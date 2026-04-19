@@ -1,0 +1,552 @@
+{
+  "master_version": "2026-Q2-rev2",
+  "effective_date": "2026-04-01",
+  "seller_of_record": {
+    "legal_name": "Grafton-Reese Industrial Co.",
+    "dba": "Grafton-Reese MRO",
+    "address": {
+      "street1": "4825 Industrial Parkway",
+      "city": "Twinsburg",
+      "state": "OH",
+      "zip": "44087",
+      "country": "US"
+    },
+    "phone": "+1-330-425-0140",
+    "order_email": "orders@grafton-reese.com",
+    "website": "grafton-reese.com"
+  },
+  "notes": "Customer master for Grafton-Reese MRO. Ten active trading partners across three segments. sku_aliases present only where customers route POs using their own part-numbering scheme.",
+  "customers": [
+    {
+      "customer_id": "CUST-00042",
+      "name": "Patterson Industrial Supply Co.",
+      "dba": null,
+      "segment": "large_distributor",
+      "tax_id": "34-2985014",
+      "duns": "078-491-2350",
+      "bill_to": {
+        "street1": "2750 Harvard Avenue",
+        "street2": "Attn: Accounts Payable — Dept 300",
+        "city": "Cleveland",
+        "state": "OH",
+        "zip": "44105",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "PATT-CLE-01",
+          "label": "Patterson DC — Cleveland",
+          "street1": "2750 Harvard Avenue",
+          "street2": "Dock 14",
+          "city": "Cleveland",
+          "state": "OH",
+          "zip": "44105",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 06:00-15:30 ET"
+        },
+        {
+          "location_code": "PATT-ATL-02",
+          "label": "Patterson DC — Atlanta South",
+          "street1": "4410 Fulton Industrial Blvd SW",
+          "street2": "Dock 7",
+          "city": "Atlanta",
+          "state": "GA",
+          "zip": "30336",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-16:00 ET"
+        },
+        {
+          "location_code": "PATT-DAL-03",
+          "label": "Patterson DC — Dallas",
+          "street1": "3902 Irving Blvd",
+          "city": "Dallas",
+          "state": "TX",
+          "zip": "75247",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-15:00 CT"
+        }
+      ],
+      "payment_terms": "Net 45",
+      "credit_limit_usd": 325000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Susan McCreary",
+          "role": "Procurement Manager",
+          "email": "s.mccreary@pattersonindustrial.com",
+          "phone": "+1-216-641-0184"
+        },
+        {
+          "name": "Accounts Payable",
+          "role": "AP",
+          "email": "ap@pattersonindustrial.com",
+          "phone": "+1-216-641-0100"
+        }
+      ],
+      "typical_channels": ["edi_x12_850", "email_pdf_po"],
+      "edi_info": {
+        "as2_id": "PATTERSON-INDUST",
+        "isa_qualifier": "01",
+        "isa_id": "1349821507",
+        "van": "OpenText GXS"
+      },
+      "sku_aliases": {
+        "887712": "FST-HCS-050-13-200-G5Z",
+        "887714": "FST-HCS-050-13-150-S18",
+        "887720": "FST-HCS-038-16-100-G8YZ",
+        "887723": "FST-HXN-050-13-G5Z",
+        "887745": "FST-FWS-050-SAE-S18",
+        "912055": "HYD-MJS-06-STL",
+        "912061": "HYD-MJE-06-STL",
+        "912118": "HYD-HSE-R2-06",
+        "912124": "HYD-HSE-R2-08",
+        "912402": "HYD-QCA-06-STL"
+      },
+      "customer_since": "2014",
+      "notes": "National MRO distributor. POs arrive via X12 850 through GXS VAN or as PDF attachments from procurement@pattersonindustrial.com. Quarterly 3.5% rebate on Hydraulic category; ship-to location code required on every PO line."
+    },
+    {
+      "customer_id": "CUST-00078",
+      "name": "Great Lakes Fluid Power Group LLC",
+      "dba": "GLFP",
+      "segment": "large_distributor",
+      "tax_id": "38-3114988",
+      "duns": "119-205-8842",
+      "bill_to": {
+        "street1": "1847 Leonard Street NW",
+        "street2": "Attn: A/P",
+        "city": "Grand Rapids",
+        "state": "MI",
+        "zip": "49504",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "GLFP-GRR-MAIN",
+          "label": "GLFP Main Warehouse",
+          "street1": "1847 Leonard Street NW",
+          "street2": "Receiving — Bldg B",
+          "city": "Grand Rapids",
+          "state": "MI",
+          "zip": "49504",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-16:00 ET"
+        },
+        {
+          "location_code": "GLFP-IND-02",
+          "label": "GLFP Indianapolis Branch",
+          "street1": "6210 W 86th Street",
+          "city": "Indianapolis",
+          "state": "IN",
+          "zip": "46278",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-15:30 ET"
+        }
+      ],
+      "payment_terms": "Net 30",
+      "credit_limit_usd": 185000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "David Vance",
+          "role": "Senior Buyer — Hydraulics",
+          "email": "dvance@glfp.com",
+          "phone": "+1-616-458-7720"
+        },
+        {
+          "name": "Ellen Ortiz",
+          "role": "Buyer — Pneumatics & MRO",
+          "email": "eortiz@glfp.com",
+          "phone": "+1-616-458-7722"
+        }
+      ],
+      "typical_channels": ["edi_x12_850", "email_xlsx_reorder"],
+      "edi_info": {
+        "as2_id": "GLFP-MICH",
+        "isa_qualifier": "ZZ",
+        "isa_id": "GLFPMI01"
+      },
+      "sku_aliases": {
+        "GLFP-04821": "HYD-MJS-06-STL",
+        "GLFP-04824": "HYD-MJE-06-STL",
+        "GLFP-04831": "HYD-MJN-06-04-STL",
+        "GLFP-04840": "HYD-ORB-06-STL",
+        "GLFP-05100": "HYD-HSE-R1-04",
+        "GLFP-05110": "HYD-HSE-R2-06",
+        "GLFP-05115": "HYD-HSE-R2-08",
+        "GLFP-05220": "HYD-HFF-08-STL",
+        "GLFP-06010": "HYD-QCA-06-STL",
+        "GLFP-06050": "HYD-CHK-08-NPT-STL",
+        "GLFP-11200": "PNM-QCI-025N-STL",
+        "GLFP-11210": "PNM-QPL-025N-STL"
+      },
+      "customer_since": "2011",
+      "notes": "Hydraulics-heavy buyer. Weekly reorder every Tuesday via standardized Excel template (GLFP_Reorder_vXX.xlsx). Tight on hose lead times — expects 3-day ship on in-stock R2 hose."
+    },
+    {
+      "customer_id": "CUST-00153",
+      "name": "Reese & Company Industrial",
+      "dba": null,
+      "segment": "regional_chain",
+      "tax_id": "34-1086420",
+      "bill_to": {
+        "street1": "1265 S Main Street",
+        "city": "Akron",
+        "state": "OH",
+        "zip": "44311",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "REESE-AKR",
+          "label": "Reese & Co. — Akron Counter",
+          "street1": "1265 S Main Street",
+          "street2": "Rear Dock",
+          "city": "Akron",
+          "state": "OH",
+          "zip": "44311",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:30-16:30 ET, Sat 08:00-12:00 ET"
+        }
+      ],
+      "payment_terms": "Net 30",
+      "credit_limit_usd": 65000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Tom Reese",
+          "role": "Owner / Purchasing",
+          "email": "tom@reesecoindustrial.com",
+          "phone": "+1-330-376-2918"
+        },
+        {
+          "name": "Maryanne Kolb",
+          "role": "Office Manager",
+          "email": "office@reesecoindustrial.com",
+          "phone": "+1-330-376-2900"
+        }
+      ],
+      "typical_channels": ["email_pdf_po", "email_body_order"],
+      "sku_aliases": {},
+      "customer_since": "2002",
+      "notes": "Family-owned supply house, fourth-generation. Sends PDF POs for larger orders, plain-text email for reorders. Occasionally calls in emergencies — log with customer_id reference."
+    },
+    {
+      "customer_id": "CUST-00201",
+      "name": "Hagan Bearing & Power Transmission, Inc.",
+      "dba": "Hagan BPT",
+      "segment": "regional_chain",
+      "tax_id": "25-1809551",
+      "bill_to": {
+        "street1": "2100 Smallman Street",
+        "street2": "Attn: A/P",
+        "city": "Pittsburgh",
+        "state": "PA",
+        "zip": "15222",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "HAGAN-PIT-01",
+          "label": "Hagan BPT — Strip District",
+          "street1": "2100 Smallman Street",
+          "street2": "Loading Bay 2",
+          "city": "Pittsburgh",
+          "state": "PA",
+          "zip": "15222",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 06:30-15:00 ET"
+        },
+        {
+          "location_code": "HAGAN-WHL-02",
+          "label": "Hagan BPT — Wheeling Branch",
+          "street1": "401 Main Street",
+          "city": "Wheeling",
+          "state": "WV",
+          "zip": "26003",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-15:30 ET"
+        }
+      ],
+      "payment_terms": "Net 30",
+      "credit_limit_usd": 48000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Mike Hagan Jr.",
+          "role": "Operations / Purchasing",
+          "email": "mike.jr@haganbpt.com",
+          "phone": "+1-412-281-4906"
+        }
+      ],
+      "typical_channels": ["email_pdf_po", "email_xlsx_reorder"],
+      "sku_aliases": {},
+      "customer_since": "1998",
+      "notes": "Mixed PDF and Excel ordering. Sometimes ships across state lines to Wheeling branch — verify ship-to on every order. No EDI."
+    },
+    {
+      "customer_id": "CUST-00267",
+      "name": "Sterling MRO Solutions",
+      "dba": null,
+      "segment": "regional_chain",
+      "tax_id": "63-1207449",
+      "bill_to": {
+        "street1": "4729 1st Avenue North",
+        "street2": "Suite 200",
+        "city": "Birmingham",
+        "state": "AL",
+        "zip": "35222",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "STER-BHM",
+          "label": "Sterling MRO — Birmingham DC",
+          "street1": "4729 1st Avenue North",
+          "street2": "Dock A",
+          "city": "Birmingham",
+          "state": "AL",
+          "zip": "35222",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-16:00 CT"
+        }
+      ],
+      "payment_terms": "Net 30",
+      "credit_limit_usd": 55000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Priya Rajan",
+          "role": "Buyer",
+          "email": "prajan@sterlingmro.com",
+          "phone": "+1-205-326-7410"
+        },
+        {
+          "name": "Wendy Booth",
+          "role": "Receiving Supervisor",
+          "email": "receiving@sterlingmro.com",
+          "phone": "+1-205-326-7415"
+        }
+      ],
+      "typical_channels": ["email_pdf_po"],
+      "sku_aliases": {},
+      "customer_since": "2018",
+      "notes": "Sterling routes all POs through their procurement portal, which emails a standardized PDF from no-reply-po@sterlingmro.com. Reply-to header is set to Priya."
+    },
+    {
+      "customer_id": "CUST-00294",
+      "name": "Ohio Valley Industrial Co.",
+      "dba": null,
+      "segment": "regional_chain",
+      "tax_id": "31-0558177",
+      "bill_to": {
+        "street1": "11185 Reading Road",
+        "city": "Cincinnati",
+        "state": "OH",
+        "zip": "45241",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "OVI-CIN",
+          "label": "Ohio Valley Industrial — Sharonville",
+          "street1": "11185 Reading Road",
+          "street2": "Warehouse Dock 3",
+          "city": "Cincinnati",
+          "state": "OH",
+          "zip": "45241",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 07:00-15:30 ET"
+        }
+      ],
+      "payment_terms": "Net 45",
+      "credit_limit_usd": 72000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Greg Sandusky",
+          "role": "Purchasing Agent",
+          "email": "g.sandusky@ohiovalleyindustrial.com",
+          "phone": "+1-513-554-2208"
+        }
+      ],
+      "typical_channels": ["email_xlsx_reorder", "email_csv_export"],
+      "sku_aliases": {},
+      "customer_since": "2007",
+      "notes": "Uses an in-house ERP (legacy JD Edwards) that exports weekly reorder sheets as .xlsx and occasionally as .csv. Headers vary by export template; they've sent three different layouts since 2023."
+    },
+    {
+      "customer_id": "CUST-00418",
+      "name": "Chuck's Hydraulic Shop",
+      "dba": null,
+      "segment": "small_b2b",
+      "tax_id": "34-3998214",
+      "bill_to": {
+        "street1": "889 Triplett Boulevard",
+        "city": "Akron",
+        "state": "OH",
+        "zip": "44306",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "CHUCKS-AKR",
+          "label": "Chuck's Hydraulic Shop",
+          "street1": "889 Triplett Boulevard",
+          "city": "Akron",
+          "state": "OH",
+          "zip": "44306",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 08:00-17:00 ET"
+        }
+      ],
+      "payment_terms": "Net 15",
+      "credit_limit_usd": 8500,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Chuck Marietta",
+          "role": "Owner",
+          "email": "chuck@chuckshyd.com",
+          "phone": "+1-330-724-8851"
+        }
+      ],
+      "typical_channels": ["email_body_order"],
+      "sku_aliases": {},
+      "customer_since": "2016",
+      "notes": "One-man hose-repair shop. Orders arrive as short plain-text emails, often on mobile (short lines, no signature). Known to reference parts by description (\"the 3/8 R2 hose\") rather than SKU. Ship-to is always the bill-to."
+    },
+    {
+      "customer_id": "CUST-00451",
+      "name": "M&M Machine & Fabrication",
+      "dba": null,
+      "segment": "small_b2b",
+      "tax_id": "39-1887206",
+      "bill_to": {
+        "street1": "2915 S Chase Avenue",
+        "city": "Milwaukee",
+        "state": "WI",
+        "zip": "53207",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "MM-MIL",
+          "label": "M&M Machine & Fab",
+          "street1": "2915 S Chase Avenue",
+          "street2": "Shop 2 — use side entrance",
+          "city": "Milwaukee",
+          "state": "WI",
+          "zip": "53207",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 06:30-15:30 CT"
+        }
+      ],
+      "payment_terms": "Net 30",
+      "credit_limit_usd": 14000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Anthony Molinaro",
+          "role": "Shop Foreman / Purchasing",
+          "email": "tony.m@mm-machineworks.com",
+          "phone": "+1-414-744-5602"
+        }
+      ],
+      "typical_channels": ["email_body_order", "email_pdf_po"],
+      "sku_aliases": {},
+      "customer_since": "2020",
+      "notes": "Mid-size machine shop, ~18 employees. Sends body-only emails for reorders, occasional hand-typed PDFs for larger jobs. Tony often forwards from his phone with 'Sent from my iPhone' footer."
+    },
+    {
+      "customer_id": "CUST-00492",
+      "name": "Redline Equipment Repair LLC",
+      "dba": "Redline Oilfield Services",
+      "segment": "small_b2b",
+      "tax_id": "74-3115899",
+      "bill_to": {
+        "street1": "8300 Market Street Road",
+        "street2": "Bldg C",
+        "city": "Houston",
+        "state": "TX",
+        "zip": "77029",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "REDLINE-HOU",
+          "label": "Redline Yard — Houston",
+          "street1": "8300 Market Street Road",
+          "street2": "Yard gate, after-hours lockbox code 4720",
+          "city": "Houston",
+          "state": "TX",
+          "zip": "77029",
+          "country": "US",
+          "receiving_hours": "Mon-Sat 06:00-18:00 CT"
+        }
+      ],
+      "payment_terms": "Net 30",
+      "credit_limit_usd": 22000,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Javier Quinonez",
+          "role": "Parts Buyer",
+          "email": "j.quinonez@redlineoilfield.com",
+          "phone": "+1-713-928-4410"
+        },
+        {
+          "name": "Darla Prewitt",
+          "role": "Operations Manager",
+          "email": "dprewitt@redlineoilfield.com",
+          "phone": "+1-713-928-4411"
+        }
+      ],
+      "typical_channels": ["email_pdf_po", "email_body_order"],
+      "sku_aliases": {},
+      "customer_since": "2019",
+      "notes": "Heavy hydraulic rebuilds for oilfield service rigs. Runs Saturdays; occasional urgent same-day orders referencing serial numbers. Prefers phone call for anything backordered > 24h."
+    },
+    {
+      "customer_id": "CUST-00537",
+      "name": "Birch Valley Farm Equipment",
+      "dba": null,
+      "segment": "small_b2b",
+      "tax_id": "23-2876603",
+      "bill_to": {
+        "street1": "2147 Benner Pike",
+        "city": "State College",
+        "state": "PA",
+        "zip": "16801",
+        "country": "US"
+      },
+      "ship_to": [
+        {
+          "location_code": "BIRCH-SCE",
+          "label": "Birch Valley Farm Equipment",
+          "street1": "2147 Benner Pike",
+          "city": "State College",
+          "state": "PA",
+          "zip": "16801",
+          "country": "US",
+          "receiving_hours": "Mon-Fri 08:00-17:00 ET, Sat 08:00-14:00 ET"
+        }
+      ],
+      "payment_terms": "COD",
+      "credit_limit_usd": 3500,
+      "currency": "USD",
+      "contacts": [
+        {
+          "name": "Stan Birchwood",
+          "role": "Owner",
+          "email": "stan.birch@birchvalleyfarmeq.com",
+          "phone": "+1-814-234-0177"
+        }
+      ],
+      "typical_channels": ["email_body_order"],
+      "sku_aliases": {},
+      "customer_since": "2022",
+      "notes": "Rural tractor/implement repair shop. COD on all orders until credit review. Uses farm-operator vocabulary — 'grade 8s', 'JIC sixes', 'the blue tubing' — often no SKUs referenced. Seasonal: heavy April-June, light winter."
+    }
+  ]
+}
