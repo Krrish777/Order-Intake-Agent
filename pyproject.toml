@@ -6,4 +6,18 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "google-adk>=1.31.0",
+    "llama-cloud>=2.1",
+    "pydantic>=2",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=8",
+    "pytest-mock>=3.12",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "integration: tests that hit the live LlamaExtract API (requires LLAMA_CLOUD_API_KEY)",
 ]
