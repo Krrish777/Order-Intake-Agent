@@ -23,7 +23,7 @@ from typing import Literal, Optional
 from pydantic import BaseModel, Field
 
 
-DocumentFormat = Literal["excel", "csv", "pdf", "edi", "email"]
+GroundTruthFormat = Literal["excel", "csv", "pdf", "edi", "email"]
 
 EdgeCase = Literal[
     "clean",
@@ -67,7 +67,7 @@ class GroundTruth(BaseModel):
 
     source_doc: str = Field(..., description="Path relative to repo root.")
     customer_id: str = Field(..., description="Must match a row in customers.json.")
-    format: DocumentFormat
+    format: GroundTruthFormat
     edge_case: EdgeCase
 
     po_number: Optional[str] = None
