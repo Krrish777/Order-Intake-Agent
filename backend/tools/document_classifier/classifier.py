@@ -20,7 +20,6 @@ from __future__ import annotations
 import io
 import time
 import uuid
-from typing import Any
 
 from dotenv import load_dotenv
 from llama_cloud import (
@@ -30,6 +29,7 @@ from llama_cloud import (
     APIStatusError,
     LlamaCloud,
 )
+from llama_cloud.types.classify_configuration_param import ClassifyConfigurationParam
 
 # Populate LLAMA_CLOUD_API_KEY etc. from a project-root .env before the SDK
 # client is constructed. Real env vars still win — load_dotenv does not
@@ -276,7 +276,7 @@ def classify_document(
     # ---- Stage 2: submit classify job. ------------------------------------
     # The per-file endpoint (client.classify.create) accepts only mode="FAST";
     # MULTIMODAL is available on the batch classifier.classify endpoint.
-    config: dict[str, Any] = {
+    config: ClassifyConfigurationParam = {
         "rules": CLASSIFY_RULES,
         "mode": "FAST",
     }
