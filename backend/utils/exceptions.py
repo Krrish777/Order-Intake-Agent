@@ -30,10 +30,7 @@ from typing import Any, Literal, Optional
 
 from backend.models.error_context import ErrorContext
 
-# ---------------------------------------------------------------------------
 # Stage vocabularies — each family narrows to its own pipeline steps.
-# ---------------------------------------------------------------------------
-
 ParseStage = Literal[
     "files.create",
     "extract.create",
@@ -49,13 +46,8 @@ ClassifyStage = Literal[
 ]
 
 
-# ---------------------------------------------------------------------------
 # Generic base hierarchy — concrete behaviour lives here, once.
-# ---------------------------------------------------------------------------
-
 class PipelineError(Exception):
-    """Base class for any failure in a document-pipeline tool."""
-
     default_message: str = "pipeline step failed"
 
     def __init__(
@@ -115,8 +107,6 @@ class PipelineRetryableError(PipelineError):
 class PipelineFatalError(PipelineError):
     """Permanent failure — escalate, do NOT retry."""
 
-
-# ---- concrete behaviours --------------------------------------------------
 
 class _RateLimitError(PipelineRetryableError):
     def __init__(
@@ -266,20 +256,17 @@ class _FailedError(PipelineFatalError):
         self.status = status
 
 
-# ===========================================================================
 # Parse family — document_parser tool.
-# ===========================================================================
-
 class ParseError(PipelineError):
     default_message = "document parser failed"
 
 
 class ParseRetryableError(ParseError, PipelineRetryableError):
-    """Transient — retry with backoff."""
+    pass
 
 
 class ParseFatalError(ParseError, PipelineFatalError):
-    """Permanent — do not retry."""
+    pass
 
 
 class ParseRateLimitError(_RateLimitError, ParseRetryableError):
@@ -381,20 +368,17 @@ class ParseFailedError(_FailedError, ParseFatalError):
         )
 
 
-# ===========================================================================
 # Classify family — document_classifier tool.
-# ===========================================================================
-
 class ClassifyError(PipelineError):
     default_message = "document classifier failed"
 
 
 class ClassifyRetryableError(ClassifyError, PipelineRetryableError):
-    """Transient — retry with backoff."""
+    pass
 
 
 class ClassifyFatalError(ClassifyError, PipelineFatalError):
-    """Permanent — do not retry."""
+    pass
 
 
 class ClassifyRateLimitError(_RateLimitError, ClassifyRetryableError):
