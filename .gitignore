@@ -10,3 +10,6 @@ wheels/
 .venv
 .adk/
 .env
+
+# Runtime logs (rotated daily / by size; never committed)
+logs/
