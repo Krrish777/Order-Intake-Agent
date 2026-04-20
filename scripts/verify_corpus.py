@@ -50,7 +50,6 @@ def _all_expected_paths() -> list[Path]:
 
 
 def _source_for(expected: Path) -> Path | None:
-    """Source file is the expected.json stem + original extension."""
     stem = expected.name[: -len(".expected.json")]
     for ext in (".xlsx", ".csv", ".pdf", ".edi", ".eml"):
         candidate = expected.parent / f"{stem}{ext}"
