@@ -1,0 +1,12 @@
+PO_NBR , LINE_NO, ITEM_NBR               , DESCRIPTION                   , QTY_REQ, UOM, UNIT_PRICE, EXT_PRICE, REQ_DATE
+0452187,     001, FST-HCS-050-13-200-G5Z , HCS 1/2-13 X 2 GR5 ZP         ,     500, EA ,       0.34,    170.00, 04/22/2026
+0452187,     002, FST-HCS-M10-150-40-88Z , HCS M10-1.5 X 40 CL8.8 ZP     ,     250, EA ,       0.29,     72.50, 04/22/2026
+0452187,     003, FST-SHC-025-20-125-AB  , SHCS 1/4-20 X 1-1/4 ALY BO    ,     300, EA ,       0.19,     57.00, 04/22/2026
+0452187,     004, FST-HXN-050-13-G5Z     , HEX NUT 1/2-13 GR5 ZP         ,     750, EA ,       0.11,     82.50, 04/22/2026
+0452187,     005, FST-FWS-038-USS-ZP     , FLAT WASH 3/8 USS ZP          ,    1000, EA ,       0.04,     40.00, 04/22/2026
+0452187,     006, FST-SLW-050-MS-ZP      , LOCK WASH 1/2 MS ZP           ,     500, EA ,       0.06,     30.00, 04/22/2026
+0452187,     007, FST-SMS-010-16-100-ZT3 , SDS #10-16 X 1 HWH ZP T3      ,     250, EA ,       0.08,     20.00, 04/22/2026
+0452187,     008, HYD-HSE-R1-04          , HOSE 100R1 -4 1/4 ID          ,     150, FT ,       2.27,    340.50, 04/22/2026
+0452187,     009, HYD-QCA-06-STL         , QC COUPLER ISO-A -6 3/8NPT STL,       6, EA ,      32.50,    195.00, 04/22/2026
+0452187,     010, PNM-PCE-038-025N-NPB   , PC ELL 90 3/8T X 1/4NPT NPB   ,      60, EA ,       5.85,    351.00, 04/22/2026
+0452187,     011, PNM-TBE-PU-025-100FT-BL, TUBING PU 1/4OD 100FT BLUE    ,       4, RL ,      32.40,    129.60, 04/22/2026

@@ -1,0 +1,22 @@
+﻿Customer PO,Line #,Patterson Item,Description,Qty,UOM,Unit Price,Extended Price,Ship To Loc,Req Date,Buyer,Terms
+PO-28503,1,887712,"Hex Cap Screw, 1/2-13 x 2"", Gr 5 Zinc",500,EA,0.30,150.00,PATT-CLE-01,04/25/2026,Susan McCreary,Net 45
+PO-28503,2,887714,"Hex Cap Screw, 1/2-13 x 1-1/2"", SS 18-8",200,EA,1.12,224.00,PATT-CLE-01,04/25/2026,Susan McCreary,Net 45
+PO-28503,3,887720,"Hex Cap Screw, 3/8-16 x 1"", Gr 8 Yellow Zinc",400,EA,0.36,144.00,PATT-ATL-02,04/25/2026,Susan McCreary,Net 45
+PO-28503,4,887723,"Hex Nut, 1/2-13, Gr 5 Zinc",750,EA,0.10,75.00,PATT-CLE-01,04/25/2026,Susan McCreary,Net 45
+PO-28503,5,887745,"Flat Washer, 1/2"" SAE, SS 18-8",1500,EA,0.08,120.00,PATT-DAL-03,04/25/2026,Susan McCreary,Net 45
+PO-28503,6,912055,"JIC Male Straight, -6 (9/16-18 UNF), Steel ZN",36,EA,2.98,107.28,PATT-ATL-02,04/25/2026,Susan McCreary,Net 45
+PO-28503,7,912061,"JIC Male Elbow 90°, -6 (9/16-18 UNF), Forged Steel",18,EA,7.66,137.88,PATT-ATL-02,04/25/2026,Susan McCreary,Net 45
+PO-28503,8,912118,"Hydraulic Hose, 100R2, -6 (3/8"" ID), 2-Wire",250,FT,3.37,842.50,PATT-CLE-01,04/25/2026,Susan McCreary,Net 45
+PO-28503,9,912124,"Hydraulic Hose, 100R2, -8 (1/2"" ID), 2-Wire",175,FT,4.44,777.00,PATT-DAL-03,04/25/2026,Susan McCreary,Net 45
+PO-28503,10,912402,"QD Coupler, ISO 7241-A, 3/8"" Body, 3/8 NPT-F",8,EA,28.15,225.20,PATT-CLE-01,04/25/2026,Susan McCreary,Net 45
+PO-28503,11,887712,"Hex Cap Screw, 1/2-13 x 2"", Gr 5 Zinc",300,EA,0.30,90.00,PATT-ATL-02,04/25/2026,Susan McCreary,Net 45
+PO-28503,12,887720,"Hex Cap Screw, 3/8-16 x 1"", Gr 8 Yellow Zinc",200,EA,0.36,72.00,PATT-DAL-03,04/25/2026,Susan McCreary,Net 45
+PO-28503,13,912118,"Hydraulic Hose, 100R2, -6 (3/8"" ID), 2-Wire",150,FT,3.37,505.50,PATT-ATL-02,04/25/2026,Susan McCreary,Net 45
+PO-28503,14,887745,"Flat Washer, 1/2"" SAE, SS 18-8",500,EA,0.08,40.00,PATT-CLE-01,04/25/2026,Susan McCreary,Net 45
+PO-28503,15,912061,"JIC Male Elbow 90°, -6 (9/16-18 UNF), Forged Steel",6,EA,7.66,45.96,PATT-DAL-03,04/25/2026,Susan McCreary,Net 45
+,,,,,,SUBTOTAL,3556.32,,,,
+,,,,,,TAX (resale exempt),0.00,,,,
+,,,,,,TOTAL,3556.32,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
+,,,,,,,,,,,
