@@ -53,17 +53,12 @@ from rich.console import Console
 from rich.logging import RichHandler
 from rich.traceback import install as install_rich_traceback
 
-# --- ContextVar for cross-async request correlation --------------------------
 request_id_var: ContextVar[str] = ContextVar("request_id", default="-")
 
-# --- Config (read at setup time only) ---------------------------------------
 _LOGS_DIR = Path(os.getenv("LOGS_DIR", "logs"))
 _LOG_LEVEL_NAME = os.getenv("LOG_LEVEL", "INFO").upper()
-
-# Root namespace: every app logger lives under this prefix.
 _ROOT_NAMESPACE = "order_intake_agent"
 
-# --- PII drop keys ----------------------------------------------------------
 _PII_KEYS = frozenset(
     {
         "prompt",
@@ -98,18 +93,11 @@ def _add_request_id(
     _method: str,
     event_dict: MutableMapping[str, Any],
 ) -> MutableMapping[str, Any]:
-    """structlog processor: inject ``request_id`` from the raw ContextVar.
-
-    Primary propagation uses ``structlog.contextvars.bind_contextvars``
-    (handled by ``merge_contextvars`` earlier in the chain). This processor is
-    a fallback for stdlib-only log records (uvicorn, warnings) that don't
-    know about structlog's contextvars.
-    """
+    # Fallback for stdlib-only records (uvicorn, warnings) that bypass
+    # structlog's contextvars; merge_contextvars covers the structlog path.
     event_dict.setdefault("request_id", request_id_var.get())
     return event_dict
 
-
-# --- Handler factories -------------------------------------------------------
 
 _CONSOLE_FORMAT = "%(message)s"
 _FILE_FORMAT = "%(asctime)s | %(name)s | %(levelname)s | [%(request_id)s] %(message)s"
@@ -238,9 +226,6 @@ def _parser_file_handler() -> logging.Handler:
     return handler
 
 
-# --- Configure once, idempotent ---------------------------------------------
-
-
 def _configure_once() -> None:
     """Idempotent setup. Safe to call many times — only the first call acts."""
     if getattr(_configure_once, "_done", False):
@@ -301,9 +286,6 @@ def _configure_once() -> None:
     )
 
 
-# --- Public API --------------------------------------------------------------
-
-
 def get_logger(name: str) -> structlog.stdlib.BoundLogger:
     """Return a namespaced structlog BoundLogger.
 
@@ -319,9 +301,6 @@ def get_logger(name: str) -> structlog.stdlib.BoundLogger:
 def generate_request_id() -> str:
     """Generate a 12-char hex request ID. For middleware use."""
     return uuid.uuid4().hex[:12]
-
-
-# --- Domain-specific helpers ------------------------------------------------
 
 
 def log_agent_invocation(
