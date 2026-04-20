@@ -1,13 +1,4 @@
-"""parse_document — the LlamaExtract-backed document parser.
-
-Sync block-and-poll wrapper around the llama_cloud SDK. Takes raw bytes of any
-supported format (PDF, XLSX, CSV, XML, image, plain text / email body) and
-returns a ParsedDocument carrying classification + per-order line items.
-
-SDK exception → typed parser exception translation lives in
-``_translate_api_error``. Every call site catches ``APIError`` (the SDK's base
-HTTP-error class), runs the translator, and re-raises.
-"""
+"""LlamaExtract-backed ``parse_document`` — sync block-and-poll wrapper."""
 
 from __future__ import annotations
 
@@ -24,9 +15,7 @@ from llama_cloud import (
 )
 from llama_cloud.types.extract_configuration_param import ExtractConfigurationParam
 
-# Populate LLAMA_CLOUD_API_KEY (and any other config) from a project-root .env
-# before the SDK client is constructed. Real env vars still win — load_dotenv
-# does not override values already set in the process environment.
+# .env is loaded before SDK client construction; real env vars win.
 load_dotenv()
 
 from backend.tools.document_classifier.format_detection import guess_mime
@@ -50,14 +39,13 @@ from backend.utils.logging import get_logger, log_llama_extract_op
 _TERMINAL_STATUSES = ("COMPLETED", "FAILED", "CANCELLED")
 _TEXT_TRUNCATION_WARNING_BYTES = 60_000  # LlamaExtract silently truncates >64 KB / page
 
-# Logger name pinned to the pre-move path so log consumers (test caplog,
-# the parser.log file sink) don't move when the module moves under legacy/.
+# Pinned to the pre-move path so caplog strings and parser.log don't
+# break if the module is rehomed.
 _log = get_logger("backend.tools.document_parser.parser")
 _client: LlamaCloud | None = None
 
 
 def _get_client() -> LlamaCloud:
-    """Lazily construct and cache the LlamaCloud client."""
     global _client
     if _client is None:
         _log.info("llama_client_init")
@@ -71,7 +59,6 @@ def _translate_api_error(
     stage: ParseStage,
     job_id: str | None = None,
 ) -> ParseError:
-    """Map a raw llama_cloud APIError to our typed ParseError subclass."""
     detail = str(exc)
     status_code = getattr(exc, "status_code", None)
     _log.warning(
@@ -175,10 +162,9 @@ def parse_document(
     client = _get_client()
     _log.debug("client_resolve_complete", cached=True)
 
-    # ---- Stage 1: upload bytes. -------------------------------------------
-    # Pass a (filename, content, content_type) tuple so httpx multipart sends
-    # a proper filename+type — BytesIO has no .name, which makes LlamaCloud
-    # reject the extract job with `Unsupported file type: None`.
+    # BytesIO has no .name, so httpx multipart drops the filename+type and
+    # LlamaCloud rejects the job with ``Unsupported file type: None``.
+    # Pass an explicit ``(filename, BytesIO, content_type)`` tuple instead.
     mime_type = guess_mime(filename)
     _log.debug(
         "stage_begin",
@@ -232,7 +218,6 @@ def parse_document(
         schema_field_count=len(config["data_schema"].get("properties", {})),
     )
 
-    # ---- Stage 2: submit extract job. -------------------------------------
     _log.debug("stage_begin", stage="extract.create", file_id=file_obj.id)
     submit_start = time.monotonic()
     try:
@@ -261,7 +246,6 @@ def parse_document(
         status=job.status,
     )
 
-    # ---- Stage 3: poll to completion. -------------------------------------
     _log.debug(
         "stage_begin",
         stage="extract.get",
@@ -352,7 +336,6 @@ def parse_document(
             detail=err_detail,
         )
 
-    # ---- Stage 4: validate against Pydantic schema. -----------------------
     _log.debug("stage_begin", stage="validation", job_id=job.id)
     validation_start = time.monotonic()
     try:

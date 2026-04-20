@@ -1,19 +1,4 @@
-"""classify_document — LlamaClassify-backed document classifier.
-
-Sync block-and-poll wrapper around ``client.classify.*``. Takes raw bytes +
-filename, returns a :class:`ClassifiedDocument` carrying the business intent
-(LLM-decided) and data format (deterministic from extension).
-
-Pipeline:
-  1. Local format detection (``detect_format`` / ``guess_mime``).
-  2. ``client.files.create(purpose="classify")`` — upload bytes.
-  3. ``client.classify.create(file_input=..., configuration={rules, mode})``.
-  4. Poll ``client.classify.get(job.id)`` until terminal.
-  5. Validate ``job.result`` + source metadata → ``ClassifiedDocument``.
-
-SDK ``APIError`` → typed ``ClassifyError`` translation lives in
-``_translate_api_error``.
-"""
+"""LlamaClassify-backed ``classify_document`` — sync block-and-poll wrapper."""
 
 from __future__ import annotations
 
@@ -31,9 +16,7 @@ from llama_cloud import (
 )
 from llama_cloud.types.classify_configuration_param import ClassifyConfigurationParam
 
-# Populate LLAMA_CLOUD_API_KEY etc. from a project-root .env before the SDK
-# client is constructed. Real env vars still win — load_dotenv does not
-# override values already set in the process environment.
+# .env is loaded before SDK client construction; real env vars win.
 load_dotenv()
 
 from backend.utils.exceptions import (
@@ -84,7 +67,6 @@ _EDI_SEGMENT_TERMINATORS = (b"~", b"\r\n", b"\r")
 
 
 def _normalize_edi_for_plaintext(content: bytes) -> bytes:
-    """Return ``content`` with EDI segment terminators rewritten as ``\\n``."""
     out = content
     for term in _EDI_SEGMENT_TERMINATORS:
         if term != b"\n":
@@ -99,7 +81,6 @@ _client: LlamaCloud | None = None
 
 
 def _get_client() -> LlamaCloud:
-    """Lazily construct and cache the LlamaCloud client."""
     global _client
     if _client is None:
         _log.info("llama_client_init", tool="document_classifier")
@@ -113,11 +94,6 @@ def _translate_api_error(
     stage: ClassifyStage,
     job_id: str | None = None,
 ) -> ClassifyError:
-    """Map a raw ``llama_cloud.APIError`` to our typed ``ClassifyError`` family.
-
-    Mirrors the translator in the legacy parser (``legacy/parser.py``) with
-    Classify-flavoured exception classes and stage vocabulary.
-    """
     detail = str(exc)
     status_code = getattr(exc, "status_code", None)
     _log.warning(
@@ -239,10 +215,9 @@ def classify_document(
 
     client = _get_client()
 
-    # ---- Stage 1: upload bytes. -------------------------------------------
-    # (filename, BytesIO, content_type) tuple so httpx multipart sends a proper
-    # filename + Content-Type. A BytesIO with no .name causes LlamaCloud to
-    # reject with `Unsupported file type: None`.
+    # BytesIO has no .name, so pass an explicit (filename, BytesIO,
+    # content_type) tuple; otherwise LlamaCloud rejects with
+    # ``Unsupported file type: None``.
     _log.debug(
         "stage_begin",
         stage="files.create",
@@ -273,9 +248,8 @@ def classify_document(
         duration_ms=upload_ms,
     )
 
-    # ---- Stage 2: submit classify job. ------------------------------------
-    # The per-file endpoint (client.classify.create) accepts only mode="FAST";
-    # MULTIMODAL is available on the batch classifier.classify endpoint.
+    # client.classify.create (per-file) accepts only mode="FAST"; MULTIMODAL
+    # is on the batch classifier.classify endpoint.
     config: ClassifyConfigurationParam = {
         "rules": CLASSIFY_RULES,
         "mode": "FAST",
@@ -306,7 +280,6 @@ def classify_document(
         duration_ms=submit_ms,
     )
 
-    # ---- Stage 3: poll to completion. -------------------------------------
     start = time.monotonic()
     deadline = start + timeout_s
     poll_count = 0
@@ -365,11 +338,10 @@ def classify_document(
             detail=err_detail,
         )
 
-    # ---- Stage 4: validate + assemble. ------------------------------------
     result = getattr(job, "result", None)
     if result is None or getattr(result, "type", None) is None:
-        # No rule matched — surface as a failed classification. Callers can
-        # decide whether to route to human review or fall back to 'other'.
+        # No rule matched — surface as a failed classification rather than a
+        # silent success. Callers decide between human review and "other".
         _log.error(
             "classify_no_rule_matched",
             job_id=job.id,
