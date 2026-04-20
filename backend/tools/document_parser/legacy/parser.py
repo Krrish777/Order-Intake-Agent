@@ -12,33 +12,7 @@ HTTP-error class), runs the translator, and re-raises.
 from __future__ import annotations
 
 import io
-import mimetypes
 import time
-
-# Extensions the stdlib mimetypes DB misses or guesses poorly. LlamaCloud
-# infers the parser path from the uploaded part's content-type, so a wrong
-# or missing type here is what produces `inputs_invalid: Unsupported file
-# type: None` at extract.create (e.g. for .csv/.edi/.eml on Windows).
-_EXTENSION_MIME_OVERRIDES = {
-    ".csv": "text/csv",
-    ".tsv": "text/tab-separated-values",
-    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    ".xls": "application/vnd.ms-excel",
-    ".eml": "message/rfc822",
-    ".edi": "application/edi-x12",
-    ".xml": "application/xml",
-    ".txt": "text/plain",
-    ".pdf": "application/pdf",
-}
-
-
-def _guess_mime(filename: str) -> str:
-    """Return a stable MIME type for ``filename``; fall back to octet-stream."""
-    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
-    if ext in _EXTENSION_MIME_OVERRIDES:
-        return _EXTENSION_MIME_OVERRIDES[ext]
-    guessed, _ = mimetypes.guess_type(filename)
-    return guessed or "application/octet-stream"
 
 from dotenv import load_dotenv
 from llama_cloud import (
@@ -55,6 +29,7 @@ from llama_cloud.types.extract_configuration_param import ExtractConfigurationPa
 # does not override values already set in the process environment.
 load_dotenv()
 
+from backend.tools.document_classifier.format_detection import guess_mime
 from backend.utils.exceptions import (
     ParseAuthError,
     ParseBadInputError,
@@ -204,7 +179,7 @@ def parse_document(
     # Pass a (filename, content, content_type) tuple so httpx multipart sends
     # a proper filename+type — BytesIO has no .name, which makes LlamaCloud
     # reject the extract job with `Unsupported file type: None`.
-    mime_type = _guess_mime(filename)
+    mime_type = guess_mime(filename)
     _log.debug(
         "stage_begin",
         stage="files.create",
