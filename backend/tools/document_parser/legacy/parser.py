@@ -159,7 +159,7 @@ def parse_document(
 
     Raises:
         ParseTimeoutError / ParseFailedError / ParseRetryableError /
-        ParseFatalError / ParseError — see ``backend/exceptions.py``.
+        ParseFatalError / ParseError — see ``backend/utils/exceptions.py``.
     """
     byte_count = len(content)
     _log.info(
