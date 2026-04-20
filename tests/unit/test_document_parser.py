@@ -20,7 +20,7 @@ from llama_cloud import (
     UnprocessableEntityError,
 )
 
-from backend.exceptions import (
+from backend.utils.exceptions import (
     ParseAuthError,
     ParseBadInputError,
     ParseConnectionError,
