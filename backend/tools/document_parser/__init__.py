@@ -19,6 +19,7 @@ from backend.tools.document_parser.legacy.parser import parse_document
 
 __all__ = [
     "parse_document",
+    "parser",
     "ParsedDocument",
     "ExtractedOrder",
     "OrderLineItem",

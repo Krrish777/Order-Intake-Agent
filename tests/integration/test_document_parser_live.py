@@ -107,8 +107,19 @@ def test_extra_hint_changes_extraction():
         extra_hint="This customer (Acme) uses 'PN' as the column header for SKU.",
     )
 
+    def _resolved_sku_count(result) -> int:
+        return sum(
+            1
+            for order in result.sub_documents
+            for item in order.line_items
+            if item.sku is not None
+        )
+
     if with_hint.sub_documents:
         with_hint_skus = [item.sku for order in with_hint.sub_documents for item in order.line_items]
         assert any(sku is not None for sku in with_hint_skus), (
             "with extra_hint, at least one SKU should be populated"
         )
+    assert _resolved_sku_count(with_hint) >= _resolved_sku_count(no_hint), (
+        "extra_hint should not reduce the number of resolved SKUs"
+    )
