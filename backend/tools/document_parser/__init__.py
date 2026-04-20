@@ -1,18 +1,4 @@
-"""document_parser tool — package marker.
-
-The LlamaExtract-based parser is now **legacy** — it lives at
-``backend.tools.document_parser.legacy.parser`` during the migration to a
-composable pipeline (classifier → parser → extractor → …).
-
-Public names are re-exported from here unchanged so existing callers
-(``scripts/parse_file.py``, ``scripts/parse_data.py``,
-``tests/unit/test_document_parser.py``) keep working without edits:
-
-    from backend.tools.document_parser import parse_document, ParsedDocument
-
-New code should prefer the new tools (``backend.tools.document_classifier``
-first) instead of this legacy surface.
-"""
+"""Public surface for the document_parser tool."""
 
 from backend.utils.exceptions import (
     ParseError,
@@ -26,9 +12,8 @@ from backend.models.parsed_document import (
     OrderLineItem,
     ParsedDocument,
 )
-# Expose the legacy module itself as ``backend.tools.document_parser.parser``
-# so that ``from backend.tools.document_parser import parser as dp`` (used in
-# tests for monkeypatching the cached _client) resolves to the legacy module.
+# ``parser`` alias lets tests monkeypatch ``parser._client`` via
+# ``from backend.tools.document_parser import parser as dp``.
 from backend.tools.document_parser.legacy import parser
 from backend.tools.document_parser.legacy.parser import parse_document
 

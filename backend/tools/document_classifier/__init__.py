@@ -1,17 +1,4 @@
-"""document_classifier tool — package marker.
-
-Re-exports the public surface so callers can write:
-
-    from backend.tools.document_classifier import (
-        classify_document,
-        ClassifiedDocument,
-        ClassifyError,
-    )
-
-instead of digging into submodules. Pydantic models + typed exceptions live
-in shared layers (``backend.models`` / ``backend.utils.exceptions``); they
-are re-exported here for caller convenience.
-"""
+"""Public surface for the document_classifier tool."""
 
 from backend.utils.exceptions import (
     ClassifyAuthError,
