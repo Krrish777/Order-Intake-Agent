@@ -13,3 +13,9 @@ wheels/
 
 # Runtime logs (rotated daily / by size; never committed)
 logs/
+
+# Firebase CLI
+.firebase/
+firebase-debug.log
+firestore-debug.log
+*-debug.log
