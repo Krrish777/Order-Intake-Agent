@@ -179,7 +179,7 @@ def classify_document(
 
     Raises:
         ``ClassifyTimeoutError`` / ``ClassifyFailedError`` / ``ClassifyError``
-        subclasses — see ``backend/exceptions.py``.
+        subclasses — see ``backend/utils/exceptions.py``.
     """
     byte_count = len(content)
     document_format = detect_format(filename)

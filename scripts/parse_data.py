@@ -35,7 +35,6 @@ _PROJECT_ROOT = Path(__file__).resolve().parent.parent
 if str(_PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(_PROJECT_ROOT))
 
-from backend.models.parsed_document import ExtractedOrder, ParsedDocument  # noqa: E402
 from backend.tools.document_parser import ParseError, parse_document  # noqa: E402
 from backend.utils.logging import get_logger  # noqa: E402
 
