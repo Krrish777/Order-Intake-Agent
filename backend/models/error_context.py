@@ -1,9 +1,8 @@
-"""Pydantic schema for the structured fields carried by pipeline exceptions.
+"""Structured payload carried by every pipeline exception.
 
-Exceptions raised by ``backend.utils.exceptions`` hold an ``ErrorContext``
-instance. This gives callers a single programmatic surface
-(``err.context.model_dump()``) that FastAPI can return as a JSON error
-envelope, while still allowing ``except`` clauses to dispatch on class.
+``err.context.model_dump()`` is the single programmatic surface for turning
+an exception into a JSON error envelope; ``except`` still dispatches on
+class.
 """
 
 from __future__ import annotations

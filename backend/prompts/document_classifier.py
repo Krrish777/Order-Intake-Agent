@@ -1,16 +1,7 @@
-"""Prompts for the document_classifier tool.
+"""LlamaClassify rules for the document_classifier tool.
 
-LlamaClassify takes a list of rules ``[{"type": str, "description": str}, ...]``
-and returns the best-matching type plus confidence and reasoning.
-
-The 8 ``type`` values are the same business intents modelled by
-``DocumentClassification`` in :mod:`backend.models.parsed_document` — kept in
-lock-step with that Literal.
-
-Per the LlamaClassify docs (``/llamaparse/classify/sdk``): *"Be specific about
-content features that distinguish the type. Include key fields the document
-usually contains."* The descriptions below follow that guidance — each cites
-the concrete fields and cue phrases a real supply-chain document carries.
+The 8 ``type`` values mirror ``DocumentClassification`` in
+``backend.models.parsed_document`` — keep them in lock-step.
 """
 
 from __future__ import annotations
