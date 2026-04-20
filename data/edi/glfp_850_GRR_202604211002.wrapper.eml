@@ -1,0 +1,48 @@
+From: GLFP EDI Notification <edi-out@glfp.com>
+To: orders@grafton-reese.com
+Subject: GLFP 850 / PO-2026-05849 / GRR-MAIN
+Date: Tue, 21 Apr 2026 10:02:00 -0400
+Message-ID: <177670544957.19656.1210127190177620937@glfp.com>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============6987509866523802578=="
+
+--===============6987509866523802578==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+This is an automated notification from GLFP's procurement system.
+
+Attached: X12 850 for PO-2026-05849. Ship-to GLFP-GRR-MAIN, required by 2026-=
+04-28. Weekly reorder per trading partner agreement.
+
+AS2 remains preferred for production exchange. This email path is provisional=
+ until AS2 trading partner onboarding completes on the GRR side.
+
+Direct questions to: David Vance, Senior Buyer =E2=80=94 Hydraulics (dvance@g=
+lfp.com, 616-458-7720).
+
+=E2=80=94 GLFP EDI Operations
+
+--===============6987509866523802578==
+Content-Type: application/edi-x12
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="glfp_850_GRR_202604211002.edi"
+MIME-Version: 1.0
+
+SVNBKjAwKiAgICAgICAgICAqMDAqICAgICAgICAgICpaWipHTEZQTUkwMSAgICAgICAqWloqR1JB
+RlRPTi1SRUVTRSAgKjI2MDQyMSoxMDAyKl4qMDA0MDEqMDAwMDAxMTUyKjAqUCo6fgpHUypQTypH
+TEZQLU1JQ0gqR1JBRlRPTi1SRUVTRSoyMDI2MDQyMSoxMDAyKjExNTIqWCowMDQwMTB+ClNUKjg1
+MCowMDAxfgpCRUcqMDAqU0EqUE8tMjAyNi0wNTg0OSoqMjAyNjA0MjF+ClJFRipDTypHTEZQLVdL
+MTd+CkRUTSowMDIqMjAyNjA0Mjh+Ck4xKlNUKkdMRlAgTUFJTiBXQVJFSE9VU0UqOTIqR0xGUC1H
+UlItTUFJTn4KTjMqMTg0NyBMRU9OQVJEIFNUUkVFVCBOVypSRUNFSVZJTkcgQkxERyBCfgpONCpH
+UkFORCBSQVBJRFMqTUkqNDk1MDR+ClBPMSowMDEqMzYqRUEqKipCUCpHTEZQLTA0ODIxKlZQKkhZ
+RC1NSlMtMDYtU1RMfgpQTzEqMDAyKjE4KkVBKioqQlAqR0xGUC0wNDgyNCpWUCpIWUQtTUpFLTA2
+LVNUTH4KUE8xKjAwMyoyNCpFQSoqKkJQKkdMRlAtMDQ4MzEqVlAqSFlELU1KTi0wNi0wNC1TVEx+
+ClBPMSowMDQqMjAwKkZUKioqQlAqR0xGUC0wNTExMCpWUCpIWUQtSFNFLVIyLTA2fgpQTzEqMDA1
+KjE1MCpGVCoqKkJQKkdMRlAtMDUxMTUqVlAqSFlELUhTRS1SMi0wOH4KUE8xKjAwNio0MCpFQSoq
+KkJQKkdMRlAtMDUyMjAqVlAqSFlELUhGRi0wOC1TVEx+ClBPMSowMDcqNSpFQSoqKkJQKkdMRlAt
+MDYwMTAqVlAqSFlELVFDQS0wNi1TVEx+ClBPMSowMDgqMzAqRUEqKipCUCpHTEZQLTExMjAwKlZQ
+KlBOTS1RQ0ktMDI1Ti1TVEx+CkNUVCo4fgpTRSoxNyowMDAxfgpHRSoxKjExNTJ+CklFQSoxKjAw
+MDAwMTE1Mn4K
+
+--===============6987509866523802578==--

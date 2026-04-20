@@ -1,0 +1,9 @@
+Hi folks,
+
+Attached is this week's reorder — PO 0452187, required by 4/22. CSV export out of JDE this time instead of our usual xlsx; finance was doing something with the templates on Monday and the weekly sheet came out in csv format. Columns should still be the same (sku, qty, uom, unit price) but ping me if the header labels drifted.
+
+Ship-to and terms aren't in the export — Sharonville dock as always, Net 45 on file. Happy to resend anything that doesn't come through clean.
+
+Greg Sandusky
+Ohio Valley Industrial Co. — Purchasing
+(513) 554-2208
