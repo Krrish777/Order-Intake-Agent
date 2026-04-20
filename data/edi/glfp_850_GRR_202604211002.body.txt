@@ -1,0 +1,9 @@
+This is an automated notification from GLFP's procurement system.
+
+Attached: X12 850 for PO-2026-05849. Ship-to GLFP-GRR-MAIN, required by 2026-04-28. Weekly reorder per trading partner agreement.
+
+AS2 remains preferred for production exchange. This email path is provisional until AS2 trading partner onboarding completes on the GRR side.
+
+Direct questions to: David Vance, Senior Buyer — Hydraulics (dvance@glfp.com, 616-458-7720).
+
+— GLFP EDI Operations
