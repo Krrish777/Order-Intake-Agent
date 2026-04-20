@@ -372,7 +372,7 @@ def log_llama_extract_op(
 ) -> None:
     """Record a LlamaExtract SDK operation.
 
-    The ``stage`` vocabulary mirrors ``backend.exceptions.ParseStage``
+    The ``stage`` vocabulary mirrors ``backend.utils.exceptions.ParseStage``
     (``files.create``, ``extract.create``, ``extract.get``, ``validation``)
     so logs and typed exceptions share one taxonomy.
     """
