@@ -6,15 +6,38 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock
 
 import pytest
-from llama_cloud import RateLimitError
+from llama_cloud import (
+    APIConnectionError,
+    APIResponseValidationError,
+    APIStatusError,
+    APITimeoutError,
+    AuthenticationError,
+    BadRequestError,
+    InternalServerError,
+    NotFoundError,
+    PermissionDeniedError,
+    RateLimitError,
+    UnprocessableEntityError,
+)
 
+from backend.exceptions import (
+    ParseAuthError,
+    ParseBadInputError,
+    ParseConnectionError,
+    ParseError,
+    ParseFatalError,
+    ParseNotFoundError,
+    ParseQuotaExhaustedError,
+    ParseRateLimitError,
+    ParseRetryableError,
+    ParseServerError,
+)
 from backend.tools.document_parser import parser as dp
 from backend.tools.document_parser import (
     ExtractedOrder,
     OrderLineItem,
     ParsedDocument,
     ParseFailedError,
-    ParseRateLimitError,
     ParseTimeoutError,
     parse_document,
 )
@@ -49,6 +72,20 @@ def _job(status: str, *, job_id: str = "ext-1", result: dict | None = None, erro
         extract_result=result,
         error=error,
     )
+
+
+def _bare_sdk_exc(cls, *, status_code: int | None = None):
+    """Construct an SDK exception without invoking its constructor.
+
+    The real SDK builds these from an httpx.Response, which is awkward in
+    unit tests. Bypassing __init__ with __new__ and setting status_code
+    manually gives us instances that satisfy isinstance() checks and the
+    translator's status_code dispatch.
+    """
+    exc = cls.__new__(cls)
+    if status_code is not None:
+        exc.status_code = status_code
+    return exc
 
 
 @pytest.fixture
@@ -96,7 +133,7 @@ def test_extracted_order_pydantic_round_trip():
 
 
 # ---------------------------------------------------------------------------
-# parse_document — terminal-status handling
+# parse_document — happy path + terminal-status handling
 # ---------------------------------------------------------------------------
 
 def test_parse_document_returns_parsed_document_on_completed(mock_client: MagicMock):
@@ -119,7 +156,6 @@ def test_parse_document_propagates_timeout(mock_client: MagicMock):
     assert err.timeout_s == 0.5
     assert err.last_status == "PENDING"
     assert err.elapsed_s >= 0.5
-    # str(exc) should be a useful one-liner that includes the structured fields
     assert "ext-1" in str(err)
     assert "PENDING" in str(err)
 
@@ -135,39 +171,8 @@ def test_parse_document_propagates_failure(mock_client: MagicMock):
     assert err.job_id == "ext-1"
     assert err.stage == "extract.get"
     assert err.detail == "schema validation failed"
-
-
-def test_parse_document_propagates_rate_limit(mock_client: MagicMock):
-    # RateLimitError is constructed by the SDK from a real HTTP response; for unit
-    # purposes we just need an instance the except clause will catch.
-    mock_client.extract.create.side_effect = RateLimitError.__new__(RateLimitError)
-    with pytest.raises(ParseRateLimitError) as excinfo:
-        parse_document(b"x", filename="po.pdf")
-    err = excinfo.value
-    assert err.stage == "extract.create"
-    # rate-limit at extract.create happens before we have a job_id
-    assert err.job_id is None
-
-
-def test_rate_limit_at_files_create_carries_correct_stage(mock_client: MagicMock):
-    """A 429 during upload should report stage='files.create', not extract.*"""
-    mock_client.files.create.side_effect = RateLimitError.__new__(RateLimitError)
-    with pytest.raises(ParseRateLimitError) as excinfo:
-        parse_document(b"x", filename="po.pdf")
-    assert excinfo.value.stage == "files.create"
-
-
-def test_parse_error_str_renders_structured_fields():
-    """str(exc) should be a useful summary including stage, job_id, and detail."""
-    from backend.exceptions import ParseError
-    exc = ParseError(
-        "boom", stage="extract.create", job_id="ext-99", detail="upstream 502",
-    )
-    rendered = str(exc)
-    assert "boom" in rendered
-    assert "extract.create" in rendered
-    assert "ext-99" in rendered
-    assert "upstream 502" in rendered
+    # ParseFailedError is a fatal-category error
+    assert isinstance(err, ParseFatalError)
 
 
 # ---------------------------------------------------------------------------
@@ -181,11 +186,10 @@ def test_extra_hint_appended_to_prompt(mock_client: MagicMock):
     _, kwargs = mock_client.extract.create.call_args
     sent_prompt = kwargs["configuration"]["system_prompt"]
     assert sent_prompt.endswith("Acme uses 'PN' for SKU")
-    assert "supply chain document extractor" in sent_prompt  # global prompt still present
+    assert "supply chain document extractor" in sent_prompt
 
 
 def test_configuration_uses_expected_keys(mock_client: MagicMock):
-    """Locks in the design decisions: agentic tier, no confidence/citations, per-doc target."""
     mock_client.extract.create.return_value = _job("COMPLETED", result=_VALID_RESULT)
     parse_document(b"x", filename="po.pdf")
 
@@ -208,9 +212,130 @@ def test_files_create_passes_filename_as_external_id(mock_client: MagicMock):
 
 
 def test_long_text_input_emits_truncation_warning(mock_client: MagicMock, caplog):
-    """Email bodies >60KB should trigger a warning about LlamaExtract's 64KB/page truncation."""
     mock_client.extract.create.return_value = _job("COMPLETED", result=_VALID_RESULT)
     big_text = b"x" * 70_000
-    with caplog.at_level("WARNING", logger="backend.tools.document_parser.parser"):
+    with caplog.at_level("WARNING", logger="order_intake_agent.backend.tools.document_parser.parser"):
         parse_document(big_text, filename="huge_email.txt")
     assert any("silently truncates" in rec.message for rec in caplog.records)
+
+
+# ---------------------------------------------------------------------------
+# Translator — SDK exceptions → typed parser exceptions (parametrized)
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize(
+    "sdk_cls, status_code, expected_cls, expected_category",
+    [
+        # 4xx caller-bug — ParseFatalError
+        (BadRequestError,           400, ParseBadInputError,        ParseFatalError),
+        (AuthenticationError,       401, ParseAuthError,            ParseFatalError),
+        (PermissionDeniedError,     403, ParseAuthError,            ParseFatalError),
+        (NotFoundError,             404, ParseNotFoundError,        ParseFatalError),
+        (UnprocessableEntityError,  422, ParseBadInputError,        ParseFatalError),
+        # 429 + 5xx — ParseRetryableError
+        (RateLimitError,            429, ParseRateLimitError,       ParseRetryableError),
+        (InternalServerError,       500, ParseServerError,          ParseRetryableError),
+    ],
+    ids=lambda v: getattr(v, "__name__", str(v)),
+)
+def test_translator_maps_named_status_subclasses(
+    mock_client: MagicMock, sdk_cls, status_code, expected_cls, expected_category,
+):
+    """Each SDK status-error subclass maps to the right typed exception AND
+    the right caller-decision category (Retryable vs Fatal)."""
+    mock_client.extract.create.side_effect = _bare_sdk_exc(sdk_cls, status_code=status_code)
+
+    with pytest.raises(expected_cls) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+
+    err = excinfo.value
+    assert isinstance(err, expected_category), (
+        f"{type(err).__name__} should be a {expected_category.__name__}"
+    )
+    assert err.stage == "extract.create"
+
+
+def test_translator_maps_402_via_status_code(mock_client: MagicMock):
+    """402 has no SDK subclass — translator dispatches by status_code."""
+    mock_client.extract.create.side_effect = _bare_sdk_exc(APIStatusError, status_code=402)
+    with pytest.raises(ParseQuotaExhaustedError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert isinstance(excinfo.value, ParseFatalError)
+    assert excinfo.value.stage == "extract.create"
+
+
+def test_translator_maps_413_to_bad_input(mock_client: MagicMock):
+    """413 Payload Too Large has no SDK subclass — should map to bad-input."""
+    mock_client.extract.create.side_effect = _bare_sdk_exc(APIStatusError, status_code=413)
+    with pytest.raises(ParseBadInputError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert excinfo.value.status_code == 413
+
+
+def test_translator_maps_503_to_server_error(mock_client: MagicMock):
+    """503 has no dedicated subclass but is in the 5xx range — should retry."""
+    mock_client.extract.create.side_effect = _bare_sdk_exc(APIStatusError, status_code=503)
+    with pytest.raises(ParseServerError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert isinstance(excinfo.value, ParseRetryableError)
+    assert excinfo.value.status_code == 503
+
+
+def test_translator_maps_connection_error(mock_client: MagicMock):
+    mock_client.extract.create.side_effect = _bare_sdk_exc(APIConnectionError)
+    with pytest.raises(ParseConnectionError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert isinstance(excinfo.value, ParseRetryableError)
+
+
+def test_translator_maps_api_timeout_error_as_connection_error(mock_client: MagicMock):
+    """APITimeoutError is a subclass of APIConnectionError — should map the same way."""
+    mock_client.extract.create.side_effect = _bare_sdk_exc(APITimeoutError)
+    with pytest.raises(ParseConnectionError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert isinstance(excinfo.value, ParseRetryableError)
+
+
+def test_translator_maps_response_validation_error(mock_client: MagicMock):
+    """APIResponseValidationError → ParseBadInputError (server returned malformed JSON)."""
+    mock_client.extract.create.side_effect = _bare_sdk_exc(APIResponseValidationError)
+    with pytest.raises(ParseBadInputError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert isinstance(excinfo.value, ParseFatalError)
+
+
+# ---------------------------------------------------------------------------
+# Stage attribution
+# ---------------------------------------------------------------------------
+
+def test_rate_limit_at_files_create_carries_correct_stage(mock_client: MagicMock):
+    """A 429 during upload should report stage='files.create', not extract.*"""
+    mock_client.files.create.side_effect = _bare_sdk_exc(RateLimitError, status_code=429)
+    with pytest.raises(ParseRateLimitError) as excinfo:
+        parse_document(b"x", filename="po.pdf")
+    assert excinfo.value.stage == "files.create"
+
+
+def test_404_during_polling_carries_job_id_and_stage(mock_client: MagicMock):
+    """If the file expires (48h cache) mid-poll, we should know which job was orphaned."""
+    mock_client.extract.create.return_value = _job("PENDING")
+    mock_client.extract.get.side_effect = _bare_sdk_exc(NotFoundError, status_code=404)
+    with pytest.raises(ParseNotFoundError) as excinfo:
+        parse_document(b"x", filename="po.pdf", timeout_s=5, poll_interval_s=0.05)
+    assert excinfo.value.stage == "extract.get"
+    assert excinfo.value.job_id == "ext-1"
+
+
+# ---------------------------------------------------------------------------
+# str() / repr() contract
+# ---------------------------------------------------------------------------
+
+def test_parse_error_str_renders_structured_fields():
+    exc = ParseError(
+        "boom", stage="extract.create", job_id="ext-99", detail="upstream 502",
+    )
+    rendered = str(exc)
+    assert "boom" in rendered
+    assert "extract.create" in rendered
+    assert "ext-99" in rendered
+    assert "upstream 502" in rendered

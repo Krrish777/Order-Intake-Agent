@@ -15,7 +15,6 @@ from __future__ import annotations
 
 import argparse
 import json
-import logging
 import os
 import sys
 from pathlib import Path
@@ -29,6 +28,9 @@ from backend.tools.document_parser import (  # noqa: E402
     ParseError,
     parse_document,
 )
+from backend.utils.logging import get_logger  # noqa: E402
+
+_log = get_logger(__name__)
 
 
 def _build_arg_parser() -> argparse.ArgumentParser:
@@ -58,7 +60,7 @@ def _build_arg_parser() -> argparse.ArgumentParser:
     p.add_argument(
         "--verbose", "-v",
         action="store_true",
-        help="Enable INFO-level logging from the parser tool",
+        help="Enable DEBUG-level logging (sets LOG_LEVEL=DEBUG for this run)",
     )
     return p
 
@@ -66,16 +68,27 @@ def _build_arg_parser() -> argparse.ArgumentParser:
 def main(argv: list[str] | None = None) -> int:
     args = _build_arg_parser().parse_args(argv)
 
-    logging.basicConfig(
-        level=logging.INFO if args.verbose else logging.WARNING,
-        format="%(asctime)s %(levelname)-7s %(name)s | %(message)s",
+    # Route verbose flag through the shared logging config. We must set the env
+    # var BEFORE the first `get_logger` call that triggers `_configure_once`
+    # (which reads LOG_LEVEL once). `get_logger` above is deferred to here so
+    # the flag still wins.
+    if args.verbose:
+        os.environ["LOG_LEVEL"] = "DEBUG"
+
+    _log.info(
+        "parse_file_cli_start",
+        file=str(args.file),
+        hint=bool(args.hint),
+        timeout_s=args.timeout,
     )
 
     if not args.file.exists():
+        _log.error("file_not_found", file=str(args.file))
         print(f"error: file not found: {args.file}", file=sys.stderr)
         return 2
 
     if not os.environ.get("LLAMA_CLOUD_API_KEY"):
+        _log.error("missing_api_key", var="LLAMA_CLOUD_API_KEY")
         print(
             "error: LLAMA_CLOUD_API_KEY is not set in the environment.\n"
             "  export LLAMA_CLOUD_API_KEY=llx-...",
@@ -84,6 +97,7 @@ def main(argv: list[str] | None = None) -> int:
         return 2
 
     content = args.file.read_bytes()
+    _log.info("file_read", file=args.file.name, bytes=len(content))
     print(
         f"→ parsing {args.file.name} ({len(content):,} bytes), "
         f"timeout={args.timeout}s, hint={'yes' if args.hint else 'no'}",
@@ -99,9 +113,21 @@ def main(argv: list[str] | None = None) -> int:
             poll_interval_s=args.poll_interval,
         )
     except ParseError as exc:
+        _log.error(
+            "parse_document_raised",
+            file=args.file.name,
+            exc_type=type(exc).__name__,
+            exc_info=True,
+        )
         print(f"\nParseError: {exc}", file=sys.stderr)
         return 1
 
+    _log.info(
+        "parse_file_cli_complete",
+        file=args.file.name,
+        classification=result.classification,
+        sub_documents=len(result.sub_documents),
+    )
     print(json.dumps(result.model_dump(), indent=2, default=str))
     return 0
 
