@@ -17,10 +17,9 @@ from __future__ import annotations
 
 from typing import Final
 
-# List of TypedDict-ish dicts — LlamaClassify's rule schema is simple
-# (``type`` + ``description``) so we use plain dicts rather than a Pydantic
-# model to avoid a serialization round-trip at call time.
-CLASSIFY_RULES: Final[list[dict[str, str]]] = [
+from llama_cloud.types.classify_configuration_param import Rule
+
+CLASSIFY_RULES: Final[list[Rule]] = [
     {
         "type": "purchase_order",
         "description": (

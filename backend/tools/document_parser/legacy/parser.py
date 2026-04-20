@@ -14,7 +14,6 @@ from __future__ import annotations
 import io
 import mimetypes
 import time
-from typing import Any
 
 # Extensions the stdlib mimetypes DB misses or guesses poorly. LlamaCloud
 # infers the parser path from the uploaded part's content-type, so a wrong
@@ -49,6 +48,7 @@ from llama_cloud import (
     APIStatusError,
     LlamaCloud,
 )
+from llama_cloud.types.extract_configuration_param import ExtractConfigurationParam
 
 # Populate LLAMA_CLOUD_API_KEY (and any other config) from a project-root .env
 # before the SDK client is constructed. Real env vars still win — load_dotenv
@@ -242,7 +242,7 @@ def parse_document(
         bytes=byte_count,
     )
 
-    config: dict[str, Any] = {
+    config: ExtractConfigurationParam = {
         "data_schema": ParsedDocument.model_json_schema(),
         "extraction_target": "per_doc",
         "tier": "agentic",
