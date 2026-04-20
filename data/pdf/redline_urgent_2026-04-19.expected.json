@@ -1,0 +1,32 @@
+{
+  "source_doc": "data/pdf/redline_urgent_2026-04-19.pdf",
+  "customer_id": "CUST-00492",
+  "format": "pdf",
+  "edge_case": "conflict_lead_time",
+  "po_number": null,
+  "po_date": "2026-04-19",
+  "required_date": null,
+  "ship_to_code": "REDLINE-HOU",
+  "payment_terms": "Net 30",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "HYD-QCA-06-STL",
+      "canonical_sku": "HYD-QCA-06-STL",
+      "description": "QD Coupler ISO 7241-A (AG), 3/8\" Body, 3/8 NPT F, Chrome-Plated Steel",
+      "quantity": 1.0,
+      "unit_of_measure": "EA",
+      "unit_price": 32.5,
+      "notes": "Referenced against Rig RED-07 / Pump Assy SN 4X-H42-11798"
+    }
+  ],
+  "known_ambiguities": [
+    "No PO number — derive from filename (redline_urgent_2026-04-19.pdf)",
+    "Delivery is literal callout 'ASAP — RIG DOWN', not a structured date",
+    "Rig serial reference (RED-07, SN 4X-H42-11798) in notes is customer context, not a line item"
+  ],
+  "known_conflicts": [
+    "HYD-QCA-06-STL has 4-day lead time per master; 'ASAP' (rig down) implies same/next day — not achievable without expedite sourcing"
+  ],
+  "expected_routing": "conflict_resolution"
+}

@@ -1,0 +1,128 @@
+{
+  "source_doc": "data/csv/ohio_valley_reorder_2026-04-08.csv",
+  "customer_id": "CUST-00294",
+  "format": "csv",
+  "edge_case": "clean",
+  "po_number": "0452187",
+  "po_date": "2026-04-08",
+  "required_date": "2026-04-22",
+  "ship_to_code": null,
+  "payment_terms": null,
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "FST-HCS-050-13-200-G5Z",
+      "canonical_sku": "FST-HCS-050-13-200-G5Z",
+      "description": "HCS 1/2-13 X 2 GR5 ZP",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.34,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "FST-HCS-M10-150-40-88Z",
+      "canonical_sku": "FST-HCS-M10-150-40-88Z",
+      "description": "HCS M10-1.5 X 40 CL8.8 ZP",
+      "quantity": 250.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.29,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "FST-SHC-025-20-125-AB",
+      "canonical_sku": "FST-SHC-025-20-125-AB",
+      "description": "SHCS 1/4-20 X 1-1/4 ALY BO",
+      "quantity": 300.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.19,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "FST-HXN-050-13-G5Z",
+      "canonical_sku": "FST-HXN-050-13-G5Z",
+      "description": "HEX NUT 1/2-13 GR5 ZP",
+      "quantity": 750.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.11,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "FST-FWS-038-USS-ZP",
+      "canonical_sku": "FST-FWS-038-USS-ZP",
+      "description": "FLAT WASH 3/8 USS ZP",
+      "quantity": 1000.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.04,
+      "notes": null
+    },
+    {
+      "line_number": 6,
+      "customer_ref": "FST-SLW-050-MS-ZP",
+      "canonical_sku": "FST-SLW-050-MS-ZP",
+      "description": "LOCK WASH 1/2 MS ZP",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.06,
+      "notes": null
+    },
+    {
+      "line_number": 7,
+      "customer_ref": "FST-SMS-010-16-100-ZT3",
+      "canonical_sku": "FST-SMS-010-16-100-ZT3",
+      "description": "SDS #10-16 X 1 HWH ZP T3",
+      "quantity": 250.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.08,
+      "notes": null
+    },
+    {
+      "line_number": 8,
+      "customer_ref": "HYD-HSE-R1-04",
+      "canonical_sku": "HYD-HSE-R1-04",
+      "description": "HOSE 100R1 -4 1/4 ID",
+      "quantity": 150.0,
+      "unit_of_measure": "FT",
+      "unit_price": 2.27,
+      "notes": null
+    },
+    {
+      "line_number": 9,
+      "customer_ref": "HYD-QCA-06-STL",
+      "canonical_sku": "HYD-QCA-06-STL",
+      "description": "QC COUPLER ISO-A -6 3/8NPT STL",
+      "quantity": 6.0,
+      "unit_of_measure": "EA",
+      "unit_price": 32.5,
+      "notes": null
+    },
+    {
+      "line_number": 10,
+      "customer_ref": "PNM-PCE-038-025N-NPB",
+      "canonical_sku": "PNM-PCE-038-025N-NPB",
+      "description": "PC ELL 90 3/8T X 1/4NPT NPB",
+      "quantity": 60.0,
+      "unit_of_measure": "EA",
+      "unit_price": 5.85,
+      "notes": null
+    },
+    {
+      "line_number": 11,
+      "customer_ref": "PNM-TBE-PU-025-100FT-BL",
+      "canonical_sku": "PNM-TBE-PU-025-100FT-BL",
+      "description": "TUBING PU 1/4OD 100FT BLUE",
+      "quantity": 4.0,
+      "unit_of_measure": "RL",
+      "unit_price": 32.4,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [
+    "Ship-to and payment terms absent from source — derive from customer master"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

@@ -1,0 +1,101 @@
+{
+  "source_doc": "data/edi/glfp_850_GRR_202604211002.edi",
+  "customer_id": "CUST-00078",
+  "format": "edi",
+  "edge_case": "minimalist_envelope",
+  "po_number": "PO-2026-05849",
+  "po_date": "2026-04-21",
+  "required_date": "2026-04-28",
+  "ship_to_code": "GLFP-GRR-MAIN",
+  "payment_terms": null,
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "GLFP-04821",
+      "canonical_sku": "HYD-MJS-06-STL",
+      "description": "JIC Male Straight -6 (from master)",
+      "quantity": 36.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "GLFP-04824",
+      "canonical_sku": "HYD-MJE-06-STL",
+      "description": "JIC Male Elbow 90 -6 (from master)",
+      "quantity": 18.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "GLFP-04831",
+      "canonical_sku": "HYD-MJN-06-04-STL",
+      "description": "JIC M x NPT M -6 x 1/4 (from master)",
+      "quantity": 24.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "GLFP-05110",
+      "canonical_sku": "HYD-HSE-R2-06",
+      "description": "Hose 100R2 -6 3/8 ID (from master)",
+      "quantity": 200.0,
+      "unit_of_measure": "FT",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "GLFP-05115",
+      "canonical_sku": "HYD-HSE-R2-08",
+      "description": "Hose 100R2 -8 1/2 ID (from master)",
+      "quantity": 150.0,
+      "unit_of_measure": "FT",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 6,
+      "customer_ref": "GLFP-05220",
+      "canonical_sku": "HYD-HFF-08-STL",
+      "description": "Hose End Fitting JIC -8 (from master)",
+      "quantity": 40.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 7,
+      "customer_ref": "GLFP-06010",
+      "canonical_sku": "HYD-QCA-06-STL",
+      "description": "QD Coupler ISO-A -6 (from master)",
+      "quantity": 5.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 8,
+      "customer_ref": "GLFP-11200",
+      "canonical_sku": "PNM-QCI-025N-STL",
+      "description": "QC Coupler Industrial M-Style 1/4 NPT F (from master)",
+      "quantity": 30.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [
+    "No PID segments — descriptions must be resolved from products.json via canonical SKU",
+    "No PO104 unit prices — pricing must be looked up from GLFP contract (not explicitly in master)",
+    "No N1*BT bill-to — derive from customer master primary billing address",
+    "Payment terms not present in 850 — derive from customer master (Net 30)"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

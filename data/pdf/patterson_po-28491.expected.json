@@ -1,0 +1,236 @@
+{
+  "source_doc": "data/pdf/patterson_po-28491.pdf",
+  "customer_id": "CUST-00042",
+  "format": "pdf",
+  "edge_case": "clean",
+  "po_number": "PO-28491",
+  "po_date": "2026-04-18",
+  "required_date": "2026-05-08",
+  "ship_to_code": "PATT-ATL-02",
+  "payment_terms": "Net 45",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "887712",
+      "canonical_sku": "FST-HCS-050-13-200-G5Z",
+      "description": "Hex Cap Screw, 1/2-13 x 2\", Gr 5 Zinc",
+      "quantity": 1200.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.3,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "887714",
+      "canonical_sku": "FST-HCS-050-13-150-S18",
+      "description": "Hex Cap Screw, 1/2-13 x 1-1/2\", 18-8 SS",
+      "quantity": 300.0,
+      "unit_of_measure": "EA",
+      "unit_price": 1.12,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "887720",
+      "canonical_sku": "FST-HCS-038-16-100-G8YZ",
+      "description": "Hex Cap Screw, 3/8-16 x 1\", Gr 8 Yellow Zinc",
+      "quantity": 800.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.36,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "887723",
+      "canonical_sku": "FST-HXN-050-13-G5Z",
+      "description": "Hex Nut, 1/2-13, Gr 5 Zinc",
+      "quantity": 1500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.1,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "887745",
+      "canonical_sku": "FST-FWS-050-SAE-S18",
+      "description": "Flat Washer, 1/2\" SAE, 18-8 SS",
+      "quantity": 2500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.08,
+      "notes": null
+    },
+    {
+      "line_number": 6,
+      "customer_ref": "912055",
+      "canonical_sku": "HYD-MJS-06-STL",
+      "description": "JIC Male Straight, -6 (9/16-18 UNF), Steel ZN",
+      "quantity": 100.0,
+      "unit_of_measure": "EA",
+      "unit_price": 2.98,
+      "notes": null
+    },
+    {
+      "line_number": 7,
+      "customer_ref": "912061",
+      "canonical_sku": "HYD-MJE-06-STL",
+      "description": "JIC Male Elbow 90°, -6 (9/16-18 UNF), Forged Steel",
+      "quantity": 48.0,
+      "unit_of_measure": "EA",
+      "unit_price": 7.66,
+      "notes": null
+    },
+    {
+      "line_number": 8,
+      "customer_ref": "912118",
+      "canonical_sku": "HYD-HSE-R2-06",
+      "description": "Hydraulic Hose, 100R2, -6 (3/8\" ID), 2-Wire",
+      "quantity": 500.0,
+      "unit_of_measure": "FT",
+      "unit_price": 3.37,
+      "notes": null
+    },
+    {
+      "line_number": 9,
+      "customer_ref": "912124",
+      "canonical_sku": "HYD-HSE-R2-08",
+      "description": "Hydraulic Hose, 100R2, -8 (1/2\" ID), 2-Wire",
+      "quantity": 375.0,
+      "unit_of_measure": "FT",
+      "unit_price": 4.44,
+      "notes": null
+    },
+    {
+      "line_number": 10,
+      "customer_ref": "912402",
+      "canonical_sku": "HYD-QCA-06-STL",
+      "description": "QD Coupler, ISO 7241-A, 3/8\" Body, 3/8 NPT-F",
+      "quantity": 12.0,
+      "unit_of_measure": "EA",
+      "unit_price": 28.15,
+      "notes": null
+    },
+    {
+      "line_number": 11,
+      "customer_ref": "FST-HCS-062-11-250-S316",
+      "canonical_sku": "FST-HCS-062-11-250-S316",
+      "description": "Hex Cap Screw, 5/8-11 x 2-1/2\", 316 SS",
+      "quantity": 75.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.38,
+      "notes": null
+    },
+    {
+      "line_number": 12,
+      "customer_ref": "FST-HCS-M10-150-40-88Z",
+      "canonical_sku": "FST-HCS-M10-150-40-88Z",
+      "description": "Hex Cap Screw, M10-1.5 x 40 mm, Cl 8.8 Zinc",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.26,
+      "notes": null
+    },
+    {
+      "line_number": 13,
+      "customer_ref": "FST-SHC-025-20-125-AB",
+      "canonical_sku": "FST-SHC-025-20-125-AB",
+      "description": "Socket Head Cap Screw, 1/4-20 x 1-1/4\", Alloy BO",
+      "quantity": 400.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.17,
+      "notes": null
+    },
+    {
+      "line_number": 14,
+      "customer_ref": "FST-SHC-038-16-150-S18",
+      "canonical_sku": "FST-SHC-038-16-150-S18",
+      "description": "Socket Head Cap Screw, 3/8-16 x 1-1/2\", 18-8 SS",
+      "quantity": 150.0,
+      "unit_of_measure": "EA",
+      "unit_price": 1.54,
+      "notes": null
+    },
+    {
+      "line_number": 15,
+      "customer_ref": "FST-FHC-010-24-075-AB",
+      "canonical_sku": "FST-FHC-010-24-075-AB",
+      "description": "Flat Head Cap Screw, #10-24 x 3/4\", Alloy BO",
+      "quantity": 300.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.11,
+      "notes": null
+    },
+    {
+      "line_number": 16,
+      "customer_ref": "FST-HXN-062-11-S18",
+      "canonical_sku": "FST-HXN-062-11-S18",
+      "description": "Hex Nut, 5/8-11, 18-8 SS",
+      "quantity": 250.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.51,
+      "notes": null
+    },
+    {
+      "line_number": 17,
+      "customer_ref": "FST-NYL-038-16-S18",
+      "canonical_sku": "FST-NYL-038-16-S18",
+      "description": "Nyloc Lock Nut, 3/8-16, 18-8 SS",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.3,
+      "notes": null
+    },
+    {
+      "line_number": 18,
+      "customer_ref": "FST-FWS-038-USS-ZP",
+      "canonical_sku": "FST-FWS-038-USS-ZP",
+      "description": "Flat Washer, 3/8\" USS, Zinc",
+      "quantity": 2000.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.04,
+      "notes": null
+    },
+    {
+      "line_number": 19,
+      "customer_ref": "FST-SLW-050-MS-ZP",
+      "canonical_sku": "FST-SLW-050-MS-ZP",
+      "description": "Split Lock Washer, 1/2\" Med, Zinc",
+      "quantity": 800.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.05,
+      "notes": null
+    },
+    {
+      "line_number": 20,
+      "customer_ref": "FST-SMS-010-16-100-ZT3",
+      "canonical_sku": "FST-SMS-010-16-100-ZT3",
+      "description": "Self-Drilling Tek, #10-16 x 1\" HWH Zinc T3",
+      "quantity": 600.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.07,
+      "notes": null
+    },
+    {
+      "line_number": 21,
+      "customer_ref": "HYD-MJN-06-04-STL",
+      "canonical_sku": "HYD-MJN-06-04-STL",
+      "description": "JIC Male x NPT Male, -6 x 1/4\" NPT, Steel",
+      "quantity": 75.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.66,
+      "notes": null
+    },
+    {
+      "line_number": 22,
+      "customer_ref": "HYD-ORB-06-STL",
+      "canonical_sku": "HYD-ORB-06-STL",
+      "description": "SAE ORB Male Straight, -6, Buna-N, Steel",
+      "quantity": 60.0,
+      "unit_of_measure": "EA",
+      "unit_price": 4.92,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

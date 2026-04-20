@@ -1,0 +1,71 @@
+{
+  "source_doc": "data/email/reese_reorder_2026-04-16.eml",
+  "customer_id": "CUST-00153",
+  "format": "email",
+  "edge_case": "semi_formal_typos",
+  "po_number": null,
+  "po_date": "2026-04-16",
+  "required_date": "2026-05-12",
+  "ship_to_code": "REESE-AKR",
+  "payment_terms": "Net 30",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "Grade 5 hex cap screws, 1/2-13 x 2\", zinc plated",
+      "canonical_sku": "FST-HCS-050-13-200-G5Z",
+      "description": "Hex Cap Screw 1/2-13 x 2 GR5 Zinc",
+      "quantity": 200.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "hex nuts same thread (1/2-13, grade 5 zinc)",
+      "canonical_sku": "FST-HXN-050-13-G5Z",
+      "description": "Hex Nut 1/2-13 GR5 Zinc",
+      "quantity": 300.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "flat washers 1/2\" SAE, 18-8 stainless",
+      "canonical_sku": "FST-FWS-050-SAE-S18",
+      "description": "Flat Washer 1/2 SAE 18-8 SS",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": "Customer specifies stainless (not zinc) for pump mounts — material is critical"
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "1/4\" R1 hose",
+      "canonical_sku": "HYD-HSE-R1-04",
+      "description": "Hydraulic Hose 100R1 -4 (1/4 ID)",
+      "quantity": 75.0,
+      "unit_of_measure": "FT",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "JIC -6 male elbows, 90 deg",
+      "canonical_sku": "HYD-MJE-06-STL",
+      "description": "JIC Male Elbow 90 -6 Steel",
+      "quantity": 12.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [
+    "No PO number — email is the authoritative record",
+    "Body typos (Ive, dont, seperate, recieve) — content-tolerant parser required",
+    "Split-shipment preference expressed in prose — must preserve as special instruction",
+    "Invoice routing (office@reesecoindustrial.com) is different from sending address"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

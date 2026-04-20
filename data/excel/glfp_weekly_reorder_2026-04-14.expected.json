@@ -1,0 +1,136 @@
+{
+  "source_doc": "data/excel/glfp_weekly_reorder_2026-04-14.xlsx",
+  "customer_id": "CUST-00078",
+  "format": "excel",
+  "edge_case": "clean",
+  "po_number": "PO-2026-05847",
+  "po_date": "2026-04-14",
+  "required_date": "2026-04-21",
+  "ship_to_code": "GLFP-GRR-MAIN",
+  "payment_terms": "Net 30",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "GLFP-04821",
+      "canonical_sku": "HYD-MJS-06-STL",
+      "description": "JIC 37 Male Straight Adapter, -6 (9/16-18 UNF), Steel ZN",
+      "quantity": 48.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.08,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "GLFP-04824",
+      "canonical_sku": "HYD-MJE-06-STL",
+      "description": "JIC 37 Male Elbow 90 deg, -6 (9/16-18 UNF), Forged Steel",
+      "quantity": 25.0,
+      "unit_of_measure": "EA",
+      "unit_price": 7.82,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "GLFP-04831",
+      "canonical_sku": "HYD-MJN-06-04-STL",
+      "description": "JIC Male x NPT Male Adapter, -6 x 1/4in NPT, Steel",
+      "quantity": 30.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.75,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "GLFP-04840",
+      "canonical_sku": "HYD-ORB-06-STL",
+      "description": "SAE ORB Male Straight, -6 (9/16-18 UNF), Buna-N, Steel",
+      "quantity": 22.0,
+      "unit_of_measure": "EA",
+      "unit_price": 5.02,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "GLFP-05110",
+      "canonical_sku": "HYD-HSE-R2-06",
+      "description": "Hydraulic Hose SAE 100R2AT, -6 (3/8 ID), 2-Wire",
+      "quantity": 175.0,
+      "unit_of_measure": "FT",
+      "unit_price": 3.47,
+      "notes": null
+    },
+    {
+      "line_number": 6,
+      "customer_ref": "GLFP-05115",
+      "canonical_sku": "HYD-HSE-R2-08",
+      "description": "Hydraulic Hose SAE 100R2AT, -8 (1/2 ID), 2-Wire",
+      "quantity": 225.0,
+      "unit_of_measure": "FT",
+      "unit_price": 4.58,
+      "notes": null
+    },
+    {
+      "line_number": 7,
+      "customer_ref": "GLFP-05100",
+      "canonical_sku": "HYD-HSE-R1-04",
+      "description": "Hydraulic Hose SAE 100R1AT, -4 (1/4 ID), 1-Wire",
+      "quantity": 125.0,
+      "unit_of_measure": "FT",
+      "unit_price": 2.05,
+      "notes": null
+    },
+    {
+      "line_number": 8,
+      "customer_ref": "GLFP-05220",
+      "canonical_sku": "HYD-HFF-08-STL",
+      "description": "Hose End Fitting, Female JIC Swivel -8, Crimp 2-Wire",
+      "quantity": 60.0,
+      "unit_of_measure": "EA",
+      "unit_price": 6.24,
+      "notes": null
+    },
+    {
+      "line_number": 9,
+      "customer_ref": "GLFP-06010",
+      "canonical_sku": "HYD-QCA-06-STL",
+      "description": "QD Coupler ISO 7241-A (AG), -6 Body x 3/8in NPT F, Steel",
+      "quantity": 6.0,
+      "unit_of_measure": "EA",
+      "unit_price": 29.15,
+      "notes": null
+    },
+    {
+      "line_number": 10,
+      "customer_ref": "GLFP-06050",
+      "canonical_sku": "HYD-CHK-08-NPT-STL",
+      "description": "Inline Check Valve, 1/2in NPT F, 5 PSI Crack, Steel",
+      "quantity": 4.0,
+      "unit_of_measure": "EA",
+      "unit_price": 25.8,
+      "notes": null
+    },
+    {
+      "line_number": 11,
+      "customer_ref": "GLFP-11200",
+      "canonical_sku": "PNM-QCI-025N-STL",
+      "description": "QC Coupler Industrial M-Style, 1/4in NPT F, Steel",
+      "quantity": 18.0,
+      "unit_of_measure": "EA",
+      "unit_price": 6.45,
+      "notes": null
+    },
+    {
+      "line_number": 12,
+      "customer_ref": "GLFP-11210",
+      "canonical_sku": "PNM-QPL-025N-STL",
+      "description": "QC Plug Industrial M-Style, 1/4in NPT M, Hardened Steel",
+      "quantity": 24.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.55,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

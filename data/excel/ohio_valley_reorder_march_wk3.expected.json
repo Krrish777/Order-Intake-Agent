@@ -1,0 +1,73 @@
+{
+  "source_doc": "data/excel/ohio_valley_reorder_march_wk3.xlsx",
+  "customer_id": "CUST-00294",
+  "format": "excel",
+  "edge_case": "ambiguity_missing_fields",
+  "po_number": null,
+  "po_date": null,
+  "required_date": null,
+  "ship_to_code": "OVI-CIN",
+  "payment_terms": "Net 45",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "FST-HCS-038-16-100-G8YZ",
+      "canonical_sku": "FST-HCS-038-16-100-G8YZ",
+      "description": "HCS 3/8-16 X 1 GR8 YELLOW ZINC",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "FST-NYL-038-16-S18",
+      "canonical_sku": "FST-NYL-038-16-S18",
+      "description": "NYLOC 3/8-16 18-8 SS",
+      "quantity": 300.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "PNM-PCS-025-025N-BR",
+      "canonical_sku": "PNM-PCS-025-025N-BR",
+      "description": "PUSH-CONNECT STR 1/4T X 1/4NPT BRASS",
+      "quantity": 50.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "PNM-QCI-025N-STL",
+      "canonical_sku": "PNM-QCI-025N-STL",
+      "description": "QC COUPLER IND 1/4 NPT F STL",
+      "quantity": 40.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "HYD-HSE-R2-06",
+      "canonical_sku": "HYD-HSE-R2-06",
+      "description": "HOSE 100R2AT -6 3/8 ID 2-WIRE",
+      "quantity": 100.0,
+      "unit_of_measure": "FT",
+      "unit_price": null,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [
+    "No explicit PO number — filename (march_wk3) is the only reference",
+    "Need-by is literal string 'ASAP' — not a structured date",
+    "Filename week tag ambiguous relative to calendar (recycles weekly)",
+    "No unit prices in source — pricing must be looked up from vendor list",
+    "Header row is at row 4 (after 3-row JDE branding block), not row 1",
+    "Ship-to implied from customer master — not stated explicitly"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "human_review"
+}

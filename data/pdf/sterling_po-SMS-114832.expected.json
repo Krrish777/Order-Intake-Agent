@@ -1,0 +1,111 @@
+{
+  "source_doc": "data/pdf/sterling_po-SMS-114832.pdf",
+  "customer_id": "CUST-00267",
+  "format": "pdf",
+  "edge_case": "typos_label_variations",
+  "po_number": "SMS-114832",
+  "po_date": "2026-04-15",
+  "required_date": "2026-05-06",
+  "ship_to_code": "STER-BHM",
+  "payment_terms": "Net 30",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "FST-HCS-050-13-200-G5Z",
+      "canonical_sku": "FST-HCS-050-13-200-G5Z",
+      "description": "Hex Cap Screw 1/2-13 x 2\" Gr5 Zinc",
+      "quantity": 400.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.34,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "FST-HXN-050-13-G5Z",
+      "canonical_sku": "FST-HXN-050-13-G5Z",
+      "description": "Hex Nut 1/2-13 Gr5 Zinc",
+      "quantity": 800.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.11,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "FST-FWS-050-SAE-S18",
+      "canonical_sku": "FST-FWS-050-SAE-S18",
+      "description": "Flat Washer 1/2\" SAE 18-8 SS",
+      "quantity": 600.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.09,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "FST-SHC-025-20-125-AB",
+      "canonical_sku": "FST-SHC-025-20-125-AB",
+      "description": "SHCS 1/4-20 x 1-1/4\" Alloy Black Oxide",
+      "quantity": 500.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.19,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "FST-SMS-010-16-100-ZT3",
+      "canonical_sku": "FST-SMS-010-16-100-ZT3",
+      "description": "Self-Drill Tek #10-16 x 1\" HWH Zn T3",
+      "quantity": 1000.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.08,
+      "notes": null
+    },
+    {
+      "line_number": 6,
+      "customer_ref": "PNM-PCS-025-025N-BR",
+      "canonical_sku": "PNM-PCS-025-025N-BR",
+      "description": "Push-Connect Str 1/4 Tube x 1/4 NPT Br",
+      "quantity": 30.0,
+      "unit_of_measure": "EA",
+      "unit_price": 4.12,
+      "notes": null
+    },
+    {
+      "line_number": 7,
+      "customer_ref": "PNM-QCI-025N-STL",
+      "canonical_sku": "PNM-QCI-025N-STL",
+      "description": "QC Coupler Ind 1/4 NPT F Steel",
+      "quantity": 20.0,
+      "unit_of_measure": "EA",
+      "unit_price": 7.2,
+      "notes": null
+    },
+    {
+      "line_number": 8,
+      "customer_ref": "PNM-TBE-PU-025-100FT-BL",
+      "canonical_sku": "PNM-TBE-PU-025-100FT-BL",
+      "description": "PU Tubing 1/4\" OD 100 ft roll Blue",
+      "quantity": 3.0,
+      "unit_of_measure": "RL",
+      "unit_price": 32.4,
+      "notes": null
+    },
+    {
+      "line_number": 9,
+      "customer_ref": "PNM-MUF-025N-BRZ",
+      "canonical_sku": "PNM-MUF-025N-BRZ",
+      "description": "Muffler 1/4 NPT M Sintered Bronze",
+      "quantity": 50.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.25,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [
+    "Label drift: 'Buyer Contact' (not Buyer), 'Supplier' (not Vendor), 'Delivery By' (not Required By), 'Unit' (not UOM)",
+    "Column order swap: UOM precedes Qty",
+    "Remit-to block routes to 3rd-party AP processor (Axia Financial Services) — must not be confused with bill-to",
+    "Portal-generated from no-reply-po@sterlingmro.com — reply-to is different address"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

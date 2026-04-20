@@ -1,0 +1,91 @@
+{
+  "source_doc": "data/excel/hagan_reorder_2026-04-09.xlsx",
+  "customer_id": "CUST-00201",
+  "format": "excel",
+  "edge_case": "typos_label_variations",
+  "po_number": "H-26189",
+  "po_date": "2026-04-09",
+  "required_date": "2026-04-23",
+  "ship_to_code": "HAGAN-WHL-02",
+  "payment_terms": "Net 30",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "FST-HCS-050-13-200-G5Z",
+      "canonical_sku": "FST-HCS-050-13-200-G5Z",
+      "description": "Hex Cap Screw 1/2-13 x 2 GR5 Zinc",
+      "quantity": 150.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.34,
+      "notes": null
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "FST-HXN-050-13-G5Z",
+      "canonical_sku": "FST-HXN-050-13-G5Z",
+      "description": "Hex Nut 1/2-13 GR5 Zinc",
+      "quantity": 200.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.11,
+      "notes": null
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "FST-FWS-050-SAE-S18",
+      "canonical_sku": "FST-FWS-050-SAE-S18",
+      "description": "Flat Washer 1/2 SAE 18-8 SS",
+      "quantity": 250.0,
+      "unit_of_measure": "EA",
+      "unit_price": 0.09,
+      "notes": null
+    },
+    {
+      "line_number": 4,
+      "customer_ref": "HYD-MJS-06-STL",
+      "canonical_sku": "HYD-MJS-06-STL",
+      "description": "JIC Male Straight -6 Steel",
+      "quantity": 24.0,
+      "unit_of_measure": "EA",
+      "unit_price": 3.42,
+      "notes": null
+    },
+    {
+      "line_number": 5,
+      "customer_ref": "HYD-MJE-06-STL",
+      "canonical_sku": "HYD-MJE-06-STL",
+      "description": "JIC Male Elbow 90 -6 Steel",
+      "quantity": 12.0,
+      "unit_of_measure": "EA",
+      "unit_price": 8.75,
+      "notes": null
+    },
+    {
+      "line_number": 6,
+      "customer_ref": "HYD-ORB-06-STL",
+      "canonical_sku": "HYD-ORB-06-STL",
+      "description": "ORB Male Straight -6 Steel",
+      "quantity": 15.0,
+      "unit_of_measure": "EA",
+      "unit_price": 5.62,
+      "notes": null
+    },
+    {
+      "line_number": 7,
+      "customer_ref": "HYD-MJN-06-04-STL",
+      "canonical_sku": "HYD-MJN-06-04-STL",
+      "description": "JIC M x NPT M -6 x 1/4 Steel",
+      "quantity": 20.0,
+      "unit_of_measure": "EA",
+      "unit_price": 4.18,
+      "notes": null
+    }
+  ],
+  "known_ambiguities": [
+    "Header typos (Desciption, Qty Ordred, Due Dte) — schema-tolerant parse required",
+    "Column order swap: UOM precedes Qty — positional parsers must remap",
+    "Ship-to is secondary branch (Wheeling WV), not primary Pittsburgh — verify against customer ship_to list",
+    "Metadata label drift: 'PO No:' / 'po date:' / 'Ship To:' / 'payment terms' — inconsistent casing"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "auto_process"
+}

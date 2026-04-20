@@ -1,0 +1,42 @@
+{
+  "source_doc": "data/email/birch_valley_emergency.eml",
+  "customer_id": "CUST-00537",
+  "format": "email",
+  "edge_case": "conflict_lead_time",
+  "po_number": null,
+  "po_date": "2026-04-20",
+  "required_date": "2026-04-21",
+  "ship_to_code": "BIRCH-SCE",
+  "payment_terms": "COD",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "grade 8s, 3/8 x 1 yellow zinc",
+      "canonical_sku": "FST-HCS-038-16-100-G8YZ",
+      "description": "Hex Cap Screw 3/8-16 x 1 GR8 Yellow Zinc",
+      "quantity": 100.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": "'Grade 8s' is farm vocabulary for Grade 8 hex cap screws"
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "blue tubing, quarter inch",
+      "canonical_sku": "PNM-TBE-PU-025-100FT-BL",
+      "description": "Polyurethane Tubing 1/4 OD 100 ft Blue",
+      "quantity": 1.0,
+      "unit_of_measure": "RL",
+      "unit_price": null,
+      "notes": "'Blue tubing' is farm vocabulary for the PU pneumatic tubing"
+    }
+  ],
+  "known_ambiguities": [
+    "No PO number",
+    "Farm-operator vocabulary ('grade 8s', 'blue tubing') requires domain-aware fuzzy match"
+  ],
+  "known_conflicts": [
+    "Requested delivery 2026-04-21 is 1 day after order date; FST-HCS-038-16-100-G8YZ has 2-day lead time per master",
+    "Requested delivery 2026-04-21 is 1 day after order date; PNM-TBE-PU-025-100FT-BL has 3-day lead time per master"
+  ],
+  "expected_routing": "conflict_resolution"
+}

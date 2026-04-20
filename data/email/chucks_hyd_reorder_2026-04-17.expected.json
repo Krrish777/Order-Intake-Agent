@@ -1,0 +1,51 @@
+{
+  "source_doc": "data/email/chucks_hyd_reorder_2026-04-17.eml",
+  "customer_id": "CUST-00418",
+  "format": "email",
+  "edge_case": "vague_references",
+  "po_number": null,
+  "po_date": "2026-04-17",
+  "required_date": null,
+  "ship_to_code": "CHUCKS-AKR",
+  "payment_terms": "Net 15",
+  "line_items": [
+    {
+      "line_number": 1,
+      "customer_ref": "the 3/8 R2 hose",
+      "canonical_sku": "HYD-HSE-R2-06",
+      "description": "Hydraulic Hose 100R2 -6 (3/8\" ID) — inferred from 3/8 R2 reference",
+      "quantity": 50.0,
+      "unit_of_measure": "FT",
+      "unit_price": null,
+      "notes": "Fuzzy match: 'R2' + '3/8' uniquely identifies HYD-HSE-R2-06"
+    },
+    {
+      "line_number": 2,
+      "customer_ref": "those JIC -6 elbows",
+      "canonical_sku": "HYD-MJE-06-STL",
+      "description": "JIC Male Elbow 90° -6 — inferred from 'JIC -6 elbow'",
+      "quantity": 6.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": "Fuzzy match: only JIC -6 elbow in master is HYD-MJE-06-STL (90° male)"
+    },
+    {
+      "line_number": 3,
+      "customer_ref": "the usual 3/8 QD couplers (ISO A style)",
+      "canonical_sku": "HYD-QCA-06-STL",
+      "description": "QD Coupler ISO 7241-A -6 Body x 3/8 NPT — inferred from 'ISO A 3/8 QD'",
+      "quantity": 2.0,
+      "unit_of_measure": "EA",
+      "unit_price": null,
+      "notes": "Fuzzy match on 'ISO A' + '3/8' + 'QD coupler'"
+    }
+  ],
+  "known_ambiguities": [
+    "No PO number — email is the authoritative record",
+    "No explicit required-delivery date — customer expects normal lead time",
+    "'Same as last time on price' — pricing requires prior-order lookup not present in document",
+    "All 3 line items referenced by vague description — requires fuzzy match against product master"
+  ],
+  "known_conflicts": [],
+  "expected_routing": "human_review"
+}
