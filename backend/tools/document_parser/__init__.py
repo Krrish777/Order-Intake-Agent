@@ -14,7 +14,7 @@ New code should prefer the new tools (``backend.tools.document_classifier``
 first) instead of this legacy surface.
 """
 
-from backend.exceptions import (
+from backend.utils.exceptions import (
     ParseError,
     ParseFailedError,
     ParseRateLimitError,

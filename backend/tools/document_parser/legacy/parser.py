@@ -12,9 +12,36 @@ HTTP-error class), runs the translator, and re-raises.
 from __future__ import annotations
 
 import io
+import mimetypes
 import time
 from typing import Any
 
+# Extensions the stdlib mimetypes DB misses or guesses poorly. LlamaCloud
+# infers the parser path from the uploaded part's content-type, so a wrong
+# or missing type here is what produces `inputs_invalid: Unsupported file
+# type: None` at extract.create (e.g. for .csv/.edi/.eml on Windows).
+_EXTENSION_MIME_OVERRIDES = {
+    ".csv": "text/csv",
+    ".tsv": "text/tab-separated-values",
+    ".xlsx": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    ".xls": "application/vnd.ms-excel",
+    ".eml": "message/rfc822",
+    ".edi": "application/edi-x12",
+    ".xml": "application/xml",
+    ".txt": "text/plain",
+    ".pdf": "application/pdf",
+}
+
+
+def _guess_mime(filename: str) -> str:
+    """Return a stable MIME type for ``filename``; fall back to octet-stream."""
+    ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+    if ext in _EXTENSION_MIME_OVERRIDES:
+        return _EXTENSION_MIME_OVERRIDES[ext]
+    guessed, _ = mimetypes.guess_type(filename)
+    return guessed or "application/octet-stream"
+
+from dotenv import load_dotenv
 from llama_cloud import (
     APIConnectionError,
     APIError,
@@ -23,7 +50,12 @@ from llama_cloud import (
     LlamaCloud,
 )
 
-from backend.exceptions import (
+# Populate LLAMA_CLOUD_API_KEY (and any other config) from a project-root .env
+# before the SDK client is constructed. Real env vars still win — load_dotenv
+# does not override values already set in the process environment.
+load_dotenv()
+
+from backend.utils.exceptions import (
     ParseAuthError,
     ParseBadInputError,
     ParseConnectionError,
@@ -43,7 +75,9 @@ from backend.utils.logging import get_logger, log_llama_extract_op
 _TERMINAL_STATUSES = ("COMPLETED", "FAILED", "CANCELLED")
 _TEXT_TRUNCATION_WARNING_BYTES = 60_000  # LlamaExtract silently truncates >64 KB / page
 
-_log = get_logger(__name__)
+# Logger name pinned to the pre-move path so log consumers (test caplog,
+# the parser.log file sink) don't move when the module moves under legacy/.
+_log = get_logger("backend.tools.document_parser.parser")
 _client: LlamaCloud | None = None
 
 
@@ -136,6 +170,12 @@ def parse_document(
         poll_interval_s=poll_interval_s,
         has_hint=extra_hint is not None,
     )
+    _log.debug(
+        "input_fingerprint",
+        filename=filename,
+        extension=filename.rsplit(".", 1)[-1].lower() if "." in filename else "",
+        bytes=byte_count,
+    )
 
     if filename.lower().endswith((".txt", ".eml")) and byte_count > _TEXT_TRUNCATION_WARNING_BYTES:
         _log.warning(
@@ -149,14 +189,33 @@ def parse_document(
     system_prompt = SYSTEM_PROMPT
     if extra_hint:
         system_prompt += f"\n\nAdditional context for this document:\n{extra_hint}"
+        _log.debug(
+            "system_prompt_extended",
+            base_len=len(SYSTEM_PROMPT),
+            hint_len=len(extra_hint),
+            final_len=len(system_prompt),
+        )
 
+    _log.debug("client_resolve_start")
     client = _get_client()
+    _log.debug("client_resolve_complete", cached=True)
 
-    # Stage 1: upload bytes.
+    # ---- Stage 1: upload bytes. -------------------------------------------
+    # Pass a (filename, content, content_type) tuple so httpx multipart sends
+    # a proper filename+type — BytesIO has no .name, which makes LlamaCloud
+    # reject the extract job with `Unsupported file type: None`.
+    mime_type = _guess_mime(filename)
+    _log.debug(
+        "stage_begin",
+        stage="files.create",
+        filename=filename,
+        bytes=byte_count,
+        mime_type=mime_type,
+    )
     upload_start = time.monotonic()
     try:
         file_obj = client.files.create(
-            file=io.BytesIO(content),
+            file=(filename, io.BytesIO(content), mime_type),
             purpose="extract",
             external_file_id=filename,
         )
@@ -169,6 +228,12 @@ def parse_document(
         )
         raise _translate_api_error(exc, stage="files.create") from exc
     upload_ms = (time.monotonic() - upload_start) * 1000
+    _log.debug(
+        "stage_end",
+        stage="files.create",
+        file_id=file_obj.id,
+        duration_ms=upload_ms,
+    )
     log_llama_extract_op(
         "files.create",
         stage="files.create",
@@ -185,8 +250,15 @@ def parse_document(
         "confidence_scores": False,
         "cite_sources": False,
     }
+    _log.debug(
+        "extract_config_built",
+        extraction_target=config["extraction_target"],
+        tier=config["tier"],
+        schema_field_count=len(config["data_schema"].get("properties", {})),
+    )
 
-    # Stage 2: submit extract job.
+    # ---- Stage 2: submit extract job. -------------------------------------
+    _log.debug("stage_begin", stage="extract.create", file_id=file_obj.id)
     submit_start = time.monotonic()
     try:
         job = client.extract.create(file_input=file_obj.id, configuration=config)
@@ -199,6 +271,13 @@ def parse_document(
         )
         raise _translate_api_error(exc, stage="extract.create") from exc
     submit_ms = (time.monotonic() - submit_start) * 1000
+    _log.debug(
+        "stage_end",
+        stage="extract.create",
+        job_id=job.id,
+        initial_status=job.status,
+        duration_ms=submit_ms,
+    )
     log_llama_extract_op(
         "extract.create",
         stage="extract.create",
@@ -207,10 +286,18 @@ def parse_document(
         status=job.status,
     )
 
-    # Stage 3: poll to completion.
+    # ---- Stage 3: poll to completion. -------------------------------------
+    _log.debug(
+        "stage_begin",
+        stage="extract.get",
+        job_id=job.id,
+        timeout_s=timeout_s,
+        poll_interval_s=poll_interval_s,
+    )
     start = time.monotonic()
     deadline = start + timeout_s
     poll_count = 0
+    previous_status = job.status
     while job.status not in _TERMINAL_STATUSES:
         elapsed = time.monotonic() - start
         if time.monotonic() > deadline:
@@ -228,6 +315,12 @@ def parse_document(
                 elapsed_s=elapsed,
                 last_status=job.status,
             )
+        _log.debug(
+            "poll_sleep",
+            job_id=job.id,
+            poll_interval_s=poll_interval_s,
+            remaining_s=max(0.0, deadline - time.monotonic()),
+        )
         time.sleep(poll_interval_s)
         poll_count += 1
         try:
@@ -245,11 +338,22 @@ def parse_document(
             "extract_poll_tick",
             job_id=job.id,
             status=job.status,
+            previous_status=previous_status,
+            status_changed=job.status != previous_status,
             polls=poll_count,
             elapsed_s=time.monotonic() - start,
         )
+        previous_status = job.status
 
     total_ms = (time.monotonic() - start) * 1000
+    _log.debug(
+        "stage_end",
+        stage="extract.get",
+        job_id=job.id,
+        final_status=job.status,
+        polls=poll_count,
+        duration_ms=total_ms,
+    )
     log_llama_extract_op(
         "extract.poll",
         stage="extract.get",
@@ -273,7 +377,9 @@ def parse_document(
             detail=err_detail,
         )
 
-    # Stage 4: validate against Pydantic schema.
+    # ---- Stage 4: validate against Pydantic schema. -----------------------
+    _log.debug("stage_begin", stage="validation", job_id=job.id)
+    validation_start = time.monotonic()
     try:
         result = ParsedDocument.model_validate(job.extract_result)
     except Exception:
@@ -283,6 +389,15 @@ def parse_document(
             exc_info=True,
         )
         raise
+    validation_ms = (time.monotonic() - validation_start) * 1000
+    _log.debug(
+        "stage_end",
+        stage="validation",
+        job_id=job.id,
+        duration_ms=validation_ms,
+        classification=result.classification,
+        sub_document_count=len(result.sub_documents),
+    )
 
     _log.info(
         "parse_document_complete",
