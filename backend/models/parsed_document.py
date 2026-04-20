@@ -1,9 +1,8 @@
-"""Data models for the document_parser tool's output.
+"""Pydantic schema for parser output.
 
-Shared across tools, agents, and future routes/services. The same Pydantic
-schema also defines LlamaExtract's `data_schema` via `model_json_schema()`,
-so field descriptions carry the extraction-time hints (label variations,
-format expectations).
+Also fed to LlamaExtract as ``data_schema`` via ``model_json_schema()`` —
+field descriptions double as extraction hints, so keep the label-alias
+lists accurate.
 """
 
 from typing import Literal, Optional
@@ -46,7 +45,7 @@ class OrderLineItem(BaseModel):
 
 
 class ExtractedOrder(BaseModel):
-    """One purchase order. A document may contain multiple."""
+    """One purchase order; a document may carry multiple."""
 
     customer_name: Optional[str] = Field(None, description="Buyer / customer company name.")
     po_number: Optional[str] = Field(
@@ -89,7 +88,7 @@ DocumentClassification = Literal[
 
 
 class ParsedDocument(BaseModel):
-    """Top-level result. ONE LlamaExtract job populates this whole structure."""
+    """Top-level parser result; populated by a single LlamaExtract job."""
 
     classification: DocumentClassification = Field(
         ...,

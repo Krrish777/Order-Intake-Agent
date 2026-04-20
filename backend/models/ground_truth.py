@@ -1,19 +1,9 @@
-"""Ground-truth schema for the synthetic data corpus.
+"""Expected-answer schema for the synthetic corpus.
 
-Each generated document in `data/` has a sibling `.expected.json` that conforms
-to `GroundTruth`. This is NOT what the extraction agent produces (that's
-`ExtractedOrder` in `parsed_document.py`); this is what the TEST HARNESS
-knows ahead of time about each document — including which edge cases the
-document exercises and how a reasonable pipeline should route it.
-
-The distinction matters:
-- `ExtractedOrder`: shape of data an agent pulls out of a document.
-- `GroundTruth`: shape of the annotation that tells evaluators what the
-  correct extraction looks like AND what edge-case routing the pipeline
-  should take.
-
-Ground truth is written once (here) and evaluated against many candidate
-extractions from many prompt/model variants later.
+One ``.expected.json`` per document in ``data/``. Distinct from
+``ExtractedOrder`` (what the agent produces) — ``GroundTruth`` also
+carries the edge-case label and the expected routing decision so
+evaluators can score pipeline behaviour, not just extraction accuracy.
 """
 
 from __future__ import annotations
