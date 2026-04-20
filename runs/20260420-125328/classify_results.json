@@ -1,0 +1,271 @@
+{
+  "file_count": 15,
+  "folder": "data",
+  "recursive": true,
+  "results": [
+    {
+      "bytes": 1486,
+      "classified": {
+        "byte_size": 1486,
+        "classify_job_id": "clj-0s48uc2wrt3vhrtsa9iics5lthq3",
+        "document_format": "csv",
+        "document_intent": "purchase_order",
+        "filename": "ohio_valley_reorder_2026-04-08.csv",
+        "intent_confidence": 1.0,
+        "intent_reasoning": "This is clearly a purchase order. It contains PO number 0452187, multiple line items with item numbers/SKUs (e.g., FST-HCS-050-13-200-G5Z), detailed descriptions, quantities required, unit of measure, unit prices, extended prices, and requested delivery dates (04/22/2026). The document has all the hallmark features of a customer's request to buy goods with no indication of seller confirmation, shipment, or invoicing.",
+        "mime_type": "text/csv"
+      },
+      "document_format": "csv",
+      "document_intent": "purchase_order",
+      "filename": "ohio_valley_reorder_2026-04-08.csv",
+      "intent_confidence": 1.0,
+      "path": "data\\csv\\ohio_valley_reorder_2026-04-08.csv",
+      "status": "classified"
+    },
+    {
+      "bytes": 2150,
+      "classified": {
+        "byte_size": 2150,
+        "classify_job_id": "clj-0htpclmvwazqv1pmqppr8eutw4ol",
+        "document_format": "csv",
+        "document_intent": "purchase_order",
+        "filename": "patterson_adhoc_reorder.csv",
+        "intent_confidence": 0.95,
+        "intent_reasoning": "This document is clearly a purchase order. It contains a PO number (PO-28503), buyer identity (Susan McCreary), multiple line items with Patterson item numbers (SKUs), descriptions, quantities, unit prices, extended prices, ship-to locations, requested dates (04/25/2026), and payment terms (Net 45). The document shows a customer's request to purchase various hardware items including screws, nuts, washers, hydraulic hoses, and couplers. It includes pricing and totals but lacks any seller acknowledgement numbers or confirmation language, confirming it is the initial purchase order rather than a confirmation.",
+        "mime_type": "text/csv"
+      },
+      "document_format": "csv",
+      "document_intent": "purchase_order",
+      "filename": "patterson_adhoc_reorder.csv",
+      "intent_confidence": 0.95,
+      "path": "data\\csv\\patterson_adhoc_reorder.csv",
+      "status": "classified"
+    },
+    {
+      "bytes": 807,
+      "classified": {
+        "byte_size": 807,
+        "classify_job_id": "clj-nd706ceqzmykhg94kthvbxlhm70a",
+        "document_format": "edi",
+        "document_intent": "purchase_order",
+        "filename": "glfp_850_GRR_202604211002.edi",
+        "intent_confidence": 0.95,
+        "intent_reasoning": "This is an EDI 850 document, which is the standard electronic format for a purchase order. Key indicators: BEG segment with document type '00' (original purchase order) and PO number 'PO-2026-05849', DTM segment showing requested delivery date (20260428), N1/N3/N4 segments identifying the ship-to location (GLFP MAIN WAREHOUSE), and multiple PO1 segments listing 8 line items with quantities, units of measure (EA, FT), buyer part numbers (BP qualifier with GLFP-* numbers), and vendor part numbers (VP qualifier with HYD-* and PNM-* numbers). This is a customer's request to buy goods, not yet confirmed by the seller. No seller acknowledgement number present, ruling out po_confirmation.",
+        "mime_type": "application/edi-x12"
+      },
+      "document_format": "edi",
+      "document_intent": "purchase_order",
+      "filename": "glfp_850_GRR_202604211002.edi",
+      "intent_confidence": 0.95,
+      "path": "data\\edi\\glfp_850_GRR_202604211002.edi",
+      "status": "classified"
+    },
+    {
+      "bytes": 1078,
+      "classified": {
+        "byte_size": 1078,
+        "classify_job_id": "clj-psg85l9ibaj5mchxhowkxin5dkgs",
+        "document_format": "edi",
+        "document_intent": "purchase_order",
+        "filename": "patterson_850_CLE_202604191435.edi",
+        "intent_confidence": 0.95,
+        "intent_reasoning": "This is an EDI 850 Purchase Order transaction set. Key indicators: BEG segment marks it as a purchase order (PO-28492), buyer is PATTERSON INDUSTRIAL SUPPLY CO, ship-to is PATTERSON DC CLEVELAND, contains 5 line items (PO1 segments) with part numbers, quantities, unit prices, and product descriptions (fasteners, hydraulic fittings, hose). DTM segments show requested delivery date (20260508) and order date. This is the buyer's request to purchase, not a seller confirmation. No sales order or acknowledgement number present, ruling out po_confirmation.",
+        "mime_type": "application/edi-x12"
+      },
+      "document_format": "edi",
+      "document_intent": "purchase_order",
+      "filename": "patterson_850_CLE_202604191435.edi",
+      "intent_confidence": 0.95,
+      "path": "data\\edi\\patterson_850_CLE_202604191435.edi",
+      "status": "classified"
+    },
+    {
+      "bytes": 845,
+      "classified": {
+        "byte_size": 845,
+        "classify_job_id": "clj-krmrij1uiwjtmwfqwnvh4wreecf5",
+        "document_format": "email",
+        "document_intent": "purchase_order",
+        "filename": "birch_valley_emergency.eml",
+        "intent_confidence": 0.92,
+        "intent_reasoning": "This document is a clear purchase order from Stan Birchwood at Birch Valley. It contains: (1) a buyer identity (Stan Birchwood/Birch Valley), (2) specific line items with part descriptions and quantities (100 grade 8 bolts 3/8 x 1 yellow zinc, 1 roll blue tubing quarter inch), (3) a requested delivery date (tomorrow), and (4) payment terms (COD). While informal in format (email/text style rather than formal PO), it meets all the key criteria for a purchase order: buyer identity, line items with SKU/part descriptions and quantities, delivery requirements, and payment method. The urgent tone and COD arrangement are typical of small business transactions. No PO number is explicitly stated, but this is common in informal orders from small operations. This is a commitment to buy, not an inquiry.",
+        "mime_type": "message/rfc822"
+      },
+      "document_format": "email",
+      "document_intent": "purchase_order",
+      "filename": "birch_valley_emergency.eml",
+      "intent_confidence": 0.92,
+      "path": "data\\email\\birch_valley_emergency.eml",
+      "status": "classified"
+    },
+    {
+      "bytes": 508,
+      "classified": {
+        "byte_size": 508,
+        "classify_job_id": "clj-49iecc2l2304vrlxii0l5i5i6k3y",
+        "document_format": "email",
+        "document_intent": "purchase_order",
+        "filename": "chucks_hyd_reorder_2026-04-17.eml",
+        "intent_confidence": 0.85,
+        "intent_reasoning": "This document is an informal purchase request from a customer named Chuck. It contains a buyer identity (Chuck, with phone number), multiple line items with quantities (50 ft of hose, 6 elbows, 2 couplers) that reference previous orders ('Same as last time on price'), and payment terms (Net 15). While it lacks a formal PO number and structured format, it is clearly a request to buy specific goods with sufficient detail to process. The informal language ('Need to reorder', 'those JIC -6 elbows', 'the usual') and reference to previous transactions ('Same as last time') indicate an established buyer-seller relationship making a repeat purchase. This matches the purchase_order category despite its casual format, as it represents a customer's request to buy goods with identifiable items, quantities, and payment terms.",
+        "mime_type": "message/rfc822"
+      },
+      "document_format": "email",
+      "document_intent": "purchase_order",
+      "filename": "chucks_hyd_reorder_2026-04-17.eml",
+      "intent_confidence": 0.85,
+      "path": "data\\email\\chucks_hyd_reorder_2026-04-17.eml",
+      "status": "classified"
+    },
+    {
+      "bytes": 1311,
+      "classified": {
+        "byte_size": 1311,
+        "classify_job_id": "clj-ijyb0bkw0nronyismgnglqbl2lli",
+        "document_format": "email",
+        "document_intent": "purchase_order",
+        "filename": "reese_reorder_2026-04-16.eml",
+        "intent_confidence": 0.95,
+        "intent_reasoning": "This document is a customer requesting specific goods with detailed line items (screws, nuts, washers, hose, elbows with quantities and specifications), a requested delivery date (5/12/26), payment terms (Net 30), and shipping instructions. However, it lacks a formal PO number or purchase order reference number, which is a key characteristic of a purchase_order. The informal tone ('Hi there', 'Hope everything is running well') and email format suggest this is more of an informal inquiry or quote request rather than a formal purchase order. Despite the detailed specifications and clear intent to buy, the absence of a PO number and the conversational nature ('when you can \u2014 not emergency') lean toward this being an inquiry with strong purchase intent rather than a formal purchase order. However, given the very specific quantities, detailed specs, delivery instructions, and payment terms reference, this is closer to a purchase order than a simple inquiry. This could be considered a purchase order in an informal business relationship where PO numbers aren't always used, so I'm classifying it as purchase_order with high confidence despite the missing formal PO number.",
+        "mime_type": "message/rfc822"
+      },
+      "document_format": "email",
+      "document_intent": "purchase_order",
+      "filename": "reese_reorder_2026-04-16.eml",
+      "intent_confidence": 0.95,
+      "path": "data\\email\\reese_reorder_2026-04-16.eml",
+      "status": "classified"
+    },
+    {
+      "bytes": 7227,
+      "classified": {
+        "byte_size": 7227,
+        "classify_job_id": "clj-d2dmbfauv01ev2oj01ouunb9ujsj",
+        "document_format": "xlsx",
+        "document_intent": "purchase_order",
+        "filename": "glfp_weekly_reorder_2026-04-14.xlsx",
+        "intent_confidence": 1.0,
+        "intent_reasoning": "This is clearly a purchase order. It contains all the hallmark elements: a PO number (PO-2026-05847), buyer identity (David Vance), multiple line items with part numbers, descriptions, quantities, unit prices and extended prices, a required delivery date (04/21/2026), ship-to and vendor information, payment terms (Net 30), and an authorized buyer signature. The document is titled 'PURCHASE ORDER' and represents Great Lakes Fluid Power Group's request to purchase hydraulic and pneumatic parts from vendor Grafton-Reese MRO. It is not yet a confirmation from the seller, nor an invoice, shipping notice, or any other document type.",
+        "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      },
+      "document_format": "xlsx",
+      "document_intent": "purchase_order",
+      "filename": "glfp_weekly_reorder_2026-04-14.xlsx",
+      "intent_confidence": 1.0,
+      "path": "data\\excel\\glfp_weekly_reorder_2026-04-14.xlsx",
+      "status": "classified"
+    },
+    {
+      "bytes": 6527,
+      "classified": {
+        "byte_size": 6527,
+        "classify_job_id": "clj-d62cqe9yxqcl1pop5llhcvp68jwr",
+        "document_format": "xlsx",
+        "document_intent": "purchase_order",
+        "filename": "hagan_reorder_2026-04-09.xlsx",
+        "intent_confidence": 0.95,
+        "intent_reasoning": "This is a clear purchase order. The document is titled 'Purchase Order / Reorder' and contains all the hallmark features: PO number (H-26189), buyer identity (Mike Hagan Jr./Hagan BPT), vendor (Grafton-Reese MRO), line items with part numbers, descriptions, quantities, unit costs, and extended totals. It includes requested delivery date (04/23/2026), payment terms (Net 30), and shipping instructions. This is a buyer's request to purchase goods from a vendor, not yet confirmed by the seller. The document shows the customer placing an order for fasteners and hydraulic fittings.",
+        "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      },
+      "document_format": "xlsx",
+      "document_intent": "purchase_order",
+      "filename": "hagan_reorder_2026-04-09.xlsx",
+      "intent_confidence": 0.95,
+      "path": "data\\excel\\hagan_reorder_2026-04-09.xlsx",
+      "status": "classified"
+    },
+    {
+      "bytes": 5647,
+      "classified": {
+        "byte_size": 5647,
+        "classify_job_id": "clj-vcldsmpt71289agv47l2xdzxo0gs",
+        "document_format": "xlsx",
+        "document_intent": "purchase_order",
+        "filename": "ohio_valley_reorder_march_wk3.xlsx",
+        "intent_confidence": 0.85,
+        "intent_reasoning": "This document is a structured requisition/purchase report listing specific items with part numbers, descriptions, quantities, and units of measure. It includes a ship-to location (OVI-CIN), need-by date (ASAP), payment terms (NET 45), and a vendor (GRAFTON-REESE). The format is clearly a request to procure goods from a supplier. While it uses 'RPT' nomenclature rather than 'PO', it functions as a purchase order with all required elements: buyer identity (OHIO VALLEY INDUSTRIAL CO.), vendor, line items with part numbers and quantities, and delivery requirements. The report ID (RPT_MRO_V3) serves as the order reference number.",
+        "mime_type": "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+      },
+      "document_format": "xlsx",
+      "document_intent": "purchase_order",
+      "filename": "ohio_valley_reorder_march_wk3.xlsx",
+      "intent_confidence": 0.85,
+      "path": "data\\excel\\ohio_valley_reorder_march_wk3.xlsx",
+      "status": "classified"
+    },
+    {
+      "bytes": 17817,
+      "error": "LlamaClassify job ended with terminal status FAILED | stage=classify.get | job_id=clj-nnioq8m4ado2p8m1vdtdr7i1ksr2 | detail='Parse job pjb-c888v87xg9m1luxtms9axrrb0bfh has no text content available'",
+      "error_type": "ClassifyFailedError",
+      "filename": "customers.json",
+      "path": "data\\masters\\customers.json",
+      "status": "error"
+    },
+    {
+      "bytes": 24935,
+      "error": "LlamaClassify job ended with terminal status FAILED | stage=classify.get | job_id=clj-z0qhxf0u1dj1oq7qs6v4x8es6diu | detail='Parse job pjb-1zoffecmjoeybs5xui827esp5gxk has no text content available'",
+      "error_type": "ClassifyFailedError",
+      "filename": "products.json",
+      "path": "data\\masters\\products.json",
+      "status": "error"
+    },
+    {
+      "bytes": 7000,
+      "classified": {
+        "byte_size": 7000,
+        "classify_job_id": "clj-1d9ef5fs9srrirexmv20s3za3wll",
+        "document_format": "pdf",
+        "document_intent": "purchase_order",
+        "filename": "patterson_po-28491.pdf",
+        "intent_confidence": 1.0,
+        "intent_reasoning": "This document is unambiguously a purchase order. It contains all the key identifying elements: (1) clearly labeled 'PURCHASE ORDER' at the top, (2) a PO number (PO-28491), (3) buyer identity (Patterson Industrial Supply Co., Susan McCreary), (4) vendor identity (Grafton-Reese MRO), (5) multiple line items with part numbers, descriptions, quantities, unit prices, and extended prices, (6) required delivery date (05/08/2026), (7) payment terms (Net 45), and (8) ship-to and bill-to addresses. The document represents the customer's request to purchase goods and has not yet been confirmed by the seller. The footer requests vendor acknowledgment within 48 hours, which is typical of a purchase order awaiting confirmation.",
+        "mime_type": "application/pdf"
+      },
+      "document_format": "pdf",
+      "document_intent": "purchase_order",
+      "filename": "patterson_po-28491.pdf",
+      "intent_confidence": 1.0,
+      "path": "data\\pdf\\patterson_po-28491.pdf",
+      "status": "classified"
+    },
+    {
+      "bytes": 3301,
+      "classified": {
+        "byte_size": 3301,
+        "classify_job_id": "clj-wg8dkr5t2nr63gwkop81qnf0b4n8",
+        "document_format": "pdf",
+        "document_intent": "purchase_order",
+        "filename": "redline_urgent_2026-04-19.pdf",
+        "intent_confidence": 0.95,
+        "intent_reasoning": "This document is a purchase order from Redline Equipment Repair LLC requesting to buy a hydraulic quick disconnect coupler. It contains all key PO elements: a buyer identity (Javier Quinonez, Parts Buyer), order date (04/19/2026), ship-to address, payment terms (Net 30), a line item with part number (HYD-QCA-06-STL), description, quantity (1 EA), unit price ($32.50), and extended amount ($32.50). The document is titled 'URGENT REORDER' which is a variant of a purchase order. There is no evidence of seller confirmation numbers (OA/SO), no shipment tracking information, and no invoice total/payment due language. This is clearly a customer's request to buy goods, not yet acknowledged by the seller.",
+        "mime_type": "application/pdf"
+      },
+      "document_format": "pdf",
+      "document_intent": "purchase_order",
+      "filename": "redline_urgent_2026-04-19.pdf",
+      "intent_confidence": 0.95,
+      "path": "data\\pdf\\redline_urgent_2026-04-19.pdf",
+      "status": "classified"
+    },
+    {
+      "bytes": 4729,
+      "classified": {
+        "byte_size": 4729,
+        "classify_job_id": "clj-xa7py2hujzi80ogf8ny35tz06df2",
+        "document_format": "pdf",
+        "document_intent": "purchase_order",
+        "filename": "sterling_po-SMS-114832.pdf",
+        "intent_confidence": 1.0,
+        "intent_reasoning": "This is clearly a Purchase Order. It contains all the required elements: a PO number (SMS-114832), buyer identity (Priya Rajan from Sterling MRO Solutions), multiple line items with part numbers, descriptions, quantities, unit prices, and extended totals. It shows a requested delivery date (05/06/2026) and payment terms (Net 30). The document is titled 'Purchase Order' at the top and represents Sterling MRO's request to buy goods from supplier Grafton-Reese MRO. It has not yet been confirmed by the seller - in fact, it explicitly requests acknowledgement within 24 hours. This is a textbook example of a purchase_order document.",
+        "mime_type": "application/pdf"
+      },
+      "document_format": "pdf",
+      "document_intent": "purchase_order",
+      "filename": "sterling_po-SMS-114832.pdf",
+      "intent_confidence": 1.0,
+      "path": "data\\pdf\\sterling_po-SMS-114832.pdf",
+      "status": "classified"
+    }
+  ],
+  "run_timestamp": "20260420-125328"
+}
