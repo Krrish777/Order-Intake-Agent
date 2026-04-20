@@ -43,9 +43,7 @@ from backend.tools.document_parser import (
 )
 
 
-# ---------------------------------------------------------------------------
 # Fixtures
-# ---------------------------------------------------------------------------
 
 _VALID_RESULT = {
     "classification": "purchase_order",
@@ -65,7 +63,6 @@ _VALID_RESULT = {
 
 
 def _job(status: str, *, job_id: str = "ext-1", result: dict | None = None, error: str | None = None):
-    """Build a SimpleNamespace mimicking a LlamaCloud extract job object."""
     return SimpleNamespace(
         id=job_id,
         status=status,
@@ -90,16 +87,13 @@ def _bare_sdk_exc(cls, *, status_code: int | None = None):
 
 @pytest.fixture
 def mock_client(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
-    """Replace the cached LlamaCloud client with a MagicMock for the test."""
     client = MagicMock()
     client.files.create.return_value = SimpleNamespace(id="dfl-test-1")
     monkeypatch.setattr(dp, "_client", client)
     return client
 
 
-# ---------------------------------------------------------------------------
 # Schema tests
-# ---------------------------------------------------------------------------
 
 def test_schema_root_is_object():
     """LlamaExtract requires data_schema root to be type=object. Catch regressions."""
@@ -132,9 +126,7 @@ def test_extracted_order_pydantic_round_trip():
     assert isinstance(order.line_items[0], OrderLineItem)
 
 
-# ---------------------------------------------------------------------------
 # parse_document — happy path + terminal-status handling
-# ---------------------------------------------------------------------------
 
 def test_parse_document_returns_parsed_document_on_completed(mock_client: MagicMock):
     mock_client.extract.create.return_value = _job("COMPLETED", result=_VALID_RESULT)
@@ -175,9 +167,7 @@ def test_parse_document_propagates_failure(mock_client: MagicMock):
     assert isinstance(err, ParseFatalError)
 
 
-# ---------------------------------------------------------------------------
 # parse_document — configuration shape
-# ---------------------------------------------------------------------------
 
 def test_extra_hint_appended_to_prompt(mock_client: MagicMock):
     mock_client.extract.create.return_value = _job("COMPLETED", result=_VALID_RESULT)
@@ -219,9 +209,7 @@ def test_long_text_input_emits_truncation_warning(mock_client: MagicMock, caplog
     assert any("silently truncates" in rec.message for rec in caplog.records)
 
 
-# ---------------------------------------------------------------------------
 # Translator — SDK exceptions → typed parser exceptions (parametrized)
-# ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize(
     "sdk_cls, status_code, expected_cls, expected_category",
@@ -304,9 +292,7 @@ def test_translator_maps_response_validation_error(mock_client: MagicMock):
     assert isinstance(excinfo.value, ParseFatalError)
 
 
-# ---------------------------------------------------------------------------
 # Stage attribution
-# ---------------------------------------------------------------------------
 
 def test_rate_limit_at_files_create_carries_correct_stage(mock_client: MagicMock):
     """A 429 during upload should report stage='files.create', not extract.*"""
@@ -326,9 +312,7 @@ def test_404_during_polling_carries_job_id_and_stage(mock_client: MagicMock):
     assert excinfo.value.job_id == "ext-1"
 
 
-# ---------------------------------------------------------------------------
 # str() / repr() contract
-# ---------------------------------------------------------------------------
 
 def test_parse_error_str_renders_structured_fields():
     exc = ParseError(

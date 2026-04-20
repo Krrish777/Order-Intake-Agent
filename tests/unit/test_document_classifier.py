@@ -42,9 +42,7 @@ from backend.tools.document_classifier import (
 from backend.tools.document_classifier import classifier as dc
 
 
-# ---------------------------------------------------------------------------
 # Fixtures
-# ---------------------------------------------------------------------------
 
 def _result(*, type_: str = "purchase_order", confidence: float = 0.92,
             reasoning: str = "Document is titled 'Purchase Order'.") -> SimpleNamespace:
@@ -53,7 +51,6 @@ def _result(*, type_: str = "purchase_order", confidence: float = 0.92,
 
 def _job(status: str, *, job_id: str = "clf-1", result: SimpleNamespace | None = None,
          error_message: str | None = None):
-    """Build a SimpleNamespace mimicking a LlamaClassify job object."""
     return SimpleNamespace(
         id=job_id,
         status=status,
@@ -63,8 +60,8 @@ def _job(status: str, *, job_id: str = "clf-1", result: SimpleNamespace | None =
 
 
 def _bare_sdk_exc(cls, *, status_code: int | None = None):
-    """Construct an SDK exception without invoking its constructor (same
-    trick as tests/unit/test_document_parser.py)."""
+    # __new__ bypass — the real SDK builds these from an httpx.Response
+    # which is awkward to synthesize; we just need isinstance() + status_code.
     exc = cls.__new__(cls)
     if status_code is not None:
         exc.status_code = status_code
@@ -73,16 +70,13 @@ def _bare_sdk_exc(cls, *, status_code: int | None = None):
 
 @pytest.fixture
 def mock_client(monkeypatch: pytest.MonkeyPatch) -> MagicMock:
-    """Replace the cached LlamaCloud client with a MagicMock for the test."""
     client = MagicMock()
     client.files.create.return_value = SimpleNamespace(id="dfl-test-1")
     monkeypatch.setattr(dc, "_client", client)
     return client
 
 
-# ---------------------------------------------------------------------------
 # Format detection
-# ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize(
     "filename, expected",
@@ -108,9 +102,7 @@ def test_detect_format_by_extension(filename: str, expected: str) -> None:
     assert detect_format(filename) == expected
 
 
-# ---------------------------------------------------------------------------
 # classify_document — happy path + terminal-status handling
-# ---------------------------------------------------------------------------
 
 def test_classify_returns_classified_document_on_completed(mock_client: MagicMock) -> None:
     mock_client.classify.create.return_value = _job(
@@ -177,9 +169,7 @@ def test_classify_no_rule_matched_raises_failed(mock_client: MagicMock) -> None:
     assert "no rule matched" in str(excinfo.value.detail)
 
 
-# ---------------------------------------------------------------------------
 # classify_document — configuration shape
-# ---------------------------------------------------------------------------
 
 def test_files_create_uses_purpose_classify(mock_client: MagicMock) -> None:
     """Upload MUST use purpose='classify' (not 'extract' — that was legacy)."""
@@ -209,9 +199,7 @@ def test_classify_create_sends_rules_and_fast_mode(mock_client: MagicMock) -> No
     }
 
 
-# ---------------------------------------------------------------------------
 # Translator — SDK exceptions → typed classifier exceptions (parametrized)
-# ---------------------------------------------------------------------------
 
 @pytest.mark.parametrize(
     "sdk_cls, status_code, expected_cls, expected_category",
@@ -271,9 +259,7 @@ def test_translator_maps_response_validation_error(mock_client: MagicMock) -> No
     assert isinstance(excinfo.value, ClassifyFatalError)
 
 
-# ---------------------------------------------------------------------------
 # Stage attribution
-# ---------------------------------------------------------------------------
 
 def test_rate_limit_at_files_create_carries_correct_stage(mock_client: MagicMock) -> None:
     mock_client.files.create.side_effect = _bare_sdk_exc(RateLimitError, status_code=429)
@@ -291,9 +277,7 @@ def test_404_during_polling_carries_job_id_and_stage(mock_client: MagicMock) -> 
     assert excinfo.value.job_id == "clf-1"
 
 
-# ---------------------------------------------------------------------------
 # str() / repr() contract
-# ---------------------------------------------------------------------------
 
 def test_classify_error_str_renders_structured_fields() -> None:
     exc = ClassifyError(
