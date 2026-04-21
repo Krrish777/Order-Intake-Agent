@@ -20,6 +20,13 @@ from backend.models.master_records import (
     ProductRecord,
     ShipToLocation,
 )
+from backend.models.validation_result import (
+    AUTO_THRESHOLD,
+    CLARIFY_THRESHOLD,
+    LineItemValidation,
+    RoutingDecision,
+    ValidationResult,
+)
 from backend.tools.order_validator.tools import (
     CUSTOMERS_COLLECTION,
     DEFAULT_CUSTOMER_MATCH_THRESHOLD,
@@ -31,8 +38,16 @@ from backend.tools.order_validator.tools import (
     MasterDataRepo,
     get_async_client,
 )
+from backend.tools.order_validator.validator import OrderValidator
 
 __all__ = [
+    # orchestrator + contracts
+    "OrderValidator",
+    "ValidationResult",
+    "LineItemValidation",
+    "RoutingDecision",
+    "AUTO_THRESHOLD",
+    "CLARIFY_THRESHOLD",
     # data-access tool
     "MasterDataRepo",
     "DEFAULT_PROJECT",
