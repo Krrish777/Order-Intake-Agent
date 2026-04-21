@@ -1,4 +1,4 @@
-"""Async Firestore client factory for the master-data repo.
+"""Async Firestore client factory for the validator's master-data tool.
 
 Mirrors :func:`scripts.load_master_data._client` exactly — same default
 project id, same ``FIRESTORE_EMULATOR_HOST`` discovery via the SDK — but
