@@ -2,11 +2,11 @@ From: Mira Chen <m.chen@patterson-indust.com>
 To: orders@grafton-reese.com
 Subject: Cross-branch ad-hoc - PO-28503 (3 DCs)
 Date: Mon, 20 Apr 2026 11:47:00 -0400
-Message-ID: <177675902314.17904.6039411154107998444@grafton-reese.example>
+Message-ID: <177675929578.18152.7508388217094892758@grafton-reese.example>
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="===============5319238342475133477=="
+Content-Type: multipart/mixed; boundary="===============4319397019038745153=="
 
---===============5319238342475133477==
+--===============4319397019038745153==
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: quoted-printable
 
@@ -29,8 +29,8 @@ Mira Chen
 Patterson Industrial Supply =E2=80=94 Central Purchasing (Cleveland HQ)
 (216) 641-8817
 
---===============5319238342475133477==
-Content-Type: text/csv
+--===============4319397019038745153==
+Content-Type: application/octet-stream
 Content-Transfer-Encoding: base64
 Content-Disposition: attachment; filename="patterson_adhoc_reorder.csv"
 MIME-Version: 1.0
@@ -74,4 +74,4 @@ MDI2LFN1c2FuIE1jQ3JlYXJ5LE5ldCA0NQ0KLCwsLCwsU1VCVE9UQUwsMzU1Ni4zMiwsLCwNCiws
 LCwsLFRBWCAocmVzYWxlIGV4ZW1wdCksMC4wMCwsLCwNCiwsLCwsLFRPVEFMLDM1NTYuMzIsLCws
 DQosLCwsLCwsLCwsLA0KLCwsLCwsLCwsLCwNCiwsLCwsLCwsLCwsDQo=
 
---===============5319238342475133477==--
+--===============4319397019038745153==--
