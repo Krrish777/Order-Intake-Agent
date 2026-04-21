@@ -12,6 +12,7 @@ dependencies = [
     "pydantic>=2",
     "pymupdf>=1.27.2.2",
     "python-dotenv>=1.2.2",
+    "rapidfuzz>=3.9",
     "reportlab>=4.4.10",
     "rich>=15.0.0",
     "structlog>=25.5.0",
@@ -21,10 +22,13 @@ dependencies = [
 dev = [
     "pytest>=8",
     "pytest-mock>=3.12",
+    "pytest-asyncio>=0.23",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+asyncio_mode = "auto"
 markers = [
     "integration: tests that hit the live LlamaExtract API (requires LLAMA_CLOUD_API_KEY)",
+    "firestore_emulator: tests that require a running Firestore emulator (FIRESTORE_EMULATOR_HOST)",
 ]
