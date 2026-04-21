@@ -53,6 +53,7 @@ data/pdf/redline_urgent_2026-04-19.{body.txt,wrapper.eml}               ✓ PDF 
 data/csv/ohio_valley_reorder_2026-04-08.{body.txt,wrapper.eml}          ✓ CSV wrapper (2026-04-20)
 data/excel/hagan_reorder_2026-04-09.{body.txt,wrapper.eml}              ✓ XLSX wrapper (2026-04-20)
 data/edi/glfp_850_GRR_202604211002.{body.txt,wrapper.eml}               ✓ EDI wrapper (2026-04-20)
+data/edi/patterson_850_CLE_202604191435.{body.txt,wrapper.eml}          ✓ EDI wrapper (2026-04-21)
 data/email/birch_valley_clarify_reply.{body.txt,eml}                    ✓ clarify reply-pair (2026-04-20)
 backend/models/classified_document.py                                   ✓
 backend/models/parsed_document.py                                       ✓
@@ -101,7 +102,7 @@ tests/eval/*.evalset.json               → feat/eval
 frontend/                               → feat/dashboard
 ```
 
-**Not blocking — iterative follow-up:** 6 remaining non-`.eml` fixtures still need wrappers (`data/{pdf,csv,excel,edi}/*.wrapper.eml` for: sterling pdf, patterson pdf; patterson_adhoc csv; glfp_weekly xlsx, ohio_valley_march xlsx; patterson edi). Pattern established via 2026-04-20 session — one per turn, `body.txt` + `scripts/scaffold_wrapper_eml.py` + review.
+**Not blocking — iterative follow-up:** 5 remaining non-`.eml` fixtures still need wrappers (`data/{pdf,csv,excel}/*.wrapper.eml` for: sterling pdf, patterson pdf; patterson_adhoc csv; glfp_weekly xlsx, ohio_valley_march xlsx). Pattern established via 2026-04-20 session — one per turn, `body.txt` + `scripts/scaffold_wrapper_eml.py` + review. (Patterson EDI landed 2026-04-21.)
 
 ## What to build first
 

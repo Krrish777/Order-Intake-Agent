@@ -1,0 +1,9 @@
+Grafton,
+
+Weekly reorder attached — PO-2026-05847, required by 4/21. Same GLFP-GRR-MAIN ship-to, Net 30 as usual.
+
+Still on the interim email path while IT finishes the AS2 trading partner setup on your end; I'll switch back to EDI once the 850s start flowing. Let me know if anything on the sheet doesn't resolve cleanly — our part numbers on the adapters changed last month (GLFP- prefix now) and I'm still catching mis-crosses.
+
+David Vance
+GLFP Senior Buyer — Hydraulics
+dvance@glfp.com / 616-458-7720

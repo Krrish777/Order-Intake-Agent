@@ -1,0 +1,9 @@
+Automated notification from Patterson Industrial Supply procurement.
+
+Attached: X12 850 (ISA control 000000847) for PO-28492. Ship-to PATT-CLE-01 — Cleveland DC, Dock 14 — required by 2026-05-08; release window opens 2026-05-06.
+
+Transmitted via email fallback per our VAN outage on 19 Apr. Please confirm receipt; our AS2 connection should be back up by Monday.
+
+EDI coordination: Ray Kowalski, r.kowalski@patterson-indust.com, 216-641-8803.
+
+— Patterson EDI Operations

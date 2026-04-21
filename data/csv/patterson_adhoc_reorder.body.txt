@@ -1,0 +1,11 @@
+Grafton team,
+
+Cross-branch ad-hoc — PO-28503, need by 4/25. This one ships to three of our DCs (Cleveland, Atlanta, Dallas) off the same order; ship-to is tagged per line in the CSV. Gail in Atlanta and the Cleveland desk signed off on their portions, Dallas pulled theirs from the supply gap report.
+
+Heads up the file is a raw JDE export, not our usual formatted template — hand-pulled because consolidated orders don't run through the weekly macro. You'll see subtotal/tax/total rows in the body; please ignore those for line entry.
+
+Net 45 on all three. Call me if the ship-to split breaks anything on your side.
+
+Mira Chen
+Patterson Industrial Supply — Central Purchasing (Cleveland HQ)
+(216) 641-8817
