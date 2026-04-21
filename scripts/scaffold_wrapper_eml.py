@@ -68,6 +68,15 @@ def _guess_mime(doc_path: Path) -> tuple[str, str]:
     return maintype, subtype
 
 
+def _parse_mime_override(value: str) -> tuple[str, str]:
+    maintype, _, subtype = value.partition("/")
+    if not maintype or not subtype:
+        raise argparse.ArgumentTypeError(
+            f"--attachment-mime must look like 'maintype/subtype', got {value!r}"
+        )
+    return maintype, subtype
+
+
 def _build_arg_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(
         prog="scaffold_wrapper_eml.py",
@@ -109,6 +118,14 @@ def _build_arg_parser() -> argparse.ArgumentParser:
         default=None,
         help="Path to a UTF-8 text file containing the email body. "
              "If omitted, a placeholder is written (hand-edit the .eml afterwards).",
+    )
+    p.add_argument(
+        "--attachment-mime",
+        dest="attachment_mime",
+        default=None,
+        help="Override MIME type for the attachment (e.g. application/octet-stream). "
+             "Use this when the source bytes must be preserved byte-for-byte and the "
+             "default text/* inference would corrupt them (UTF-8 BOMs, mixed encodings).",
     )
     p.add_argument(
         "--force",
@@ -154,7 +171,10 @@ def main(argv: list[str] | None = None) -> int:
     msg.set_content(body)
 
     if args.doc is not None:
-        maintype, subtype = _guess_mime(args.doc)
+        if args.attachment_mime is not None:
+            maintype, subtype = _parse_mime_override(args.attachment_mime)
+        else:
+            maintype, subtype = _guess_mime(args.doc)
         msg.add_attachment(
             args.doc.read_bytes(),
             maintype=maintype,

@@ -50,8 +50,13 @@ That's **~5.5 worktrees** left (read side of `feat/persistence` landed 2026-04-2
 data/masters/{products,customers}.json                                  ✓
 data/{csv,edi,email,excel,pdf}/                                         ✓ fixtures
 data/pdf/redline_urgent_2026-04-19.{body.txt,wrapper.eml}               ✓ PDF wrapper (2026-04-20)
+data/pdf/patterson_po-28491.{body.txt,wrapper.eml}                      ✓ PDF wrapper (2026-04-21)
+data/pdf/sterling_po-SMS-114832.{body.txt,wrapper.eml}                  ✓ PDF wrapper (2026-04-21)
 data/csv/ohio_valley_reorder_2026-04-08.{body.txt,wrapper.eml}          ✓ CSV wrapper (2026-04-20)
+data/csv/patterson_adhoc_reorder.{body.txt,wrapper.eml}                 ✓ CSV wrapper (2026-04-21, octet-stream for BOM)
 data/excel/hagan_reorder_2026-04-09.{body.txt,wrapper.eml}              ✓ XLSX wrapper (2026-04-20)
+data/excel/glfp_weekly_reorder_2026-04-14.{body.txt,wrapper.eml}        ✓ XLSX wrapper (2026-04-21)
+data/excel/ohio_valley_reorder_march_wk3.{body.txt,wrapper.eml}         ✓ XLSX wrapper (2026-04-21)
 data/edi/glfp_850_GRR_202604211002.{body.txt,wrapper.eml}               ✓ EDI wrapper (2026-04-20)
 data/edi/patterson_850_CLE_202604191435.{body.txt,wrapper.eml}          ✓ EDI wrapper (2026-04-21)
 data/email/birch_valley_clarify_reply.{body.txt,eml}                    ✓ clarify reply-pair (2026-04-20)
@@ -102,7 +107,7 @@ tests/eval/*.evalset.json               → feat/eval
 frontend/                               → feat/dashboard
 ```
 
-**Not blocking — iterative follow-up:** 5 remaining non-`.eml` fixtures still need wrappers (`data/{pdf,csv,excel}/*.wrapper.eml` for: sterling pdf, patterson pdf; patterson_adhoc csv; glfp_weekly xlsx, ohio_valley_march xlsx). Pattern established via 2026-04-20 session — one per turn, `body.txt` + `scripts/scaffold_wrapper_eml.py` + review. (Patterson EDI landed 2026-04-21.)
+**Fixture wrappers complete (2026-04-21):** all 10 non-`.eml` fixtures now have `{body.txt,wrapper.eml}` pairs. `tests/unit/test_eml_parser.py` parametrizes over every `.eml` under `data/` and runs 44 checks (envelope parse + attachment byte round-trip) — all green. Patterson adhoc CSV uses `--attachment-mime application/octet-stream` because its UTF-8 BOM (a known_ambiguity) would be mangled by the default `text/csv` re-encoding path; scaffold script grew an `--attachment-mime` flag to support this.
 
 ## What to build first
 
