@@ -3,7 +3,7 @@
 These models deserialize snapshots from the ``products``, ``customers``, and
 ``meta`` collections that ``scripts/load_master_data.py`` writes from
 ``data/masters/*.json``. They form the typed surface that
-:class:`backend.data.firestore_repo.FirestoreRepo` returns.
+:class:`backend.tools.order_validator.tools.master_data_repo.MasterDataRepo` returns.
 
 The product catalog is heterogeneous (fasteners, hoses, valves, regulators,
 filters) and each subcategory carries its own attribute set (``thread``,
@@ -82,7 +82,7 @@ class ProductRecord(BaseModel):
     country_of_origin: Optional[str] = None
 
     # Layer-2 seam. Populated by a future embedding-seed script; consumed by
-    # ``FirestoreRepo.find_product_by_embedding``. Commented out until the
+    # ``MasterDataRepo.find_product_by_embedding``. Commented out until the
     # seed lands so the field does not appear on freshly-loaded docs and
     # confuse dashboard consumers.
     #
@@ -133,7 +133,7 @@ class MetaRecord(BaseModel):
 
 
 class EmbeddingMatch(BaseModel):
-    """Return shape of :meth:`FirestoreRepo.find_product_by_embedding`.
+    """Return shape of :meth:`MasterDataRepo.find_product_by_embedding`.
 
     Stable now (Layer-2 stub returns an empty list of this type); populated
     by the real implementation once Gemini text-embedding-004 seeds the
