@@ -1,0 +1,52 @@
+From: Patterson EDI Operations <edi-ops@patterson-indust.com>
+To: orders@grafton-reese.com
+Subject: EDI 850 - PO-28492 (VAN failover)
+Date: Sun, 19 Apr 2026 14:35:00 -0400
+Message-ID: <177675857972.15632.7104439648125880258@grafton-reese.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============3925974083189996799=="
+
+--===============3925974083189996799==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Automated notification from Patterson Industrial Supply procurement.
+
+Attached: X12 850 (ISA control 000000847) for PO-28492. Ship-to PATT-CLE-01 =
+=E2=80=94 Cleveland DC, Dock 14 =E2=80=94 required by 2026-05-08; release win=
+dow opens 2026-05-06.
+
+Transmitted via email fallback per our VAN outage on 19 Apr. Please confirm r=
+eceipt; our AS2 connection should be back up by Monday.
+
+EDI coordination: Ray Kowalski, r.kowalski@patterson-indust.com, 216-641-8803.
+
+=E2=80=94 Patterson EDI Operations
+
+--===============3925974083189996799==
+Content-Type: application/edi-x12
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="patterson_850_CLE_202604191435.edi"
+MIME-Version: 1.0
+
+SVNBKjAwKiAgICAgICAgICAqMDAqICAgICAgICAgICowMSoxMzQ5ODIxNTA3ICAgICAqWloqR1JB
+RlRPTi1SRUVTRSAgKjI2MDQxOSoxNDM1Kl4qMDA0MDEqMDAwMDAwODQ3KjAqUCo6fgpHUypQTypQ
+QVRURVJTT04tSU5EVVNUKkdSQUZUT04tUkVFU0UqMjAyNjA0MTkqMTQzNSo4NDcqWCowMDQwMTB+
+ClNUKjg1MCowMDAxfgpCRUcqMDAqU0EqUE8tMjg0OTIqKjIwMjYwNDE5fgpSRUYqRFAqMzAwfgpS
+RUYqQ08qUEFUVC1DTEUtT1JERVItODQ3Mn4KRFRNKjAwMioyMDI2MDUwOH4KRFRNKjAxMCoyMDI2
+MDUwNn4KTjEqQlQqUEFUVEVSU09OIElORFVTVFJJQUwgU1VQUExZIENPKjkyKlBBVFQtQklMTH4K
+TjMqMjc1MCBIQVJWQVJEIEFWRU5VRSpBVFROIEEvUCBERVBUIDMwMH4KTjQqQ0xFVkVMQU5EKk9I
+KjQ0MTA1fgpOMSpTVCpQQVRURVJTT04gREMgQ0xFVkVMQU5EKjkyKlBBVFQtQ0xFLTAxfgpOMyoy
+NzUwIEhBUlZBUkQgQVZFTlVFKkRPQ0sgMTR+Ck40KkNMRVZFTEFORCpPSCo0NDEwNX4KUE8xKjAw
+MSo1MDAqRUEqMC4zMCpXRSpCUCo4ODc3MTIqVlAqRlNULUhDUy0wNTAtMTMtMjAwLUc1Wn4KUElE
+KkYqKioqSGV4IENhcCBTY3JldyAxLzItMTMgeCAyaW4gR3IgNSBaaW5jfgpQTzEqMDAyKjYwKkVB
+KjIuOTgqV0UqQlAqOTEyMDU1KlZQKkhZRC1NSlMtMDYtU1RMfgpQSUQqRioqKipKSUMgTWFsZSBT
+dHJhaWdodCAtNiA5LzE2LTE4IFVORiBTdGVlbCBaTn4KUE8xKjAwMyoyNCpFQSo3LjY2KldFKkJQ
+KjkxMjA2MSpWUCpIWUQtTUpFLTA2LVNUTH4KUElEKkYqKioqSklDIE1hbGUgRWxib3cgOTAgLTYg
+OS8xNi0xOCBVTkYgRm9yZ2VkIFN0ZWVsfgpQTzEqMDA0KjMwMCpGVCozLjM3KldFKkJQKjkxMjEx
+OCpWUCpIWUQtSFNFLVIyLTA2fgpQSUQqRioqKipIeWRyYXVsaWMgSG9zZSAxMDBSMiAtNiAzLzhp
+biBJRCAyLVdpcmV+ClBPMSowMDUqMTAqRUEqMjguMTUqV0UqQlAqOTEyNDAyKlZQKkhZRC1RQ0Et
+MDYtU1RMfgpQSUQqRioqKipRRCBDb3VwbGVyIElTTyA3MjQxLUEgQUcgMy84aW4gQm9keSAzLzgg
+TlBULUZ+CkNUVCo1fgpTRSoyNCowMDAxfgpHRSoxKjg0N34KSUVBKjEqMDAwMDAwODQ3fg==
+
+--===============3925974083189996799==--
