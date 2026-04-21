@@ -4,7 +4,7 @@ topic: "Order Intake Agent — Status vs Glacis Spec"
 sprint: 1
 parent: "Order-Intake-Sprint-Overview.md"
 date: 2026-04-20
-last_updated: 2026-04-20 (sessions: Firestore init + master-data load; ingestion CLI + envelope contract + 4 format wrappers + reply pair)
+last_updated: 2026-04-21 (read-side persistence landed on master: 06916a6 pytest config, 2fc297b client+repo, 5286322 models+tests)
 tags:
   - sprint
   - status
@@ -25,7 +25,7 @@ Snapshot taken 2026-04-20 at end of planning session. Maps every stage of the Gl
 | **2c. Validation** | SKU + price + quantity + credit + inventory + delivery + duplicate | — | **Track V**: 3-tier SKU matcher + price tolerance + qty sanity. Drop credit/inventory/delivery/duplicate for sprint. |
 | **2d. Enrichment (item matching)** | Exact → fuzzy → embedding | — | Part of Track V (inside SKU matcher). |
 | **3. Decision layer** | Auto ≥0.95 / Clarify 0.80–0.95 / Escalate <0.80 | — | Part of Track V (`scorer.py`). |
-| **4a. ERP write** | Firestore write | Emulator live; `products` (35) + `customers` (10) + `meta/master_data` seeded ✓ | **Track P** — write adapter for `orders` / `exceptions` collections. ADK Sessions/Memory research collapsed: decided on Firestore directly (see `Firebase-Init-Decisions.md`). |
+| **4a. ERP read/write** | Firestore read + write | Emulator live; `products` (35) + `customers` (10) + `meta/master_data` seeded ✓. **Read side shipped on master (2026-04-21):** `backend/data/FirestoreRepo` async repo + typed `ProductRecord` / `CustomerRecord` / `MetaRecord` / `EmbeddingMatch` ✓; unit tests (in-memory fake) + `firestore_emulator`-marked integration tests ✓. | **Track P write side** — `OrderStore` + `ExceptionStore` for `orders` / `exceptions` collections. |
 | **4b. Clarify email** | Gemini-generated email asking for missing fields | — | Part of Track A (router stage). |
 | **4c. Human dashboard** | Firestore real-time + approve/reject/edit | — | **Track D** — read-only list + exception view. Approve/reject deferred. |
 | **Orchestration** | ADK SequentialAgent wiring stages | Stub `backend/my_agent/agent.py` ⚠ | **Track A**: replace stub with real SequentialAgent. |
@@ -36,11 +36,11 @@ Snapshot taken 2026-04-20 at end of planning session. Maps every stage of the Gl
 
 ## One-line summary
 
-**We've built the "understanding" half of the pipeline plus the ingestion layer and persistence substrate** — classify + extract + typed output + master data + realistic fixtures + **envelope contract + inject CLI** + **Firestore emulator with seeded master data**.
+**The read path is complete on master** — classify + extract + typed output + master data + realistic fixtures + envelope contract + inject CLI + Firestore emulator with seeded master data + typed async read repo over master data.
 
-**Most of the "judgment and action" half is still open** — validate, decide, route, persist writes, orchestrate, surface, eval, demo.
+**The "judgment and action" half is still open** — validate, decide, route, persist *writes*, orchestrate, surface, eval, demo.
 
-That's **6 worktrees** of work left (was 8 — `feat/inject-cli` shipped 2026-04-20; `research/adk-session-memory` collapsed into direct-Firestore same day). Roughly **~50% of total code lines are done**, but the 50% left is the part that turns a parser into an agent.
+That's **~5.5 worktrees** left (read side of `feat/persistence` landed 2026-04-21; only the write side remains). Roughly **~55% of total code lines are done**. The validator is fully unblocked — `FirestoreRepo` returns typed `ProductRecord` / `CustomerRecord` instances directly, so the validator runs against real data instead of mocks.
 
 ## Built-vs-missing inventory
 
@@ -71,18 +71,28 @@ scripts/scaffold_wrapper_eml.py                                         ✓ fixt
 firebase.json, .firebaserc, firebase/*.{rules,indexes.json}             ✓ emulator config
 google-cloud-firestore 2.27.0 (pyproject.toml)                          ✓
 research/Firebase-Init-Decisions.md                                     ✓ decision record
+backend/data/__init__.py                                                ✓ re-exports repo + records (2fc297b)
+backend/data/firestore_client.py                                        ✓ async Firestore client factory (2fc297b)
+backend/data/firestore_repo.py                                          ✓ FirestoreRepo — async read-only master-data repo (2fc297b)
+backend/models/master_records.py                                        ✓ ProductRecord, CustomerRecord, AddressRecord, ShipToLocation,
+                                                                            ContactRecord, MetaRecord, EmbeddingMatch (5286322)
 tests/unit/test_document_classifier.py                                  ✓
 tests/unit/test_eml_parser.py                                           ✓ 26 tests over all .eml fixtures (2026-04-20)
+tests/unit/test_firestore_repo.py                                       ✓ in-memory fake — behavioural contract tests (5286322)
+tests/integration/test_firestore_repo_emulator.py                       ✓ emulator-backed parity tests (5286322)
+rapidfuzz>=3.9, pytest-asyncio>=0.23, asyncio_mode="auto",              ✓ pytest config incl. firestore_emulator marker (06916a6)
 ```
 
 ### Missing (this sprint's work, mapped to branches)
 
 ```
-backend/tools/order_validator/          → feat/validation
+backend/tools/order_validator/          → feat/validation (consumes backend/data.FirestoreRepo)
 backend/models/validation_result.py     → feat/validation (integration contract)
 backend/models/order_record.py          → contracts commit on master
 backend/models/exception_record.py      → contracts commit on master
-backend/persistence/                    → feat/persistence (Firestore direct; no ADK research gating)
+backend/data/orders_store.py            → feat/persistence-writes (write side; read side in progress)
+backend/data/exceptions_store.py        → feat/persistence-writes
+backend/data/embeddings_index.py        → feat/embeddings (unblocks SKU tier-3; find_product_by_embedding is stubbed today)
 backend/my_agent/agent.py (rewrite)     → feat/agent-orchestration
 backend/my_agent/stages/                → feat/agent-orchestration
 scripts/run_demo.py                     → feat/demo-script
@@ -97,8 +107,10 @@ frontend/                               → feat/dashboard
 
 Two parallel branches, no deps between them — start both in separate worktrees:
 
-1. **`feat/validation`** — pure function, fastest unit-test loop, highest signal for demo. **Now unblocked**: master data is queryable from Firestore emulator.
+1. **`feat/validation`** — pure async function consuming `FirestoreRepo`. Tiers 1 (exact) + 2 (fuzzy via `rapidfuzz`) shippable today; tier 3 (embedding) waits on `feat/embeddings`. Price tolerance + qty sanity + confidence scorer + routing decision (0.95 / 0.80). Unit tests reuse the in-memory fake pattern from `test_firestore_repo.py`.
 2. **`feat/eval`** — tests authored alongside the 3 demo scenarios.
+
+**Parallel but deferrable:** `feat/embeddings` — seed Gemini `text-embedding-004` vectors for the 35 products into Firestore + wire the vector-search side of `find_product_by_embedding` (currently a stub returning `[]`). Not on the critical path; tier-1/2 matching demos fine without it.
 
 ~~`research/adk-session-memory`~~ — **collapsed 2026-04-20**: decided to use Firestore directly as the ERP substitute (spec-accurate) rather than ADK Sessions/Memory. See `Firebase-Init-Decisions.md` for the full rationale.
 
