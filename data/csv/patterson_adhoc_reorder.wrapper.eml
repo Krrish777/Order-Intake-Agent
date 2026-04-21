@@ -1,0 +1,77 @@
+From: Mira Chen <m.chen@patterson-indust.com>
+To: orders@grafton-reese.com
+Subject: Cross-branch ad-hoc - PO-28503 (3 DCs)
+Date: Mon, 20 Apr 2026 11:47:00 -0400
+Message-ID: <177675902314.17904.6039411154107998444@grafton-reese.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="===============5319238342475133477=="
+
+--===============5319238342475133477==
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+
+Grafton team,
+
+Cross-branch ad-hoc =E2=80=94 PO-28503, need by 4/25. This one ships to three=
+ of our DCs (Cleveland, Atlanta, Dallas) off the same order; ship-to is tagge=
+d per line in the CSV. Gail in Atlanta and the Cleveland desk signed off on t=
+heir portions, Dallas pulled theirs from the supply gap report.
+
+Heads up the file is a raw JDE export, not our usual formatted template =E2=
+=80=94 hand-pulled because consolidated orders don't run through the weekly m=
+acro. You'll see subtotal/tax/total rows in the body; please ignore those for=
+ line entry.
+
+Net 45 on all three. Call me if the ship-to split breaks anything on your sid=
+e.
+
+Mira Chen
+Patterson Industrial Supply =E2=80=94 Central Purchasing (Cleveland HQ)
+(216) 641-8817
+
+--===============5319238342475133477==
+Content-Type: text/csv
+Content-Transfer-Encoding: base64
+Content-Disposition: attachment; filename="patterson_adhoc_reorder.csv"
+MIME-Version: 1.0
+
+77u/Q3VzdG9tZXIgUE8sTGluZSAjLFBhdHRlcnNvbiBJdGVtLERlc2NyaXB0aW9uLFF0eSxVT00s
+VW5pdCBQcmljZSxFeHRlbmRlZCBQcmljZSxTaGlwIFRvIExvYyxSZXEgRGF0ZSxCdXllcixUZXJt
+cw0KUE8tMjg1MDMsMSw4ODc3MTIsIkhleCBDYXAgU2NyZXcsIDEvMi0xMyB4IDIiIiwgR3IgNSBa
+aW5jIiw1MDAsRUEsMC4zMCwxNTAuMDAsUEFUVC1DTEUtMDEsMDQvMjUvMjAyNixTdXNhbiBNY0Ny
+ZWFyeSxOZXQgNDUNClBPLTI4NTAzLDIsODg3NzE0LCJIZXggQ2FwIFNjcmV3LCAxLzItMTMgeCAx
+LTEvMiIiLCBTUyAxOC04IiwyMDAsRUEsMS4xMiwyMjQuMDAsUEFUVC1DTEUtMDEsMDQvMjUvMjAy
+NixTdXNhbiBNY0NyZWFyeSxOZXQgNDUNClBPLTI4NTAzLDMsODg3NzIwLCJIZXggQ2FwIFNjcmV3
+LCAzLzgtMTYgeCAxIiIsIEdyIDggWWVsbG93IFppbmMiLDQwMCxFQSwwLjM2LDE0NC4wMCxQQVRU
+LUFUTC0wMiwwNC8yNS8yMDI2LFN1c2FuIE1jQ3JlYXJ5LE5ldCA0NQ0KUE8tMjg1MDMsNCw4ODc3
+MjMsIkhleCBOdXQsIDEvMi0xMywgR3IgNSBaaW5jIiw3NTAsRUEsMC4xMCw3NS4wMCxQQVRULUNM
+RS0wMSwwNC8yNS8yMDI2LFN1c2FuIE1jQ3JlYXJ5LE5ldCA0NQ0KUE8tMjg1MDMsNSw4ODc3NDUs
+IkZsYXQgV2FzaGVyLCAxLzIiIiBTQUUsIFNTIDE4LTgiLDE1MDAsRUEsMC4wOCwxMjAuMDAsUEFU
+VC1EQUwtMDMsMDQvMjUvMjAyNixTdXNhbiBNY0NyZWFyeSxOZXQgNDUNClBPLTI4NTAzLDYsOTEy
+MDU1LCJKSUMgTWFsZSBTdHJhaWdodCwgLTYgKDkvMTYtMTggVU5GKSwgU3RlZWwgWk4iLDM2LEVB
+LDIuOTgsMTA3LjI4LFBBVFQtQVRMLTAyLDA0LzI1LzIwMjYsU3VzYW4gTWNDcmVhcnksTmV0IDQ1
+DQpQTy0yODUwMyw3LDkxMjA2MSwiSklDIE1hbGUgRWxib3cgOTDCsCwgLTYgKDkvMTYtMTggVU5G
+KSwgRm9yZ2VkIFN0ZWVsIiwxOCxFQSw3LjY2LDEzNy44OCxQQVRULUFUTC0wMiwwNC8yNS8yMDI2
+LFN1c2FuIE1jQ3JlYXJ5LE5ldCA0NQ0KUE8tMjg1MDMsOCw5MTIxMTgsIkh5ZHJhdWxpYyBIb3Nl
+LCAxMDBSMiwgLTYgKDMvOCIiIElEKSwgMi1XaXJlIiwyNTAsRlQsMy4zNyw4NDIuNTAsUEFUVC1D
+TEUtMDEsMDQvMjUvMjAyNixTdXNhbiBNY0NyZWFyeSxOZXQgNDUNClBPLTI4NTAzLDksOTEyMTI0
+LCJIeWRyYXVsaWMgSG9zZSwgMTAwUjIsIC04ICgxLzIiIiBJRCksIDItV2lyZSIsMTc1LEZULDQu
+NDQsNzc3LjAwLFBBVFQtREFMLTAzLDA0LzI1LzIwMjYsU3VzYW4gTWNDcmVhcnksTmV0IDQ1DQpQ
+Ty0yODUwMywxMCw5MTI0MDIsIlFEIENvdXBsZXIsIElTTyA3MjQxLUEsIDMvOCIiIEJvZHksIDMv
+OCBOUFQtRiIsOCxFQSwyOC4xNSwyMjUuMjAsUEFUVC1DTEUtMDEsMDQvMjUvMjAyNixTdXNhbiBN
+Y0NyZWFyeSxOZXQgNDUNClBPLTI4NTAzLDExLDg4NzcxMiwiSGV4IENhcCBTY3JldywgMS8yLTEz
+IHggMiIiLCBHciA1IFppbmMiLDMwMCxFQSwwLjMwLDkwLjAwLFBBVFQtQVRMLTAyLDA0LzI1LzIw
+MjYsU3VzYW4gTWNDcmVhcnksTmV0IDQ1DQpQTy0yODUwMywxMiw4ODc3MjAsIkhleCBDYXAgU2Ny
+ZXcsIDMvOC0xNiB4IDEiIiwgR3IgOCBZZWxsb3cgWmluYyIsMjAwLEVBLDAuMzYsNzIuMDAsUEFU
+VC1EQUwtMDMsMDQvMjUvMjAyNixTdXNhbiBNY0NyZWFyeSxOZXQgNDUNClBPLTI4NTAzLDEzLDkx
+MjExOCwiSHlkcmF1bGljIEhvc2UsIDEwMFIyLCAtNiAoMy84IiIgSUQpLCAyLVdpcmUiLDE1MCxG
+VCwzLjM3LDUwNS41MCxQQVRULUFUTC0wMiwwNC8yNS8yMDI2LFN1c2FuIE1jQ3JlYXJ5LE5ldCA0
+NQ0KUE8tMjg1MDMsMTQsODg3NzQ1LCJGbGF0IFdhc2hlciwgMS8yIiIgU0FFLCBTUyAxOC04Iiw1
+MDAsRUEsMC4wOCw0MC4wMCxQQVRULUNMRS0wMSwwNC8yNS8yMDI2LFN1c2FuIE1jQ3JlYXJ5LE5l
+dCA0NQ0KUE8tMjg1MDMsMTUsOTEyMDYxLCJKSUMgTWFsZSBFbGJvdyA5MMKwLCAtNiAoOS8xNi0x
+OCBVTkYpLCBGb3JnZWQgU3RlZWwiLDYsRUEsNy42Niw0NS45NixQQVRULURBTC0wMywwNC8yNS8y
+MDI2LFN1c2FuIE1jQ3JlYXJ5LE5ldCA0NQ0KLCwsLCwsU1VCVE9UQUwsMzU1Ni4zMiwsLCwNCiws
+LCwsLFRBWCAocmVzYWxlIGV4ZW1wdCksMC4wMCwsLCwNCiwsLCwsLFRPVEFMLDM1NTYuMzIsLCws
+DQosLCwsLCwsLCwsLA0KLCwsLCwsLCwsLCwNCiwsLCwsLCwsLCwsDQo=
+
+--===============5319238342475133477==--
