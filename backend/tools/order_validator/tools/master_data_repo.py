@@ -1,8 +1,13 @@
 """Async master-data repository over Firestore.
 
-Reads only — the validator stage consumes these methods; it never writes.
-Transactional / write paths (orders, exceptions) belong to a future
-``OrderStore`` behind the ``backend/persistence/`` seam.
+One of the validator's tools — the data-access tool. Sibling tools
+(``sku_matcher``, ``customer_resolver``, ``price_check``, ``qty_check``)
+consume the typed records this module returns; they own the business
+rules, this module owns the I/O.
+
+Reads only. Transactional / write paths (orders, exceptions) belong to a
+separate ``backend/persistence/`` package owned by the
+``feat/persistence-writes`` track.
 
 The repo owns one :class:`~google.cloud.firestore.AsyncClient` for its
 lifetime and caches ``list_all_products`` / the customer roster in
@@ -49,7 +54,7 @@ DEFAULT_CUSTOMER_MATCH_THRESHOLD = 90
 DEFAULT_EMBEDDING_TOP_K = 5
 
 
-class FirestoreRepo:
+class MasterDataRepo:
     """Async, dependency-injected read surface for the master-data
     collections. Construct with an ``AsyncClient`` (emulator or live) and
     call the methods below; close with :meth:`aclose` when the owning
@@ -233,7 +238,7 @@ class FirestoreRepo:
 
 
 __all__ = [
-    "FirestoreRepo",
+    "MasterDataRepo",
     "PRODUCTS_COLLECTION",
     "CUSTOMERS_COLLECTION",
     "META_COLLECTION",
