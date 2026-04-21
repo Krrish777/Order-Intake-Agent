@@ -4,7 +4,7 @@ topic: "Order Intake Agent — Status vs Glacis Spec"
 sprint: 1
 parent: "Order-Intake-Sprint-Overview.md"
 date: 2026-04-20
-last_updated: 2026-04-21 (read-side persistence landed on master: 06916a6 pytest config, 2fc297b client+repo, 5286322 models+tests)
+last_updated: 2026-04-21 (Track V validator + restructure landed: order_validator package with 6 tools + scorer/router/orchestrator, 180 unit tests green)
 tags:
   - sprint
   - status
@@ -22,10 +22,10 @@ Snapshot taken 2026-04-20 at end of planning session. Maps every stage of the Gl
 | **1. Signal ingestion** | Gmail watch → Pub/Sub → attachment download | Fixtures ✓ + 4/4 format wrappers (PDF/CSV/XLSX/EDI) ✓ + clarify-reply fixture ✓ + `backend/ingestion/` (`EmailEnvelope` + `parse_eml`) ✓ + `scripts/inject_email.py` CLI ✓ | Wrap remaining 6 non-`.eml` fixtures (iterative, non-blocking). Gmail push deferred to later sprint. |
 | **2a. Classification** | LLM classifier (intent) + rules (format) | `backend/tools/document_classifier/` — LlamaClassify intent + deterministic format ✓ | Nothing. Done. |
 | **2b. Extraction** | Gemini multimodal → structured JSON | `backend/tools/document_parser/` — LlamaExtract → `ParsedDocument` ✓ | Nothing. Done. |
-| **2c. Validation** | SKU + price + quantity + credit + inventory + delivery + duplicate | — | **Track V**: 3-tier SKU matcher + price tolerance + qty sanity. Drop credit/inventory/delivery/duplicate for sprint. |
-| **2d. Enrichment (item matching)** | Exact → fuzzy → embedding | — | Part of Track V (inside SKU matcher). |
-| **3. Decision layer** | Auto ≥0.95 / Clarify 0.80–0.95 / Escalate <0.80 | — | Part of Track V (`scorer.py`). |
-| **4a. ERP read/write** | Firestore read + write | Emulator live; `products` (35) + `customers` (10) + `meta/master_data` seeded ✓. **Read side shipped on master (2026-04-21):** `backend/data/FirestoreRepo` async repo + typed `ProductRecord` / `CustomerRecord` / `MetaRecord` / `EmbeddingMatch` ✓; unit tests (in-memory fake) + `firestore_emulator`-marked integration tests ✓. | **Track P write side** — `OrderStore` + `ExceptionStore` for `orders` / `exceptions` collections. |
+| **2c. Validation** | SKU + price + quantity + credit + inventory + delivery + duplicate | `backend/tools/order_validator/` ✓ — `OrderValidator` orchestrator + 6 tools (master_data_repo, sku_matcher, customer_resolver, price_check, qty_check, firestore_client) + `scorer` + `router`. 180 unit tests green. Credit/inventory/delivery/duplicate dropped per cut-list. | Nothing. Done. |
+| **2d. Enrichment (item matching)** | Exact → fuzzy → embedding | 3-tier ladder in `sku_matcher.py` ✓ — Tier 1 exact + alias, Tier 2 rapidfuzz `token_set_ratio` over `short_description`, Tier 3 embedding stub falls through cleanly. | Nothing. Tier 3 fills in when `feat/embeddings` lands. |
+| **3. Decision layer** | Auto ≥0.95 / Clarify 0.80–0.95 / Escalate <0.80 | `scorer.aggregate` + `router.decide` ✓ — thresholds + `RoutingDecision` enum live in `backend/models/validation_result.py`. | Nothing. Done. |
+| **4a. ERP read/write** | Firestore read + write | Emulator live; `products` (35) + `customers` (10) + `meta/master_data` seeded ✓. **Read side now lives inside the validator package** (`backend/tools/order_validator/tools/master_data_repo.py` + `firestore_client.py`) — `MasterDataRepo` returns typed `ProductRecord` / `CustomerRecord` / `MetaRecord` / `EmbeddingMatch`; in-memory fake unit tests + `firestore_emulator` integration tests ✓. | **Track P write side** — `OrderStore` + `ExceptionStore` for `orders` / `exceptions` collections, owned by a future `backend/persistence/` package. |
 | **4b. Clarify email** | Gemini-generated email asking for missing fields | — | Part of Track A (router stage). |
 | **4c. Human dashboard** | Firestore real-time + approve/reject/edit | — | **Track D** — read-only list + exception view. Approve/reject deferred. |
 | **Orchestration** | ADK SequentialAgent wiring stages | Stub `backend/my_agent/agent.py` ⚠ | **Track A**: replace stub with real SequentialAgent. |
@@ -36,11 +36,11 @@ Snapshot taken 2026-04-20 at end of planning session. Maps every stage of the Gl
 
 ## One-line summary
 
-**The read path is complete on master** — classify + extract + typed output + master data + realistic fixtures + envelope contract + inject CLI + Firestore emulator with seeded master data + typed async read repo over master data.
+**The read path + judgment layer are complete on master** — classify + extract + typed output + master data + realistic fixtures + envelope contract + inject CLI + Firestore emulator with seeded master data + typed async read repo + `OrderValidator` (3-tier SKU matcher, customer resolver, price tolerance, qty sanity, scorer, threshold-based router).
 
-**The "judgment and action" half is still open** — validate, decide, route, persist *writes*, orchestrate, surface, eval, demo.
+**The "action and surface" half is still open** — persist *writes*, orchestrate the agent, generate clarify emails, surface to a dashboard, eval, demo.
 
-That's **~5.5 worktrees** left (read side of `feat/persistence` landed 2026-04-21; only the write side remains). Roughly **~55% of total code lines are done**. The validator is fully unblocked — `FirestoreRepo` returns typed `ProductRecord` / `CustomerRecord` instances directly, so the validator runs against real data instead of mocks.
+That's **~4.5 worktrees** left (read side of `feat/persistence` landed 2026-04-21; Track V validator landed 2026-04-21; write side, agent orchestration, clarify generation, dashboard, eval, demo remain). Roughly **~70% of total code lines are done**. The next critical-path branch is `feat/persistence-writes` (`OrderStore` + `ExceptionStore`) — once those land, `feat/agent-orchestration` can wire the full vertical slice.
 
 ## Built-vs-missing inventory
 
@@ -77,46 +77,61 @@ scripts/scaffold_wrapper_eml.py                                         ✓ fixt
 firebase.json, .firebaserc, firebase/*.{rules,indexes.json}             ✓ emulator config
 google-cloud-firestore 2.27.0 (pyproject.toml)                          ✓
 research/Firebase-Init-Decisions.md                                     ✓ decision record
-backend/data/__init__.py                                                ✓ re-exports repo + records (2fc297b)
-backend/data/firestore_client.py                                        ✓ async Firestore client factory (2fc297b)
-backend/data/firestore_repo.py                                          ✓ FirestoreRepo — async read-only master-data repo (2fc297b)
+backend/tools/order_validator/__init__.py                               ✓ public surface — re-exports OrderValidator, contracts, repo, records
+backend/tools/order_validator/validator.py                              ✓ OrderValidator orchestrator (2026-04-21)
+backend/tools/order_validator/scorer.py                                 ✓ aggregate() — mean confidence + check-failure penalty
+backend/tools/order_validator/router.py                                 ✓ decide() — threshold-based RoutingDecision
+backend/tools/order_validator/tools/__init__.py                         ✓ tool collection re-exports
+backend/tools/order_validator/tools/master_data_repo.py                 ✓ MasterDataRepo — async read-only master-data repo (moved from backend/data)
+backend/tools/order_validator/tools/firestore_client.py                 ✓ async Firestore client factory (moved from backend/data)
+backend/tools/order_validator/tools/sku_matcher.py                      ✓ 3-tier ladder: exact (incl. alias) → fuzzy → embedding stub
+backend/tools/order_validator/tools/customer_resolver.py                ✓ wraps repo.find_customer_by_name
+backend/tools/order_validator/tools/price_check.py                      ✓ pure function: ±10% tolerance band, permissive on missing quote
+backend/tools/order_validator/tools/qty_check.py                        ✓ pure function: presence/sign + UoM + min_order (base UoM only)
+backend/models/validation_result.py                                     ✓ ValidationResult, LineItemValidation, RoutingDecision, AUTO/CLARIFY thresholds
 backend/models/master_records.py                                        ✓ ProductRecord, CustomerRecord, AddressRecord, ShipToLocation,
                                                                             ContactRecord, MetaRecord, EmbeddingMatch (5286322)
+tests/unit/conftest.py                                                  ✓ FakeAsyncClient + seeded_repo / empty_repo fixtures (shared)
 tests/unit/test_document_classifier.py                                  ✓
 tests/unit/test_eml_parser.py                                           ✓ 26 tests over all .eml fixtures (2026-04-20)
-tests/unit/test_firestore_repo.py                                       ✓ in-memory fake — behavioural contract tests (5286322)
-tests/integration/test_firestore_repo_emulator.py                       ✓ emulator-backed parity tests (5286322)
+tests/unit/test_master_data_repo.py                                     ✓ in-memory fake — behavioural contract tests (renamed)
+tests/unit/test_sku_matcher.py                                          ✓ 9 tests over the 3-tier ladder
+tests/unit/test_customer_resolver.py                                    ✓ 7 tests incl. dba match + alias preservation
+tests/unit/test_price_check.py                                          ✓ 8 tests covering tolerance edges
+tests/unit/test_qty_check.py                                            ✓ 10 tests incl. alt-UoM min_order skip
+tests/unit/test_scorer.py                                               ✓ 9 tests covering mean + penalty math
+tests/unit/test_router.py                                               ✓ 8 tests on threshold edges (0.7999/0.8000/0.9499/0.9500)
+tests/unit/test_validator.py                                            ✓ 8 end-to-end scenarios against seeded fake
+tests/integration/test_master_data_repo_emulator.py                     ✓ emulator-backed parity tests (renamed)
 rapidfuzz>=3.9, pytest-asyncio>=0.23, asyncio_mode="auto",              ✓ pytest config incl. firestore_emulator marker (06916a6)
 ```
 
 ### Missing (this sprint's work, mapped to branches)
 
 ```
-backend/tools/order_validator/          → feat/validation (consumes backend/data.FirestoreRepo)
-backend/models/validation_result.py     → feat/validation (integration contract)
-backend/models/order_record.py          → contracts commit on master
-backend/models/exception_record.py      → contracts commit on master
-backend/data/orders_store.py            → feat/persistence-writes (write side; read side in progress)
-backend/data/exceptions_store.py        → feat/persistence-writes
-backend/data/embeddings_index.py        → feat/embeddings (unblocks SKU tier-3; find_product_by_embedding is stubbed today)
-backend/my_agent/agent.py (rewrite)     → feat/agent-orchestration
-backend/my_agent/stages/                → feat/agent-orchestration
-scripts/run_demo.py                     → feat/demo-script
-scripts/run_eval.py                     → feat/eval
-tests/eval/*.evalset.json               → feat/eval
-frontend/                               → feat/dashboard
+backend/models/order_record.py             → contracts commit on master
+backend/models/exception_record.py         → contracts commit on master
+backend/persistence/orders_store.py        → feat/persistence-writes
+backend/persistence/exceptions_store.py    → feat/persistence-writes
+backend/persistence/embeddings_index.py    → feat/embeddings (unblocks SKU tier-3; find_product_by_embedding is stubbed today)
+backend/my_agent/agent.py (rewrite)        → feat/agent-orchestration
+backend/my_agent/stages/                   → feat/agent-orchestration
+scripts/run_demo.py                        → feat/demo-script
+scripts/run_eval.py                        → feat/eval
+tests/eval/*.evalset.json                  → feat/eval
+frontend/                                  → feat/dashboard
 ```
 
 **Fixture wrappers complete (2026-04-21):** all 10 non-`.eml` fixtures now have `{body.txt,wrapper.eml}` pairs. `tests/unit/test_eml_parser.py` parametrizes over every `.eml` under `data/` and runs 44 checks (envelope parse + attachment byte round-trip) — all green. Patterson adhoc CSV uses `--attachment-mime application/octet-stream` because its UTF-8 BOM (a known_ambiguity) would be mangled by the default `text/csv` re-encoding path; scaffold script grew an `--attachment-mime` flag to support this.
 
 ## What to build first
 
-Two parallel branches, no deps between them — start both in separate worktrees:
+With Track V landed, two parallel branches with no deps between them:
 
-1. **`feat/validation`** — pure async function consuming `FirestoreRepo`. Tiers 1 (exact) + 2 (fuzzy via `rapidfuzz`) shippable today; tier 3 (embedding) waits on `feat/embeddings`. Price tolerance + qty sanity + confidence scorer + routing decision (0.95 / 0.80). Unit tests reuse the in-memory fake pattern from `test_firestore_repo.py`.
-2. **`feat/eval`** — tests authored alongside the 3 demo scenarios.
+1. **`feat/persistence-writes`** — `OrderStore` + `ExceptionStore` under a new `backend/persistence/` package. Consumes `ValidationResult.decision` to choose collection (`orders` for AUTO_APPROVE, `exceptions` for CLARIFY/ESCALATE). Idempotency key is `source_message_id`. Unit tests reuse the same in-memory `FakeAsyncClient` pattern from `tests/unit/conftest.py`.
+2. **`feat/eval`** — `tests/eval/*.evalset.json` golden files authored alongside the 3 demo scenarios. The validator's `OrderValidator(repo).validate(order)` already returns deterministic `ValidationResult` objects against the seeded fake — easy to snapshot.
 
-**Parallel but deferrable:** `feat/embeddings` — seed Gemini `text-embedding-004` vectors for the 35 products into Firestore + wire the vector-search side of `find_product_by_embedding` (currently a stub returning `[]`). Not on the critical path; tier-1/2 matching demos fine without it.
+**Parallel but deferrable:** `feat/embeddings` — seed Gemini `text-embedding-004` vectors for the 35 products into Firestore + replace the stub at `backend/tools/order_validator/tools/master_data_repo.py:find_product_by_embedding`. Not on the critical path; tier-1/2 matching demos fine without it (paraphrased free-text queries just route to clarify, which is correct).
 
 ~~`research/adk-session-memory`~~ — **collapsed 2026-04-20**: decided to use Firestore directly as the ERP substitute (spec-accurate) rather than ADK Sessions/Memory. See `Firebase-Init-Decisions.md` for the full rationale.
 
@@ -127,13 +142,12 @@ Once those two merge to master, everything else cascades per the dependency grap
 Land a single contracts commit on `master` first — every branch imports these types:
 
 - `EmailEnvelope`, `EmailAttachment` → `backend/ingestion/email_envelope.py` **✓ already on master (2026-04-20)**
-- `ValidationResult`, `RoutingDecision` → `backend/models/validation_result.py`
+- `ValidationResult`, `RoutingDecision`, `LineItemValidation` → `backend/models/validation_result.py` **✓ on master (2026-04-21)**
 - `OrderRecord` → `backend/models/order_record.py` (must carry `source_message_id` + `thread_id` for idempotency and clarify correlation)
 - `ExceptionRecord` → `backend/models/exception_record.py` (three IDs across its lifecycle: `source_message_id`, `clarify_message_id`, `reply_message_id`)
 - `OrderStore`, `ExceptionStore` protocols → `backend/persistence/base.py` (include `find_pending_clarify(thread_id)` on `ExceptionStore` — clarify-reply loop correlates via thread)
-- `MasterDataIndex` loader → `backend/data/master_index.py`
 
-The envelope pair is already shipped. The remaining five are the only real coordination point across worktrees.
+The envelope pair and validator contracts are already shipped. The three persistence types are the only remaining coordination point across worktrees.
 
 ## Connections
 
