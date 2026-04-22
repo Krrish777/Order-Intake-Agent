@@ -18,5 +18,20 @@ Public surface:
 from __future__ import annotations
 
 from backend.persistence.base import ExceptionStore, OrderStore
+from backend.persistence.coordinator import IntakeCoordinator, ProcessResult
+from backend.persistence.exceptions_store import (
+    EXCEPTIONS_COLLECTION,
+    FirestoreExceptionStore,
+)
+from backend.persistence.orders_store import ORDERS_COLLECTION, FirestoreOrderStore
 
-__all__ = ["OrderStore", "ExceptionStore"]
+__all__ = [
+    "ExceptionStore",
+    "OrderStore",
+    "IntakeCoordinator",
+    "ProcessResult",
+    "FirestoreOrderStore",
+    "FirestoreExceptionStore",
+    "ORDERS_COLLECTION",
+    "EXCEPTIONS_COLLECTION",
+]
