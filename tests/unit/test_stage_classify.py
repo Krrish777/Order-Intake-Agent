@@ -5,29 +5,22 @@ The stage iterates ``envelope.attachments``, calls the injected sync
 results into ``state['classified_docs']`` (purchase_order intent only)
 and ``state['skipped_docs']`` (everything else, with filename/stage/reason).
 
-The ctx-helper block here is duplicated from ``test_stage_reply_shortcircuit.py``
-— Steps 4d-4h will likely keep copying the same helper until one of them
-decides the duplication is worth pulling up into ``tests/unit/_stage_testing.py``.
-If you're that someone, move ``_build_ctx`` / ``_collect_events`` /
-``_final_state_delta`` there and update the three existing call sites.
+The ctx/collect/delta helpers now live in
+:mod:`tests.unit._stage_testing`; ``_make_ctx`` here is a thin wrapper
+that forwards the stage-specific state keys.
 """
 
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime, timezone
-from typing import Iterable
 from unittest.mock import MagicMock
 
 import pytest
-from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events.event import Event
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.adk.sessions.session import Session
 
 from backend.ingestion.email_envelope import EmailAttachment, EmailEnvelope
 from backend.models.classified_document import ClassifiedDocument
 from backend.my_agent.stages.classify import CLASSIFY_STAGE_NAME, ClassifyStage
+from tests.unit._stage_testing import collect_events, final_state_delta, make_stage_ctx
 
 
 # --------------------------------------------------------------------- helpers
@@ -85,38 +78,16 @@ def _make_ctx(
     *,
     reply_handled: bool | None = None,
     skipped_docs: list[dict[str, object]] | None = None,
-) -> InvocationContext:
+):
     """Build a real :class:`InvocationContext` with the right state preseeded."""
-    session = Session(id="s-test", app_name="order-intake-test", user_id="u-test")
+    state: dict[str, object] = {}
     if envelope is not None:
-        session.state["envelope"] = envelope.model_dump(mode="json")
+        state["envelope"] = envelope.model_dump(mode="json")
     if reply_handled is not None:
-        session.state["reply_handled"] = reply_handled
+        state["reply_handled"] = reply_handled
     if skipped_docs is not None:
-        session.state["skipped_docs"] = skipped_docs
-    return InvocationContext(
-        session_service=InMemorySessionService(),
-        invocation_id="inv-test",
-        agent=stage,
-        session=session,
-    )
-
-
-async def _collect_events(
-    stage: ClassifyStage, ctx: InvocationContext
-) -> list[Event]:
-    events: list[Event] = []
-    async for event in stage.run_async(ctx):
-        events.append(event)
-    return events
-
-
-def _final_state_delta(events: Iterable[Event]) -> dict[str, object]:
-    merged: dict[str, object] = {}
-    for event in events:
-        if event.actions and event.actions.state_delta:
-            merged.update(event.actions.state_delta)
-    return merged
+        state["skipped_docs"] = skipped_docs
+    return make_stage_ctx(stage=stage, state=state)
 
 
 # ---------------------------------------------------------------------- tests
@@ -132,8 +103,8 @@ def test_reply_handled_no_ops() -> None:
     )
     ctx = _make_ctx(stage, env, reply_handled=True)
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert classify_fn.call_count == 0
     assert delta["classified_docs"] == []
@@ -149,8 +120,8 @@ def test_single_purchase_order_attachment() -> None:
     env = _make_envelope(attachments=[_make_attachment("po-001.pdf")])
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert len(delta["classified_docs"]) == 1  # type: ignore[arg-type]
     only = delta["classified_docs"][0]  # type: ignore[index]
@@ -180,8 +151,8 @@ def test_mixed_attachments_splits_po_from_others() -> None:
     )
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     classified = delta["classified_docs"]
     skipped = delta["skipped_docs"]
@@ -216,8 +187,8 @@ def test_all_non_po_attachments_all_skipped() -> None:
     )
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert delta["classified_docs"] == []
     assert len(delta["skipped_docs"]) == 3  # type: ignore[arg-type]
@@ -229,7 +200,7 @@ def test_missing_envelope_state_raises() -> None:
     ctx = _make_ctx(stage, envelope=None)
 
     with pytest.raises(ValueError, match="requires IngestStage"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
     assert classify_fn.call_count == 0
 
@@ -240,8 +211,8 @@ def test_empty_attachments_list_yields_empty_lists() -> None:
     env = _make_envelope(attachments=[])
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert delta["classified_docs"] == []
     assert delta["skipped_docs"] == []
@@ -257,4 +228,4 @@ def test_classify_fn_raising_propagates() -> None:
     ctx = _make_ctx(stage, env)
 
     with pytest.raises(RuntimeError, match="LlamaClassify timeout"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))

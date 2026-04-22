@@ -17,16 +17,10 @@ produces the real JSON shape downstream will receive.
 
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime, timezone
-from typing import Iterable
 from unittest.mock import AsyncMock
 
 import pytest
-from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events.event import Event
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.adk.sessions.session import Session
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.exception_record import ExceptionRecord, ExceptionStatus
@@ -42,6 +36,7 @@ from backend.models.validation_result import (
 )
 from backend.my_agent.stages.reply_shortcircuit import ReplyShortCircuitStage
 from backend.persistence.base import ExceptionStore
+from tests.unit._stage_testing import collect_events, final_state_delta, make_stage_ctx
 
 
 # --------------------------------------------------------------------- helpers
@@ -65,34 +60,12 @@ def _make_envelope(
     )
 
 
-def _make_ctx(stage: ReplyShortCircuitStage, envelope: EmailEnvelope | None) -> InvocationContext:
+def _make_ctx(stage: ReplyShortCircuitStage, envelope: EmailEnvelope | None):
     """Build a real :class:`InvocationContext` with envelope pre-seeded on state."""
-    session = Session(id="s-test", app_name="order-intake-test", user_id="u-test")
+    state: dict[str, object] = {}
     if envelope is not None:
-        session.state["envelope"] = envelope.model_dump(mode="json")
-    return InvocationContext(
-        session_service=InMemorySessionService(),
-        invocation_id="inv-test",
-        agent=stage,
-        session=session,
-    )
-
-
-async def _collect_events(
-    stage: ReplyShortCircuitStage, ctx: InvocationContext
-) -> list[Event]:
-    events: list[Event] = []
-    async for event in stage.run_async(ctx):
-        events.append(event)
-    return events
-
-
-def _final_state_delta(events: Iterable[Event]) -> dict[str, object]:
-    merged: dict[str, object] = {}
-    for event in events:
-        if event.actions and event.actions.state_delta:
-            merged.update(event.actions.state_delta)
-    return merged
+        state["envelope"] = envelope.model_dump(mode="json")
+    return make_stage_ctx(stage=stage, state=state)
 
 
 def _sample_parsed_doc() -> ParsedDocument:
@@ -170,9 +143,9 @@ def test_no_in_reply_to_sets_reply_handled_false() -> None:
     env = _make_envelope(in_reply_to=None)
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
-    delta = _final_state_delta(events)
+    delta = final_state_delta(events)
     assert delta["reply_handled"] is False
     store.find_pending_clarify.assert_not_awaited()
     store.update_with_reply.assert_not_awaited()
@@ -185,9 +158,9 @@ def test_empty_in_reply_to_sets_reply_handled_false() -> None:
     env = _make_envelope(in_reply_to="")
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
-    delta = _final_state_delta(events)
+    delta = final_state_delta(events)
     assert delta["reply_handled"] is False
     store.find_pending_clarify.assert_not_awaited()
     store.update_with_reply.assert_not_awaited()
@@ -200,9 +173,9 @@ def test_in_reply_to_with_no_pending_match_sets_reply_handled_false() -> None:
     env = _make_envelope(in_reply_to="<msg-abc@x.com>", thread_id="thread-xyz")
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
-    delta = _final_state_delta(events)
+    delta = final_state_delta(events)
     assert delta["reply_handled"] is False
     store.find_pending_clarify.assert_awaited_once_with("thread-xyz")
     store.update_with_reply.assert_not_awaited()
@@ -244,9 +217,9 @@ def test_in_reply_to_with_pending_match_advances_exception() -> None:
     )
     ctx = _make_ctx(stage, env)
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
-    delta = _final_state_delta(events)
+    delta = final_state_delta(events)
     assert delta["reply_handled"] is True
     assert delta["reply_parent_source_message_id"] == "<orig-msg-001@customer.com>"
     assert delta["reply_updated_exception"]["status"] == "awaiting_review"
@@ -264,7 +237,7 @@ def test_missing_envelope_state_raises() -> None:
     ctx = _make_ctx(stage, envelope=None)
 
     with pytest.raises(ValueError, match="requires IngestStage"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
 
 def test_update_with_reply_raises_propagates() -> None:
@@ -279,4 +252,4 @@ def test_update_with_reply_raises_propagates() -> None:
     ctx = _make_ctx(stage, env)
 
     with pytest.raises(ValueError, match="status guard"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))

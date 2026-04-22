@@ -7,24 +7,17 @@ bytes from ``envelope.attachments``, calls the injected sync ``parse_fn``
 list. ``skipped_docs`` is APPEND-not-overwrite: any parse-time skips are
 added to the existing list set by earlier stages.
 
-The ctx-helper block here is duplicated from ``test_stage_classify.py``
-— Step 4e is the planned pull-up trigger for moving the shared
-``_make_ctx`` / ``_collect_events`` / ``_final_state_delta`` helpers
-into ``tests/unit/_stage_testing.py``.
+The ctx/collect/delta helpers now live in
+:mod:`tests.unit._stage_testing`; ``_make_ctx`` here is a thin wrapper
+that forwards the stage-specific state keys.
 """
 
 from __future__ import annotations
 
-import asyncio
 from datetime import datetime, timezone
-from typing import Iterable
 from unittest.mock import MagicMock
 
 import pytest
-from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events.event import Event
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.adk.sessions.session import Session
 
 from backend.ingestion.email_envelope import EmailAttachment, EmailEnvelope
 from backend.models.classified_document import ClassifiedDocument
@@ -34,6 +27,7 @@ from backend.models.parsed_document import (
     ParsedDocument,
 )
 from backend.my_agent.stages.parse import PARSE_STAGE_NAME, ParseStage
+from tests.unit._stage_testing import collect_events, final_state_delta, make_stage_ctx
 
 
 # --------------------------------------------------------------------- helpers
@@ -135,40 +129,18 @@ def _make_ctx(
     reply_handled: bool | None = None,
     classified_docs: list[dict[str, object]] | None = None,
     skipped_docs: list[dict[str, object]] | None = None,
-) -> InvocationContext:
+):
     """Build a real :class:`InvocationContext` with the right state preseeded."""
-    session = Session(id="s-test", app_name="order-intake-test", user_id="u-test")
+    state: dict[str, object] = {}
     if envelope is not None:
-        session.state["envelope"] = envelope.model_dump(mode="json")
+        state["envelope"] = envelope.model_dump(mode="json")
     if reply_handled is not None:
-        session.state["reply_handled"] = reply_handled
+        state["reply_handled"] = reply_handled
     if classified_docs is not None:
-        session.state["classified_docs"] = classified_docs
+        state["classified_docs"] = classified_docs
     if skipped_docs is not None:
-        session.state["skipped_docs"] = skipped_docs
-    return InvocationContext(
-        session_service=InMemorySessionService(),
-        invocation_id="inv-test",
-        agent=stage,
-        session=session,
-    )
-
-
-async def _collect_events(
-    stage: ParseStage, ctx: InvocationContext
-) -> list[Event]:
-    events: list[Event] = []
-    async for event in stage.run_async(ctx):
-        events.append(event)
-    return events
-
-
-def _final_state_delta(events: Iterable[Event]) -> dict[str, object]:
-    merged: dict[str, object] = {}
-    for event in events:
-        if event.actions and event.actions.state_delta:
-            merged.update(event.actions.state_delta)
-    return merged
+        state["skipped_docs"] = skipped_docs
+    return make_stage_ctx(stage=stage, state=state)
 
 
 # ---------------------------------------------------------------------- tests
@@ -195,8 +167,8 @@ def test_reply_handled_no_ops() -> None:
         skipped_docs=prior_skipped,
     )
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert parse_fn.call_count == 0
     assert delta["parsed_docs"] == []
@@ -214,7 +186,7 @@ def test_missing_envelope_state_raises() -> None:
     )
 
     with pytest.raises(ValueError, match="requires IngestStage"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
     assert parse_fn.call_count == 0
 
@@ -227,7 +199,7 @@ def test_missing_classified_docs_state_raises() -> None:
     ctx = _make_ctx(stage, env)
 
     with pytest.raises(ValueError, match="requires ClassifyStage"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
     assert parse_fn.call_count == 0
 
@@ -252,8 +224,8 @@ def test_empty_classified_docs_yields_empty_parsed_docs() -> None:
         skipped_docs=prior_skipped,
     )
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert parse_fn.call_count == 0
     assert delta["parsed_docs"] == []
@@ -278,8 +250,8 @@ def test_single_classified_doc_single_subdoc_flattens_to_one_entry() -> None:
         classified_docs=[_classified_dict(filename="po-001.pdf")],
     )
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     parsed_docs = delta["parsed_docs"]
     assert isinstance(parsed_docs, list)
@@ -313,8 +285,8 @@ def test_single_classified_doc_multiple_subdocs_flattens_per_sub_doc() -> None:
         classified_docs=[_classified_dict(filename="bundle.pdf")],
     )
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     parsed_docs = delta["parsed_docs"]
     assert isinstance(parsed_docs, list)
@@ -366,8 +338,8 @@ def test_multiple_classified_docs_flattens_all() -> None:
         ],
     )
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     parsed_docs = delta["parsed_docs"]
     assert isinstance(parsed_docs, list)
@@ -415,8 +387,8 @@ def test_parser_returns_zero_subdocs_appended_to_skipped_docs() -> None:
         skipped_docs=prior_skipped,
     )
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    delta = _final_state_delta(events)
+    events = collect_events(stage.run_async(ctx))
+    delta = final_state_delta(events)
 
     assert delta["parsed_docs"] == []
 
@@ -446,4 +418,4 @@ def test_parse_fn_raising_propagates() -> None:
     )
 
     with pytest.raises(RuntimeError, match="LlamaExtract timeout"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
