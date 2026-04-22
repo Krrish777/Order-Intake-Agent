@@ -9,13 +9,16 @@ the counts back so the schema is self-contained.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class RunSummary(BaseModel):
-    """One-line recap of a pipeline run, rendered into the event log."""
+    """One-line recap of a pipeline run, rendered into the event log.
 
-    model_config = ConfigDict(extra="forbid")
+    Used as ``output_schema`` on the Gemini SummaryAgent. Intentionally
+    does NOT set ``model_config = ConfigDict(extra="forbid")`` — see the
+    ClarifyEmail docstring for the Gemini 400 root cause.
+    """
 
     orders_created: int = Field(
         ...,

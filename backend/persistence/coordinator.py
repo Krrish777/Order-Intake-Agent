@@ -76,7 +76,17 @@ class IntakeCoordinator:
         *,
         order_index: int = 0,
         clarify_body: Optional[str] = None,
+        precomputed_validation: Optional[ValidationResult] = None,
     ) -> ProcessResult:
+        """Route one sub-document through validation → store.
+
+        When ``precomputed_validation`` is provided, the coordinator trusts
+        it and skips re-invoking ``self._validator.validate``. This is how
+        the orchestrator's ValidateStage hands its already-computed result
+        off to PersistStage without paying the LLM+I/O cost twice. Callers
+        that don't pre-validate (direct unit tests, future integrations)
+        leave the kwarg unset and the coordinator runs validation itself.
+        """
         doc_id = self._compose_doc_id(envelope.message_id, order_index)
         thread_id = envelope.thread_id or envelope.message_id
 
@@ -91,7 +101,10 @@ class IntakeCoordinator:
             return ProcessResult(kind="duplicate", exception=existing_exception)
 
         extracted_order = parsed_doc.sub_documents[order_index]
-        validation = await self._validator.validate(extracted_order)
+        if precomputed_validation is not None:
+            validation = precomputed_validation
+        else:
+            validation = await self._validator.validate(extracted_order)
 
         if validation.decision is RoutingDecision.AUTO_APPROVE:
             order = await self._build_order_record(

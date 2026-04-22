@@ -426,3 +426,47 @@ async def test_clarify_body_defaults_to_none_when_not_passed(fake_client):
 
     assert result.exception is not None
     assert result.exception.clarify_body is None
+
+
+async def test_precomputed_validation_skips_validator_call(fake_client):
+    """When the caller supplies precomputed_validation, coordinator trusts it
+    and does NOT re-invoke validator.validate — halves LLM+I/O cost when the
+    orchestrator has already validated in ValidateStage."""
+    pre = _validation(RoutingDecision.AUTO_APPROVE, customer=_sample_customer())
+    coord, validator, _repo = _make_coord(
+        fake_client,
+        # The coord's own validator is configured with a CLARIFY outcome —
+        # if the coordinator wrongly re-validates we'll see kind=='exception'.
+        _validation(
+            RoutingDecision.CLARIFY,
+            customer=_sample_customer(),
+            matched_sku=None,
+            confidence=0.85,
+            notes=["should not be used"],
+        ),
+    )
+
+    result = await coord.process(
+        _parsed_doc(),
+        _envelope(),
+        precomputed_validation=pre,
+    )
+
+    assert result.kind == "order"
+    assert result.order is not None
+    validator.validate.assert_not_awaited()
+
+
+async def test_no_precomputed_validation_falls_back_to_validator(fake_client):
+    """When precomputed_validation is None (default), coordinator invokes its
+    own validator — the pre-Track-A-Step-5 behavior stays intact for direct
+    callers that don't know about the orchestrator state."""
+    coord, validator, _repo = _make_coord(
+        fake_client,
+        _validation(RoutingDecision.AUTO_APPROVE, customer=_sample_customer()),
+    )
+
+    result = await coord.process(_parsed_doc(), _envelope())
+
+    assert result.kind == "order"
+    validator.validate.assert_awaited_once()

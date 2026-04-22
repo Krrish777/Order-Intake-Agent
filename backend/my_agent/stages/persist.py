@@ -60,6 +60,7 @@ from pydantic import PrivateAttr
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.parsed_document import ParsedDocument
+from backend.models.validation_result import ValidationResult
 from backend.persistence.coordinator import IntakeCoordinator
 
 PERSIST_STAGE_NAME: Final[str] = "persist_stage"
@@ -140,6 +141,20 @@ class PersistStage(BaseAgent):
         clarify_bodies: dict[str, Any] = ctx.session.state.get(
             "clarify_bodies", {}
         )
+        # Re-hydrate ValidateStage's precomputed ValidationResult per
+        # sub-doc so coordinator.process can skip the redundant second
+        # validator.validate call. Keyed by (filename, sub_doc_index) to
+        # match parsed_docs. Missing key → fall back to fresh validation
+        # in the coordinator (defensive; ValidateStage should always write).
+        validation_results: list[dict[str, Any]] = ctx.session.state.get(
+            "validation_results", []
+        )
+        validation_by_key: dict[tuple[str, int], ValidationResult] = {
+            (r["filename"], r["sub_doc_index"]): ValidationResult.model_validate(
+                r["validation"]
+            )
+            for r in validation_results
+        }
 
         process_results: list[dict[str, Any]] = []
 
@@ -160,11 +175,15 @@ class PersistStage(BaseAgent):
                 )
                 body = body_dict["body"]
 
+            precomputed = validation_by_key.get(
+                (entry["filename"], entry["sub_doc_index"])
+            )
             result = await self._coordinator.process(
                 parsed,
                 envelope,
                 order_index=entry["sub_doc_index"],
                 clarify_body=body,
+                precomputed_validation=precomputed,
             )
             process_results.append(
                 {

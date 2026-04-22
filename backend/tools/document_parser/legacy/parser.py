@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-import hashlib
+import uuid
 import io
 import time
 
@@ -51,20 +51,21 @@ def _external_file_id(filename: str, content: bytes) -> str:
 
     LlamaCloud enforces uniqueness on (project_id, external_file_id); passing
     the raw filename trips a 400 UniqueViolationError on re-runs against the
-    same workspace. Suffixing a content-hash keeps the base filename visible
-    for log readability while making the id idempotent within-content
-    (re-uploading the same bytes yields the same id) and unique across-content
-    (a different payload under the same filename gets a distinct id).
+    same workspace. We suffix a per-invocation random UUID fragment so every
+    call gets a fresh id — same shape the classifier uses
+    (``name::{12 hex}``).
 
-    Mirrors the suffix shape used by ``classifier.py`` (``name::{12 hex}``);
-    the classifier uses a random uuid token there because classify is a
-    one-shot upload, whereas parse benefits from the content-deterministic
-    form when paired with LlamaCloud's file-level caching. Kept inline
-    (rather than extracted to a shared module) to avoid a cross-tool
-    import just for a 2-line helper.
+    A deterministic content-hash suffix was tried first (Step 6.5, 2026-04-22)
+    on the theory that same-bytes → same-id would LlamaCloud-cache-hit; in
+    practice LlamaCloud rejects duplicates with UniqueViolationError instead
+    of de-duping, so the deterministic form blocks the second run. UUID-per-
+    call trades a small re-upload cost for reliability across runs.
+
+    Kept inline (rather than extracted to a shared module) to avoid a
+    cross-tool import just for a 2-line helper; classifier.py keeps its
+    own copy for the same reason.
     """
-    short_hash = hashlib.sha256(content).hexdigest()[:12]
-    return f"{filename}::{short_hash}"
+    return f"{filename}::{uuid.uuid4().hex[:12]}"
 
 
 def _get_client() -> LlamaCloud:

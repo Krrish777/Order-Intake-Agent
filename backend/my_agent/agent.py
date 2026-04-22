@@ -60,16 +60,16 @@ from typing import Any, Final
 
 from google.adk.agents import LlmAgent, SequentialAgent
 
-from backend.my_agent.agents.clarify_email_agent import build_clarify_email_agent
-from backend.my_agent.agents.summary_agent import build_summary_agent
-from backend.my_agent.stages.clarify import ClarifyStage
-from backend.my_agent.stages.classify import ClassifyFn, ClassifyStage
-from backend.my_agent.stages.finalize import FinalizeStage
-from backend.my_agent.stages.ingest import IngestStage
-from backend.my_agent.stages.parse import ParseFn, ParseStage
-from backend.my_agent.stages.persist import PersistStage
-from backend.my_agent.stages.reply_shortcircuit import ReplyShortCircuitStage
-from backend.my_agent.stages.validate import ValidateStage
+from .agents.clarify_email_agent import build_clarify_email_agent
+from .agents.summary_agent import build_summary_agent
+from .stages.clarify import ClarifyStage
+from .stages.classify import ClassifyFn, ClassifyStage
+from .stages.finalize import FinalizeStage
+from .stages.ingest import IngestStage
+from .stages.parse import ParseFn, ParseStage
+from .stages.persist import PersistStage
+from .stages.reply_shortcircuit import ReplyShortCircuitStage
+from .stages.validate import ValidateStage
 from backend.persistence.base import ExceptionStore
 from backend.persistence.coordinator import IntakeCoordinator
 from backend.persistence.exceptions_store import FirestoreExceptionStore

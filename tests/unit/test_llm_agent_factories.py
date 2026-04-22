@@ -58,3 +58,65 @@ def test_factories_return_distinct_instances() -> None:
 
     assert id(clarify_a) != id(clarify_b)
     assert id(summary_a) != id(summary_b)
+
+
+def _assert_gemini_schema_safe(schema: type) -> None:
+    """Walk a Pydantic schema's JSON representation and fail if any node
+    sets ``additionalProperties: false``.
+
+    Gemini's ``generation_config.response_schema`` uses a restricted
+    OpenAPI-3 subset that does NOT accept ``additionalProperties`` — a
+    live 400 surfaced this the first time the pipeline reached the
+    summary LlmAgent. Pydantic emits that field when the model (or any
+    nested model) carries ``ConfigDict(extra="forbid")``. This walk
+    blocks a regression.
+    """
+    json_schema = schema.model_json_schema()
+
+    def _walk(node: object, path: str = "$") -> None:
+        if isinstance(node, dict):
+            if node.get("additionalProperties") is False:
+                raise AssertionError(
+                    f"{schema.__name__}.model_json_schema() contains "
+                    f"`additionalProperties: false` at {path} — Gemini's "
+                    f"response_schema will reject this with a 400. Remove "
+                    f"`ConfigDict(extra=\"forbid\")` from the model (or "
+                    f"any nested model) that feeds this LlmAgent's "
+                    f"output_schema."
+                )
+            for k, v in node.items():
+                _walk(v, f"{path}.{k}")
+        elif isinstance(node, list):
+            for i, item in enumerate(node):
+                _walk(item, f"{path}[{i}]")
+
+    _walk(json_schema)
+
+
+def test_clarify_email_schema_is_gemini_safe() -> None:
+    """ClarifyEmail must not set ``extra=\"forbid\"`` — Gemini rejects
+    ``additionalProperties: false`` in its response_schema field."""
+    _assert_gemini_schema_safe(ClarifyEmail)
+
+
+def test_run_summary_schema_is_gemini_safe() -> None:
+    """RunSummary must not set ``extra=\"forbid\"`` — same rule as
+    ClarifyEmail. Both schemas landed on Gemini via ``output_schema`` on
+    their LlmAgent factories, so both are guarded here."""
+    _assert_gemini_schema_safe(RunSummary)
+
+
+def test_every_factory_produces_gemini_safe_output_schema() -> None:
+    """Catch-all: any future LlmAgent factory whose ``output_schema`` ever
+    reaches Gemini must pass the ``additionalProperties: false`` walk.
+
+    Loops the two known factories; adding a third factory file should
+    extend this fixture explicitly (keeps the test list visible rather
+    than auto-discovering via module scan, which can mask skipped agents).
+    """
+    for factory in (build_clarify_email_agent, build_summary_agent):
+        agent = factory()
+        assert agent.output_schema is not None, (
+            f"{factory.__name__} should set output_schema"
+        )
+        _assert_gemini_schema_safe(agent.output_schema)
