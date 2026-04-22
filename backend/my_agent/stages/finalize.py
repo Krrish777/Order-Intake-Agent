@@ -49,6 +49,11 @@ FINALIZE_STAGE_NAME: Final[str] = "finalize_stage"
 class FinalizeStage(BaseAgent):
     """BaseAgent that invokes the summary LlmAgent with deterministic counts.
 
+    Note: this stage coerces ``'reply_handled'`` to a ``bool`` on
+    ``ctx.session.state`` (default ``False``) when seeding the summary
+    template; downstream readers of that key after FinalizeStage see
+    the coerced value.
+
     Dep-injection choice: **PrivateAttr typed as ``Any``**. Same
     reasoning as :class:`ClarifyStage`: the real injected value is an
     :class:`~google.adk.agents.LlmAgent` (a Pydantic ``BaseModel``), but
