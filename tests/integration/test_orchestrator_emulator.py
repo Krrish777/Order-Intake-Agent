@@ -16,6 +16,16 @@ What is real
 * Real :func:`classify_document` (LlamaClassify) and
   :func:`parse_document` (LlamaExtract) — hit the live LlamaCloud API.
 
+What this test proves about Runner survivability
+-------------------------------------------------
+The ``SequentialAgent`` structure survives :meth:`Runner.run_async`
+setup (the ``model_copy`` of the parent context). Child-invoke
+survivability of :class:`FakeChildLlmAgent` itself is demonstrated
+transitively by the AUTO_APPROVE → FinalizeStage path completing
+end-to-end once the parser's ``external_file_id`` fix from Step 6.5
+clears the ParseStage hurdle; this fixture's clarify child is never
+invoked (AUTO_APPROVE routes past it).
+
 What is stubbed
 ---------------
 Both :class:`LlmAgent` children are replaced with
@@ -45,21 +55,14 @@ Required setup
    LlamaCloud API; this test is not eligible for a sealed-environment
    run.
 
-Known flakiness
----------------
-:func:`backend.tools.document_parser.parse_document` passes ``filename``
-verbatim as LlamaExtract's ``external_file_id``. The patterson fixture's
-attachment is named ``patterson_po-28491.pdf``. If that exact
-``external_file_id`` already exists on the LlamaCloud project (from a
-prior test run in the same workspace), ``files.create`` raises
-:class:`ParseBadInputError` (HTTP 400) on the unique-constraint
-collision and the test fails at ParseStage. Work around by deleting the
-stale file through LlamaCloud's console, or by upgrading the parser to
-append a per-invocation suffix (already done for
-:func:`classify_document`; see ``classifier.py:204`` for the pattern).
-This is a pre-existing parser issue, not an orchestration bug — the
-eight-stage wiring up to and including ParseStage is exercised
-regardless.
+Re-run idempotence
+------------------
+:func:`backend.tools.document_parser.parse_document` now suffixes
+``external_file_id`` with a SHA-256 hash of the payload bytes (see
+``_external_file_id``), so re-running this test against an unchanged
+fixture reuses the same LlamaCloud file id without tripping the
+(project_id, external_file_id) unique constraint. Mutating the fixture
+bytes changes the suffix and uploads fresh.
 
 Run with::
 
@@ -262,6 +265,13 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
         assert run_summary["orders_created"] == 1, run_summary
         assert run_summary["exceptions_opened"] == 0, run_summary
         assert run_summary["docs_skipped"] == 0, run_summary
+
+        # FinalizeStage deterministically seeds these BEFORE invoking the summary agent;
+        # assert against the pre-seed so a regression in count computation is caught
+        # independently of the (stubbed) summary agent's echoed response.
+        assert state["orders_created"] == 1
+        assert state["exceptions_opened"] == 0
+        assert state["docs_skipped"] == 0
 
         # skipped_docs must be empty for the Patterson AUTO_APPROVE path
         # — the PDF is the sole attachment and classifies as purchase_order.

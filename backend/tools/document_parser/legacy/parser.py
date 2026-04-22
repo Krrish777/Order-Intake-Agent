@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import io
 import time
 
@@ -43,6 +44,27 @@ _TEXT_TRUNCATION_WARNING_BYTES = 60_000  # LlamaExtract silently truncates >64 K
 # break if the module is rehomed.
 _log = get_logger("backend.tools.document_parser.parser")
 _client: LlamaCloud | None = None
+
+
+def _external_file_id(filename: str, content: bytes) -> str:
+    """Return a LlamaCloud-unique external_file_id for (filename, content).
+
+    LlamaCloud enforces uniqueness on (project_id, external_file_id); passing
+    the raw filename trips a 400 UniqueViolationError on re-runs against the
+    same workspace. Suffixing a content-hash keeps the base filename visible
+    for log readability while making the id idempotent within-content
+    (re-uploading the same bytes yields the same id) and unique across-content
+    (a different payload under the same filename gets a distinct id).
+
+    Mirrors the suffix shape used by ``classifier.py`` (``name::{12 hex}``);
+    the classifier uses a random uuid token there because classify is a
+    one-shot upload, whereas parse benefits from the content-deterministic
+    form when paired with LlamaCloud's file-level caching. Kept inline
+    (rather than extracted to a shared module) to avoid a cross-tool
+    import just for a 2-line helper.
+    """
+    short_hash = hashlib.sha256(content).hexdigest()[:12]
+    return f"{filename}::{short_hash}"
 
 
 def _get_client() -> LlamaCloud:
@@ -109,8 +131,9 @@ def parse_document(
 
     Args:
         content: Raw bytes of the document. Format inferred from filename.
-        filename: Used as external_file_id; LlamaExtract uses the extension to
-            pick the right parser path (PDF/XLSX/CSV/XML/PNG/JPG/TXT/...).
+        filename: Drives the LlamaExtract parser-path selection by extension
+            (PDF/XLSX/CSV/XML/PNG/JPG/TXT/...) and forms the prefix of the
+            LlamaCloud ``external_file_id`` (see ``_external_file_id``).
         extra_hint: Optional free-text appended to the global system prompt.
         timeout_s: Wall-clock budget for the whole submit + poll cycle.
         poll_interval_s: Seconds between status polls.
@@ -173,12 +196,13 @@ def parse_document(
         bytes=byte_count,
         mime_type=mime_type,
     )
+    external_file_id = _external_file_id(filename, content)
     upload_start = time.monotonic()
     try:
         file_obj = client.files.create(
             file=(filename, io.BytesIO(content), mime_type),
             purpose="extract",
-            external_file_id=filename,
+            external_file_id=external_file_id,
         )
     except APIError as exc:
         _log.error(
