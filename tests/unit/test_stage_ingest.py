@@ -169,6 +169,18 @@ def test_heuristic_recognizes_raw_eml_by_mime_header() -> None:
     assert envelope["message_id"]
 
 
+def test_path_starting_with_from_routes_as_path_when_no_blank_line() -> None:
+    """A string starting with ``From_Suppliers/...`` but lacking a blank line
+    must take the path branch, not the raw-EML branch. Proves the heuristic
+    requires *both* a MIME-header prefix AND a blank line — neither alone.
+    """
+    stage = IngestStage()
+    ctx = _build_ctx(stage, "From_Suppliers/msg.eml")
+
+    with pytest.raises(EmlParseError):
+        asyncio.run(_collect_events(stage, ctx))
+
+
 def test_author_and_name_set_correctly() -> None:
     stage = IngestStage()
     assert stage.name == INGEST_STAGE_NAME
