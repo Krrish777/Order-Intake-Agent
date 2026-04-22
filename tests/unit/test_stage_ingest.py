@@ -18,20 +18,14 @@ which assumes a live Pydantic model — cheaper to just construct the real thing
 
 from __future__ import annotations
 
-import asyncio
 import base64
 from pathlib import Path
-from typing import Iterable
 
 import pytest
-from google.adk.agents.invocation_context import InvocationContext
-from google.adk.events.event import Event
-from google.adk.sessions.in_memory_session_service import InMemorySessionService
-from google.adk.sessions.session import Session
-from google.genai import types
 
 from backend.ingestion.eml_parser import EmlParseError
 from backend.my_agent.stages.ingest import INGEST_STAGE_NAME, IngestStage
+from tests.unit._stage_testing import collect_events, final_state_delta, make_stage_ctx
 
 
 # --------------------------------------------------------------------- helpers
@@ -42,51 +36,16 @@ WRAPPER_EML = REPO_ROOT / "data" / "pdf" / "patterson_po-28491.wrapper.eml"
 CLARIFY_REPLY_EML = REPO_ROOT / "data" / "email" / "birch_valley_clarify_reply.eml"
 
 
-def _build_ctx(stage: IngestStage, text: str | None) -> InvocationContext:
-    """Construct a minimal but real :class:`InvocationContext`.
-
-    ``text=None`` triggers a missing-user-content path in the stage; otherwise
-    the text is wrapped in a single-part ``types.Content``.
-    """
-    user_content = (
-        types.Content(role="user", parts=[types.Part(text=text)]) if text is not None else None
-    )
-    session = Session(id="s-test", app_name="order-intake-test", user_id="u-test")
-    return InvocationContext(
-        session_service=InMemorySessionService(),
-        invocation_id="inv-test",
-        agent=stage,
-        session=session,
-        user_content=user_content,
-    )
-
-
-async def _collect_events(stage: IngestStage, ctx: InvocationContext) -> list[Event]:
-    events: list[Event] = []
-    async for event in stage.run_async(ctx):
-        events.append(event)
-    return events
-
-
-def _final_state_delta(events: Iterable[Event]) -> dict[str, object]:
-    """Return the merged ``state_delta`` across all events, last write wins."""
-    merged: dict[str, object] = {}
-    for event in events:
-        if event.actions and event.actions.state_delta:
-            merged.update(event.actions.state_delta)
-    return merged
-
-
 # ---------------------------------------------------------------------- tests
 
 
 def test_path_input_parses_eml_into_envelope_state() -> None:
     stage = IngestStage()
-    ctx = _build_ctx(stage, str(WRAPPER_EML))
+    ctx = make_stage_ctx(stage=stage, user_text=str(WRAPPER_EML))
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
-    delta = _final_state_delta(events)
+    delta = final_state_delta(events)
     envelope = delta["envelope"]
     assert isinstance(envelope, dict)
     assert envelope["message_id"]
@@ -96,11 +55,11 @@ def test_path_input_parses_eml_into_envelope_state() -> None:
 def test_raw_eml_input_parses_via_tempfile() -> None:
     raw = WRAPPER_EML.read_text(encoding="utf-8")
     stage = IngestStage()
-    ctx = _build_ctx(stage, raw)
+    ctx = make_stage_ctx(stage=stage, user_text=raw)
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
-    envelope = _final_state_delta(events)["envelope"]
+    envelope = final_state_delta(events)["envelope"]
     assert isinstance(envelope, dict)
     # Raw path means source_path points at a tempfile, which is fine —
     # the stage's contract is that *the parsed fields* land on state.
@@ -110,36 +69,36 @@ def test_raw_eml_input_parses_via_tempfile() -> None:
 
 def test_empty_user_content_raises() -> None:
     stage = IngestStage()
-    ctx = _build_ctx(stage, None)
+    ctx = make_stage_ctx(stage=stage, user_text=None)
 
     with pytest.raises(ValueError, match="IngestStage requires user message"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
 
 def test_empty_text_user_content_raises() -> None:
     """Whitespace-only text counts as empty per the fail-fast contract."""
     stage = IngestStage()
-    ctx = _build_ctx(stage, "   \n  ")
+    ctx = make_stage_ctx(stage=stage, user_text="   \n  ")
 
     with pytest.raises(ValueError, match="IngestStage requires user message"):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
 
 def test_nonexistent_path_raises_eml_parse_error(tmp_path: Path) -> None:
     missing = tmp_path / "does-not-exist.eml"
     stage = IngestStage()
-    ctx = _build_ctx(stage, str(missing))
+    ctx = make_stage_ctx(stage=stage, user_text=str(missing))
 
     with pytest.raises(EmlParseError):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
 
 def test_body_only_email_synthesizes_body_attachment() -> None:
     stage = IngestStage()
-    ctx = _build_ctx(stage, str(CLARIFY_REPLY_EML))
+    ctx = make_stage_ctx(stage=stage, user_text=str(CLARIFY_REPLY_EML))
 
-    events = asyncio.run(_collect_events(stage, ctx))
-    envelope = _final_state_delta(events)["envelope"]
+    events = collect_events(stage.run_async(ctx))
+    envelope = final_state_delta(events)["envelope"]
 
     attachments = envelope["attachments"]
     assert len(attachments) == 1
@@ -159,13 +118,13 @@ def test_heuristic_recognizes_raw_eml_by_mime_header() -> None:
     # Sanity check the fixture actually starts with a MIME header.
     assert raw.lower().startswith("from:")
     stage = IngestStage()
-    ctx = _build_ctx(stage, raw)
+    ctx = make_stage_ctx(stage=stage, user_text=raw)
 
-    events = asyncio.run(_collect_events(stage, ctx))
+    events = collect_events(stage.run_async(ctx))
 
     # If the heuristic had mis-routed this to the path branch, parse_eml
     # would have raised EmlParseError on the nonexistent "path".
-    envelope = _final_state_delta(events)["envelope"]
+    envelope = final_state_delta(events)["envelope"]
     assert envelope["message_id"]
 
 
@@ -175,18 +134,18 @@ def test_path_starting_with_from_routes_as_path_when_no_blank_line() -> None:
     requires *both* a MIME-header prefix AND a blank line — neither alone.
     """
     stage = IngestStage()
-    ctx = _build_ctx(stage, "From_Suppliers/msg.eml")
+    ctx = make_stage_ctx(stage=stage, user_text="From_Suppliers/msg.eml")
 
     with pytest.raises(EmlParseError):
-        asyncio.run(_collect_events(stage, ctx))
+        collect_events(stage.run_async(ctx))
 
 
 def test_author_and_name_set_correctly() -> None:
     stage = IngestStage()
     assert stage.name == INGEST_STAGE_NAME
 
-    ctx = _build_ctx(stage, str(WRAPPER_EML))
-    events = asyncio.run(_collect_events(stage, ctx))
+    ctx = make_stage_ctx(stage=stage, user_text=str(WRAPPER_EML))
+    events = collect_events(stage.run_async(ctx))
 
     # At least one event authored by the stage carrying the envelope delta.
     ingest_events = [e for e in events if e.author == INGEST_STAGE_NAME]
