@@ -1,5 +1,29 @@
 """Shared fixtures for the unit test suite.
 
+Unit-suite emulator env defaults (load-bearing)
+-----------------------------------------------
+:mod:`backend.my_agent.agent` evaluates
+``root_agent = _build_default_root_agent()`` at import time (intentional —
+``adk web .`` discovers the root agent by attribute scan), which
+constructs an async Firestore client via
+:func:`backend.tools.order_validator.tools.firestore_client.get_async_client`.
+That client factory raises :class:`DefaultCredentialsError` without
+either real GCP credentials or the emulator env vars. Several unit tests
+import ``backend.my_agent.agent`` (topology tests, etc.) so we must fill
+in placeholder values before any ``backend.*`` import happens.
+
+Using :func:`os.environ.setdefault` means a caller who already exported
+these (e.g. via ``make test`` or in CI) wins — we only fill in when the
+env is empty. No real network is touched during collection because the
+client is lazy on first use and unit tests either mock the client or use
+:class:`FakeAsyncClient` defined in this module.
+
+Scope note: this was previously set in the root :mod:`tests.conftest`,
+which had the side effect of auto-enabling integration-test emulator
+paths. It now lives here so integration tests keep their original
+skip-or-fail-on-missing-emulator semantic. Must run before any
+``backend.*`` import in this module.
+
 The in-memory :class:`FakeAsyncClient` is the reused testing primitive for
 any code that touches :class:`google.cloud.firestore.AsyncClient` — both
 the validator tools (Track V) and the persistence stores
@@ -24,6 +48,13 @@ Integration parity with the real async SDK is asserted in the
 """
 
 from __future__ import annotations
+
+import os
+
+# Load-bearing: must run BEFORE any ``backend.*`` import below. See the
+# module docstring for the full rationale.
+os.environ.setdefault("FIRESTORE_EMULATOR_HOST", "localhost:8080")
+os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "demo-order-intake-local")
 
 import json
 from datetime import datetime, timezone

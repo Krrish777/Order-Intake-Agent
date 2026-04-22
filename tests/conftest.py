@@ -1,32 +1,18 @@
-"""Root conftest — test-wide environment setup.
+"""Root conftest — intentionally minimal.
 
-Sets ``FIRESTORE_EMULATOR_HOST`` and ``GOOGLE_CLOUD_PROJECT`` before any
-test module is imported. This is load-bearing:
-:mod:`backend.my_agent.agent` evaluates
-``root_agent = _build_default_root_agent()`` at import time (intentional —
-``adk web .`` discovers the root agent by attribute scan), which
-constructs an async Firestore client via
-:func:`~backend.tools.order_validator.tools.firestore_client.get_async_client`.
-That client factory raises :class:`DefaultCredentialsError` without
-either real GCP credentials or the emulator env vars.
+Historical note: this module used to call
+``os.environ.setdefault("FIRESTORE_EMULATOR_HOST", ...)`` and
+``os.environ.setdefault("GOOGLE_CLOUD_PROJECT", ...)`` so that importing
+``backend.my_agent.agent`` at unit-test collection time would not blow
+up on missing GCP credentials — ``root_agent = _build_default_root_agent()``
+runs at import time and constructs an async Firestore client via
+:func:`backend.tools.order_validator.tools.firestore_client.get_async_client`.
 
-The ``Makefile``'s ``dev`` target sets these before invoking
-``adk web``; this conftest does the same for pytest. No real network is
-touched during test collection — the client is lazy on first use and
-unit tests never reach that path (they mock the client or use
-:class:`FakeAsyncClient` from ``tests/unit/conftest.py``). Integration
-tests that DO hit the emulator have their own
-``not os.environ.get("FIRESTORE_EMULATOR_HOST")`` skip guard and will
-happily use whatever value we set here.
-
-Using :func:`os.environ.setdefault` means a caller who already exported
-these (e.g. via ``make test`` or in CI) wins — we only fill in when the
-env is empty.
+That setdefault pair was moved to :mod:`tests.unit.conftest` (scope:
+unit suite only) so integration tests retain their original
+skip-or-fail-on-missing-emulator semantic: they must see
+``FIRESTORE_EMULATOR_HOST`` set by the user / CI / Makefile, not
+implicitly inherited from a root-level pytest hook.
 """
 
 from __future__ import annotations
-
-import os
-
-os.environ.setdefault("FIRESTORE_EMULATOR_HOST", "localhost:8080")
-os.environ.setdefault("GOOGLE_CLOUD_PROJECT", "demo-order-intake-local")
