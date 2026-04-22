@@ -10,9 +10,10 @@ from logs.
 from __future__ import annotations
 
 import base64
+import binascii
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_serializer
+from pydantic import BaseModel, Field, field_serializer, field_validator
 
 
 class EmailAttachment(BaseModel):
@@ -20,7 +21,8 @@ class EmailAttachment(BaseModel):
 
     In-memory, ``content`` is the raw decoded bytes — Track A reads this
     directly. For JSON output (CLI), the field serializer base64-encodes it
-    so binary payloads like PDFs survive UTF-8 validation.
+    so binary payloads like PDFs survive UTF-8 validation; the paired
+    validator base64-decodes on rehydrate so the round-trip is symmetric.
     """
 
     filename: str
@@ -30,6 +32,23 @@ class EmailAttachment(BaseModel):
     @field_serializer("content")
     def _serialize_content(self, value: bytes) -> str:
         return base64.b64encode(value).decode("ascii")
+
+    @field_validator("content", mode="before")
+    @classmethod
+    def _deserialize_content(cls, value: object) -> object:
+        # When rehydrating from ``model_dump(mode="json")`` output, the paired
+        # serializer emitted a strict base64-ASCII string; decode it back to
+        # the original bytes so the round-trip is symmetric. A plain-text
+        # ``str`` (e.g. CSV body produced by ``email.iter_attachments`` for
+        # ``text/*`` parts) is not valid base64, so we fall back to Pydantic's
+        # default behavior (UTF-8 encode) in that case. Raw ``bytes`` inputs
+        # pass through untouched.
+        if isinstance(value, str):
+            try:
+                return base64.b64decode(value.encode("ascii"), validate=True)
+            except (ValueError, binascii.Error):
+                return value
+        return value
 
 
 class EmailEnvelope(BaseModel):
