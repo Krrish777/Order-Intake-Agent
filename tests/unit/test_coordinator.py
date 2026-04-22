@@ -361,3 +361,68 @@ async def test_thread_id_falls_back_to_message_id_when_envelope_lacks_thread(fak
     )
 
     assert result.order.thread_id == "msg-no-thread"
+
+
+async def test_clarify_body_kwarg_written_to_exception(fake_client):
+    """On CLARIFY, the clarify_body kwarg must be persisted on the exception
+    so the dashboard can render the generated email alongside the reason."""
+    coord, _validator, _repo = _make_coord(
+        fake_client,
+        _validation(
+            RoutingDecision.CLARIFY,
+            customer=_sample_customer(),
+            matched_sku=None,
+            confidence=0.85,
+            notes=["no match for 'WGT-001'"],
+        ),
+    )
+
+    body = "Hi Pat,\n\nCould you confirm the SKU for line 1?\n\nThanks."
+    result = await coord.process(_parsed_doc(), _envelope(), clarify_body=body)
+
+    assert result.exception is not None
+    assert result.exception.status is ExceptionStatus.PENDING_CLARIFY
+    assert result.exception.clarify_body == body
+
+
+async def test_clarify_body_dropped_on_escalate(fake_client):
+    """clarify_body is only meaningful for CLARIFY (pending_clarify) cases.
+    ESCALATE bypasses clarify and goes straight to human review — if a caller
+    passes a body by mistake, coordinator must not persist it."""
+    coord, _validator, _repo = _make_coord(
+        fake_client,
+        _validation(
+            RoutingDecision.ESCALATE,
+            customer=None,
+            matched_sku=None,
+            confidence=0.4,
+            notes=["customer unresolved"],
+        ),
+    )
+
+    result = await coord.process(
+        _parsed_doc(), _envelope(), clarify_body="should not be persisted"
+    )
+
+    assert result.exception is not None
+    assert result.exception.status is ExceptionStatus.ESCALATED
+    assert result.exception.clarify_body is None
+
+
+async def test_clarify_body_defaults_to_none_when_not_passed(fake_client):
+    """Caller can skip clarify_body entirely — coordinator leaves it None."""
+    coord, _validator, _repo = _make_coord(
+        fake_client,
+        _validation(
+            RoutingDecision.CLARIFY,
+            customer=_sample_customer(),
+            matched_sku=None,
+            confidence=0.85,
+            notes=["no match"],
+        ),
+    )
+
+    result = await coord.process(_parsed_doc(), _envelope())
+
+    assert result.exception is not None
+    assert result.exception.clarify_body is None

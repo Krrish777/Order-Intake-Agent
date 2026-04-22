@@ -75,6 +75,7 @@ class IntakeCoordinator:
         envelope: EmailEnvelope,
         *,
         order_index: int = 0,
+        clarify_body: Optional[str] = None,
     ) -> ProcessResult:
         doc_id = self._compose_doc_id(envelope.message_id, order_index)
         thread_id = envelope.thread_id or envelope.message_id
@@ -104,8 +105,10 @@ class IntakeCoordinator:
             if validation.decision is RoutingDecision.CLARIFY
             else ExceptionStatus.ESCALATED
         )
+        # clarify_body only meaningful for PENDING_CLARIFY; ignored on ESCALATED.
+        body = clarify_body if status is ExceptionStatus.PENDING_CLARIFY else None
         exception = self._build_exception_record(
-            parsed_doc, validation, doc_id, thread_id, status
+            parsed_doc, validation, doc_id, thread_id, status, body
         )
         persisted = await self._exception_store.save(exception)
         return ProcessResult(kind="exception", exception=persisted)
@@ -173,6 +176,7 @@ class IntakeCoordinator:
         doc_id: str,
         thread_id: str,
         status: ExceptionStatus,
+        clarify_body: Optional[str],
     ) -> ExceptionRecord:
         now = datetime.now(timezone.utc)
         return ExceptionRecord(
@@ -180,6 +184,7 @@ class IntakeCoordinator:
             thread_id=thread_id,
             status=status,
             reason=_compose_reason(validation),
+            clarify_body=clarify_body,
             parsed_doc=parsed_doc,
             validation_result=validation,
             created_at=now,

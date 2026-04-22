@@ -80,6 +80,7 @@ def _sample_exception(
     reason: str = "Line 0: no match for 'MYSTERY-SKU'.",
     clarify_message_id: str | None = None,
     reply_message_id: str | None = None,
+    clarify_body: str | None = None,
 ) -> ExceptionRecord:
     base = datetime(2026, 4, 22, 0, 0, 0, tzinfo=timezone.utc)
     return ExceptionRecord(
@@ -89,6 +90,7 @@ def _sample_exception(
         reply_message_id=reply_message_id,
         status=status,
         reason=reason,
+        clarify_body=clarify_body,
         parsed_doc=_sample_parsed_doc(),
         validation_result=_sample_validation_result(),
         created_at=base,
@@ -361,3 +363,22 @@ async def test_save_preserves_validation_result_snapshot(fake_client):
     assert len(vr.lines) == 1
     assert vr.lines[0].matched_sku is None
     assert "MYSTERY-SKU" in vr.lines[0].notes[0]
+
+
+async def test_save_round_trips_clarify_body(fake_client):
+    """The clarify_body field (added in schema v2) must survive Firestore
+    serialization — the dashboard reads it to render the generated email
+    alongside the exception."""
+    from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+    body = (
+        "Hi Pat,\n\nWe received your PO but couldn't match the SKU on line 1.\n"
+        "Could you confirm the part number?\n\nThanks,\nOrders"
+    )
+    store = FirestoreExceptionStore(fake_client)
+    saved = await store.save(_sample_exception(clarify_body=body))
+
+    fetched = await store.get(saved.source_message_id)
+    assert fetched is not None
+    assert fetched.clarify_body == body
+    assert fetched.schema_version == 2
