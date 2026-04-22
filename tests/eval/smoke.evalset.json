@@ -16,7 +16,6 @@
         {
           "invocation_id": "inv_1",
           "user_content": {
-            "role": "user",
             "parts": [
               {
                 "text": "data/pdf/patterson_po-28491.wrapper.eml"
@@ -38,7 +37,7 @@
         }
       ],
       "session_input": {
-        "app_name": "my_agent",
+        "app_name": "order_intake",
         "user_id": "eval_user",
         "state": {}
       }
@@ -49,7 +48,6 @@
         {
           "invocation_id": "inv_1",
           "user_content": {
-            "role": "user",
             "parts": [
               {
                 "text": "data/pdf/redline_urgent_2026-04-19.wrapper.eml"
@@ -71,7 +69,7 @@
         }
       ],
       "session_input": {
-        "app_name": "my_agent",
+        "app_name": "order_intake",
         "user_id": "eval_user",
         "state": {}
       }
@@ -82,7 +80,6 @@
         {
           "invocation_id": "inv_1",
           "user_content": {
-            "role": "user",
             "parts": [
               {
                 "text": "data/email/birch_valley_clarify_reply.eml"
@@ -104,7 +101,7 @@
         }
       ],
       "session_input": {
-        "app_name": "my_agent",
+        "app_name": "order_intake",
         "user_id": "eval_user",
         "state": {}
       }

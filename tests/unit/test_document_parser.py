@@ -192,8 +192,8 @@ def test_configuration_uses_expected_keys(mock_client: MagicMock):
     assert cfg["data_schema"]["type"] == "object"
 
 
-def test_files_create_passes_hash_suffixed_external_id(mock_client: MagicMock):
-    """external_file_id is the filename plus a content-hash suffix (see
+def test_files_create_passes_uuid_suffixed_external_id(mock_client: MagicMock):
+    """external_file_id is the filename plus a random UUID fragment (see
     ``_external_file_id``), not the raw filename — LlamaCloud enforces
     uniqueness on (project_id, external_file_id) so re-running against
     the same fixture would otherwise trip a UniqueViolationError."""
@@ -202,15 +202,20 @@ def test_files_create_passes_hash_suffixed_external_id(mock_client: MagicMock):
 
     _, kwargs = mock_client.files.create.call_args
     assert kwargs["external_file_id"].startswith("email_body.txt::")
-    assert len(kwargs["external_file_id"]) > len("email_body.txt::")
+    # "filename::" + 12 hex chars
+    assert len(kwargs["external_file_id"]) == len("email_body.txt::") + 12
     assert kwargs["purpose"] == "extract"
 
 
-def test_external_file_id_deterministic_for_same_content(mock_client: MagicMock):
-    """Two parse calls with the same (filename, content) produce the SAME
-    external_file_id — the hash suffix is content-derived, so repeated
-    uploads of an identical payload are idempotent from LlamaCloud's
-    uniqueness-constraint perspective."""
+def test_external_file_id_unique_per_call_with_same_content(mock_client: MagicMock):
+    """Two parse calls with the same (filename, content) produce DIFFERENT
+    external_file_ids — the UUID suffix is per-invocation so LlamaCloud
+    accepts repeated uploads without hitting the uniqueness constraint.
+
+    This is the whole point of the UUID suffix; an earlier content-hash
+    approach (sha256[:12]) was deterministic and made the second run
+    collide with the first.
+    """
     mock_client.extract.create.return_value = _job("COMPLETED", result=_VALID_RESULT)
     parse_document(b"same-bytes", filename="doc.pdf")
     first_id = mock_client.files.create.call_args.kwargs["external_file_id"]
@@ -221,13 +226,15 @@ def test_external_file_id_deterministic_for_same_content(mock_client: MagicMock)
     parse_document(b"same-bytes", filename="doc.pdf")
     second_id = mock_client.files.create.call_args.kwargs["external_file_id"]
 
-    assert first_id == second_id
+    assert first_id != second_id
+    assert first_id.startswith("doc.pdf::")
+    assert second_id.startswith("doc.pdf::")
 
 
-def test_external_file_id_differs_for_different_content(mock_client: MagicMock):
+def test_external_file_id_unique_per_call_with_different_content(mock_client: MagicMock):
     """Two parse calls with the same filename but different content bytes
-    produce DIFFERENT external_file_ids — re-issuing the same filename
-    with a different payload must not collide with an earlier upload."""
+    also produce DIFFERENT external_file_ids — UUID-per-call is agnostic
+    to content, so any two invocations collide-free regardless of payload."""
     mock_client.extract.create.return_value = _job("COMPLETED", result=_VALID_RESULT)
     parse_document(b"payload-a", filename="doc.pdf")
     first_id = mock_client.files.create.call_args.kwargs["external_file_id"]

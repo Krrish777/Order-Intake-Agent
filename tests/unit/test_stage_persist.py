@@ -209,6 +209,7 @@ def _make_ctx(
     parsed_docs: list[dict[str, object]] | None = None,
     clarify_bodies: dict[str, object] | None = None,
     skipped_docs: list[dict[str, object]] | None = None,
+    validation_results: list[dict[str, object]] | None = None,
 ):
     state: dict[str, object] = {}
     if reply_handled is not None:
@@ -221,6 +222,8 @@ def _make_ctx(
         state["clarify_bodies"] = clarify_bodies
     if skipped_docs is not None:
         state["skipped_docs"] = skipped_docs
+    if validation_results is not None:
+        state["validation_results"] = validation_results
     return make_stage_ctx(stage=stage, state=state)
 
 
@@ -497,6 +500,64 @@ def test_coordinator_raising_propagates() -> None:
 
     with pytest.raises(RuntimeError, match="firestore unreachable"):
         collect_events(stage.run_async(ctx))
+
+
+def test_precomputed_validation_threaded_through_to_coordinator() -> None:
+    """When state['validation_results'] has an entry keyed by
+    (filename, sub_doc_index), PersistStage re-hydrates it and passes it
+    to coordinator.process as ``precomputed_validation`` — so the
+    coordinator can skip the redundant second validator.validate call."""
+    coordinator = AsyncMock(spec=IntakeCoordinator)
+    coordinator.process.return_value = ProcessResult(
+        kind="order", order=_sample_order_record()
+    )
+    stage = PersistStage(coordinator=coordinator)
+    vr = _sample_validation_result(decision=RoutingDecision.AUTO_APPROVE)
+    ctx = _make_ctx(
+        stage,
+        envelope=_envelope_dict(),
+        parsed_docs=[_parsed_docs_entry(filename="po-001.pdf", sub_doc_index=0)],
+        validation_results=[
+            {
+                "filename": "po-001.pdf",
+                "sub_doc_index": 0,
+                "validation": vr.model_dump(mode="json"),
+            }
+        ],
+    )
+
+    collect_events(stage.run_async(ctx))
+
+    assert coordinator.process.await_count == 1
+    _, kwargs = coordinator.process.call_args
+    pre = kwargs["precomputed_validation"]
+    assert isinstance(pre, ValidationResult)
+    assert pre.decision is RoutingDecision.AUTO_APPROVE
+    assert pre.aggregate_confidence == vr.aggregate_confidence
+
+
+def test_missing_validation_results_falls_back_to_none() -> None:
+    """If state['validation_results'] is absent or doesn't cover this
+    (filename, sub_doc_index), PersistStage passes
+    ``precomputed_validation=None`` and the coordinator runs its own
+    validator. Preserves backwards-compatibility for paths that skip
+    ValidateStage."""
+    coordinator = AsyncMock(spec=IntakeCoordinator)
+    coordinator.process.return_value = ProcessResult(
+        kind="order", order=_sample_order_record()
+    )
+    stage = PersistStage(coordinator=coordinator)
+    ctx = _make_ctx(
+        stage,
+        envelope=_envelope_dict(),
+        parsed_docs=[_parsed_docs_entry()],
+        # validation_results intentionally omitted
+    )
+
+    collect_events(stage.run_async(ctx))
+
+    _, kwargs = coordinator.process.call_args
+    assert kwargs["precomputed_validation"] is None
 
 
 def test_malformed_clarify_body_raises() -> None:

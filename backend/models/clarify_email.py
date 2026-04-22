@@ -8,13 +8,20 @@ schema, so keep them concrete.
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, Field
 
 
 class ClarifyEmail(BaseModel):
-    """One drafted clarify email to send back to the customer."""
+    """One drafted clarify email to send back to the customer.
 
-    model_config = ConfigDict(extra="forbid")
+    Used as ``output_schema`` on the Gemini ClarifyEmailAgent. Intentionally
+    does NOT set ``model_config = ConfigDict(extra="forbid")`` — Pydantic
+    emits ``additionalProperties: false`` for that, which Gemini's
+    ``generation_config.response_schema`` rejects with a 400 (field not
+    recognized by the OpenAPI 3 subset Gemini accepts). Pydantic's default
+    silently-ignore-extra is the right behavior here: the LLM's output is
+    what we validate, not untrusted user input.
+    """
 
     subject: str = Field(
         ...,
