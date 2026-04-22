@@ -25,7 +25,7 @@ concurrency violations.
 
 from __future__ import annotations
 
-from typing import AsyncGenerator, Final
+from typing import Any, AsyncGenerator, Final
 
 from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
@@ -33,7 +33,6 @@ from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
 from google.genai import types
 from pydantic import PrivateAttr
-from typing import Any
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.persistence.base import ExceptionStore
