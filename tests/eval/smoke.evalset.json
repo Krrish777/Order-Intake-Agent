@@ -1,0 +1,113 @@
+{
+  "eval_set_id": "order_intake_smoke",
+  "name": "Order Intake Smoke Evalset",
+  "description": "Smoke-tier evalset for the 8-stage Order Intake pipeline. Exercises the pipeline end-to-end against live Gemini (clarify + summary LlmAgents), live LlamaClassify + LlamaExtract, and a local Firestore emulator. Each case pipes the absolute path of a .eml fixture as user input; IngestStage materialises the EmailEnvelope from disk. Loose thresholds per /adk-eval-guide: the summary text is Gemini-generated so literal response-match is expected to fail — we grade completion, not perfection.",
+  "metadata": {
+    "notes": [
+      "Cases shipped: patterson (AUTO_APPROVE), redline_urgent (AUTO_APPROVE expected, discover at run time if it routes CLARIFY instead), birch_valley_reply (reply-handled short-circuit).",
+      "Cases deferred: a dedicated CLARIFY-scoring fixture (0.80 <= score < 0.95). Blocked on the subagent not having a running Firestore emulator + seeded master data, so we cannot discover which existing fixture lands in the clarify band at authoring time. TODO: once emulator is up and master data is seeded, run OrderValidator against each fixture's ExtractedOrder and pin a case whose aggregate_confidence is in [0.80, 0.95).",
+      "Prerequisites documented in tests/eval/README.md. Case 4 (birch_valley) additionally requires running tests/eval/fixtures/seed_birch_valley_exception.py before invoking adk eval so the PENDING_CLARIFY parent exception exists."
+    ]
+  },
+  "eval_cases": [
+    {
+      "eval_id": "patterson_auto_approve",
+      "conversation": [
+        {
+          "invocation_id": "inv_1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "data/pdf/patterson_po-28491.wrapper.eml"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Processed 1 purchase order from Patterson Industrial Supply. 1 order created, 0 exceptions opened, 0 documents skipped."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "my_agent",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "redline_urgent_auto_approve",
+      "conversation": [
+        {
+          "invocation_id": "inv_1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "data/pdf/redline_urgent_2026-04-19.wrapper.eml"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Processed the urgent redline purchase order. 1 order created, 0 exceptions opened, 0 documents skipped."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "my_agent",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    },
+    {
+      "eval_id": "birch_valley_reply_short_circuit",
+      "conversation": [
+        {
+          "invocation_id": "inv_1",
+          "user_content": {
+            "role": "user",
+            "parts": [
+              {
+                "text": "data/email/birch_valley_clarify_reply.eml"
+              }
+            ]
+          },
+          "final_response": {
+            "role": "model",
+            "parts": [
+              {
+                "text": "Reply detected on existing clarify thread; advanced the pending exception to awaiting review. 0 orders created, 0 exceptions opened, 0 documents skipped."
+              }
+            ]
+          },
+          "intermediate_data": {
+            "tool_uses": [],
+            "intermediate_responses": []
+          }
+        }
+      ],
+      "session_input": {
+        "app_name": "my_agent",
+        "user_id": "eval_user",
+        "state": {}
+      }
+    }
+  ]
+}
