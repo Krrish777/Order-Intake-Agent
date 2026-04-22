@@ -170,6 +170,12 @@ def _build_default_root_agent() -> SequentialAgent:
         can see whether the emulator is down, credentials are missing,
         or a prompt template has a syntax error.
     """
+    # The async Firestore client is process-scoped: we intentionally do
+    # NOT call ``client.aclose()`` on module unload. ``adk web`` / Cloud
+    # Run processes own this client for their whole lifetime, so client
+    # lifecycle == process lifecycle. Short-lived scripts that DO want
+    # explicit cleanup should skip this helper and call
+    # :func:`build_root_agent` directly with their own client.
     client = get_async_client()
 
     master_data_repo = MasterDataRepo(client)
