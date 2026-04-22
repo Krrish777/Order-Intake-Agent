@@ -8,10 +8,11 @@ keys on ``ctx.session.state`` (``customer_name``, ``original_subject``,
 emits lands in ``state['clarify_bodies']`` keyed by
 ``"{filename}#{sub_doc_index}"``.
 
-The child LlmAgent dep is exercised via a :class:`_FakeClarifyAgent`
-duck-type that yields a single :class:`Event` with
-``state_delta={"clarify_email": {...}}``. It also snapshots the three
-placeholder keys from ``ctx.session.state`` on each invocation so tests
+The child LlmAgent dep is exercised via the shared
+:class:`FakeChildLlmAgent` duck-type (from ``_stage_testing``) with
+``output_key="clarify_email"``. The fake yields a single :class:`Event`
+with ``state_delta={"clarify_email": {...}}`` and snapshots the three
+placeholder keys on ``ctx.session.state`` on each invocation so tests
 can assert the seeding order.
 """
 
@@ -21,62 +22,35 @@ from datetime import datetime, timezone
 from typing import Any
 
 import pytest
-from google.adk.events.event import Event
-from google.adk.events.event_actions import EventActions
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.my_agent.stages.clarify import CLARIFY_STAGE_NAME, ClarifyStage
-from tests.unit._stage_testing import collect_events, final_state_delta, make_stage_ctx
+from tests.unit._stage_testing import (
+    FakeChildLlmAgent,
+    collect_events,
+    final_state_delta,
+    make_stage_ctx,
+)
 
 
 # --------------------------------------------------------------------- helpers
 
 
-class _FakeClarifyAgent:
-    """Duck-typed stand-in for the clarify-email LlmAgent.
+def _make_clarify_fake(
+    *,
+    responses: list[dict[str, Any]] | None = None,
+) -> FakeChildLlmAgent:
+    """Thin wrapper around :class:`FakeChildLlmAgent` for this test module.
 
-    Only implements ``run_async`` — ClarifyStage invokes the child via
-    the async-generator contract and inspects ``event.actions.state_delta``
-    for the ``clarify_email`` key. A fake keeps the tests hermetic (no
-    Gemini call) and lets us assert invocation count + the state
-    snapshot seen by the child.
+    Centralises the ``output_key`` + ``capture_keys`` choices so each
+    test reads as a behavioural assertion, not a fake-config dump.
     """
-
-    def __init__(
-        self,
-        *,
-        responses: list[dict[str, Any]] | None = None,
-        extra_events: list[Event] | None = None,
-    ) -> None:
-        self._responses = list(responses) if responses is not None else None
-        self._extra_events = list(extra_events) if extra_events else []
-        self.call_count = 0
-        self.capture_state: list[dict[str, Any]] = []
-        self.name = "fake_clarify_agent"
-
-    async def run_async(self, ctx):
-        self.call_count += 1
-        self.capture_state.append(
-            {
-                "customer_name": ctx.session.state.get("customer_name"),
-                "original_subject": ctx.session.state.get("original_subject"),
-                "reason": ctx.session.state.get("reason"),
-            }
-        )
-        for extra in self._extra_events:
-            yield extra
-        if self._responses is None:
-            # No final clarify_email at all — ClarifyStage should raise.
-            return
-        response = (
-            self._responses.pop(0)
-            if self._responses
-            else {"subject": "Re: stub", "body": "stub"}
-        )
-        yield Event(
-            author=self.name,
-            actions=EventActions(state_delta={"clarify_email": response}),
-        )
+    return FakeChildLlmAgent(
+        output_key="clarify_email",
+        responses=responses,
+        capture_keys=["customer_name", "original_subject", "reason"],
+        name="fake_clarify_agent",
+    )
 
 
 def _envelope_dict(subject: str = "PO #12345 — urgent") -> dict[str, Any]:
@@ -172,7 +146,7 @@ def _make_ctx(
 def test_reply_handled_no_ops() -> None:
     """reply_handled=True → child NEVER invoked; clarify_bodies={};
     skipped_docs preserved."""
-    fake = _FakeClarifyAgent()
+    fake = _make_clarify_fake()
     stage = ClarifyStage(clarify_agent=fake)
     prior_skipped = [
         {
@@ -198,7 +172,7 @@ def test_reply_handled_no_ops() -> None:
 
 
 def test_missing_validation_results_raises() -> None:
-    fake = _FakeClarifyAgent()
+    fake = _make_clarify_fake()
     stage = ClarifyStage(clarify_agent=fake)
     ctx = _make_ctx(stage, envelope=_envelope_dict())
 
@@ -209,7 +183,7 @@ def test_missing_validation_results_raises() -> None:
 
 
 def test_missing_envelope_raises() -> None:
-    fake = _FakeClarifyAgent()
+    fake = _make_clarify_fake()
     stage = ClarifyStage(clarify_agent=fake)
     ctx = _make_ctx(stage, validation_results=[_validation_entry()])
 
@@ -222,7 +196,7 @@ def test_missing_envelope_raises() -> None:
 def test_no_clarify_tier_results_yields_empty_bodies() -> None:
     """validation_results holds only AUTO + ESCALATE entries → child
     never invoked; clarify_bodies=={}."""
-    fake = _FakeClarifyAgent()
+    fake = _make_clarify_fake()
     stage = ClarifyStage(clarify_agent=fake)
     ctx = _make_ctx(
         stage,
@@ -247,7 +221,7 @@ def test_single_clarify_entry_produces_one_body() -> None:
         "subject": "Re: PO #12345 — urgent",
         "body": "Hi Birch Valley team, could you confirm the quantity on line 0?",
     }
-    fake = _FakeClarifyAgent(responses=[response])
+    fake = _make_clarify_fake(responses=[response])
     stage = ClarifyStage(clarify_agent=fake)
     ctx = _make_ctx(
         stage,
@@ -275,7 +249,7 @@ def test_multiple_clarify_entries_produces_multiple_bodies() -> None:
     the per-invocation state snapshots."""
     response_a = {"subject": "Re: PO A", "body": "Body for A"}
     response_b = {"subject": "Re: PO B", "body": "Body for B"}
-    fake = _FakeClarifyAgent(responses=[response_a, response_b])
+    fake = _make_clarify_fake(responses=[response_a, response_b])
     stage = ClarifyStage(clarify_agent=fake)
 
     entry_a = _validation_entry(
@@ -332,7 +306,7 @@ def test_child_never_emits_clarify_email_raises() -> None:
     """Child yields events but none carries clarify_email in state_delta
     → ClarifyStage re-raises a clear RuntimeError."""
     # responses=None → fake yields no final clarify_email event.
-    fake = _FakeClarifyAgent(responses=None)
+    fake = _make_clarify_fake(responses=None)
     stage = ClarifyStage(clarify_agent=fake)
     ctx = _make_ctx(
         stage,
@@ -352,7 +326,7 @@ def test_prompt_state_keys_seeded_from_validation_and_envelope() -> None:
     """Before the child is invoked, ctx.session.state must carry
     customer_name (from validation.customer.name), original_subject
     (from envelope.subject), and reason (from concatenated line notes)."""
-    fake = _FakeClarifyAgent(
+    fake = _make_clarify_fake(
         responses=[{"subject": "Re: stub", "body": "stub"}]
     )
     stage = ClarifyStage(clarify_agent=fake)

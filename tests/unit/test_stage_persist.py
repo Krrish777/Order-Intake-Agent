@@ -497,3 +497,28 @@ def test_coordinator_raising_propagates() -> None:
 
     with pytest.raises(RuntimeError, match="firestore unreachable"):
         collect_events(stage.run_async(ctx))
+
+
+def test_malformed_clarify_body_raises() -> None:
+    """clarify_bodies entry missing the 'body' field → AssertionError.
+
+    Locks the fail-fast behaviour: if ClarifyStage's output schema
+    ever drifts from ``ClarifyEmail(subject, body)``, PersistStage
+    must surface the drift loudly rather than silently writing
+    ``clarify_body=None``.
+    """
+    coordinator = AsyncMock(spec=IntakeCoordinator)
+    stage = PersistStage(coordinator=coordinator)
+    ctx = _make_ctx(
+        stage,
+        envelope=_envelope_dict(),
+        parsed_docs=[
+            _parsed_docs_entry(filename="x.pdf", sub_doc_index=0)
+        ],
+        clarify_bodies={"x.pdf#0": {"subject": "only"}},
+    )
+
+    with pytest.raises(AssertionError, match="missing the 'body' field"):
+        collect_events(stage.run_async(ctx))
+
+    assert coordinator.process.await_count == 0

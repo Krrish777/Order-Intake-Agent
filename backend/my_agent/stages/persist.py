@@ -149,7 +149,16 @@ class PersistStage(BaseAgent):
             body_dict = clarify_bodies.get(key)
             # ClarifyStage stores {subject, body} dicts; the coordinator
             # only persists the body string onto ExceptionRecord.clarify_body.
-            body = body_dict["body"] if body_dict else None
+            # Fail-fast if ClarifyStage's output schema ever drifts from
+            # ClarifyEmail(subject, body).
+            if body_dict is None:
+                body = None
+            else:
+                assert "body" in body_dict, (
+                    f"clarify_bodies[{key!r}] is missing the 'body' field: "
+                    f"{body_dict!r}"
+                )
+                body = body_dict["body"]
 
             result = await self._coordinator.process(
                 parsed,
