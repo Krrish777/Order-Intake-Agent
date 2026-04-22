@@ -69,6 +69,14 @@ doc from the emulator UI (`http://localhost:4000/firestore`) or rotate
 
 ## Running the evalset
 
+**Run from the repo root.** Fixture paths in `smoke.evalset.json` are
+CWD-relative: `IngestStage._parse_raw_content` calls
+`parse_eml(Path(text.strip()))`, which resolves against `os.getcwd()`.
+If you `cd tests/eval` (or anywhere else) before invoking `adk eval`,
+the relative paths will fail to resolve and IngestStage will treat the
+string as raw EML content, producing a nonsense envelope and an
+across-the-board failure. Stay at the repo root.
+
 ```bash
 uv run adk eval backend/my_agent \
     tests/eval/smoke.evalset.json \
@@ -116,6 +124,13 @@ uv run adk eval backend/my_agent \
   `response_match_score` comparison against the expected text will
   always be low. Threshold is 0.3 on purpose; tighten only after pinning a
   judge-based metric (`final_response_match_v2` with a loose rubric).
+- **`app_name` mismatch on first run.** If the first run errors with
+  `Session not found`, the `session_input.app_name` in
+  `smoke.evalset.json` may need to match ADK's derived name for this
+  project. Try swapping `my_agent` → `backend.my_agent` →
+  `order_intake_pipeline` in that order (the three likely candidates
+  per `/adk-eval-guide` gotcha #3: the module basename, the dotted
+  import path, and the `name=` passed to `SequentialAgent`).
 
 ## Why loose thresholds
 
