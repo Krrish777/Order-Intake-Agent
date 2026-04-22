@@ -4,7 +4,7 @@ topic: "Order Intake Agent — Status vs Glacis Spec"
 sprint: 1
 parent: "Order-Intake-Sprint-Overview.md"
 date: 2026-04-20
-last_updated: 2026-04-22 (Track P write side landed: backend/persistence/ — OrderStore + ExceptionStore + IntakeCoordinator with full snapshot OrderRecord, single-doc ExceptionRecord lifecycle, source_message_id idempotency, find_pending_clarify composite index. 35 new unit + 10 new integration tests; full suite at 235 passed)
+last_updated: 2026-04-22 (Track A in flight — 4 commits landed on master: contracts schema bump (clarify_body on ExceptionRecord + IntakeCoordinator.process(clarify_body=...) signature, schema_version→2), ClarifyEmail + RunSummary output-schema models + state-injected prompt templates, LlmAgent factories for clarify + summary (gemini-3-flash-preview), IngestStage (first BaseAgent of 8) with path/raw-EML heuristic + body-only attachment synthesis. +11 new unit tests; suite at 230 passed.)
 tags:
   - sprint
   - status
@@ -26,9 +26,9 @@ Snapshot taken 2026-04-20 at end of planning session. Maps every stage of the Gl
 | **2d. Enrichment (item matching)** | Exact → fuzzy → embedding | 3-tier ladder in `sku_matcher.py` ✓ — Tier 1 exact + alias, Tier 2 rapidfuzz `token_set_ratio` over `short_description`, Tier 3 embedding stub falls through cleanly. | Nothing. Tier 3 fills in when `feat/embeddings` lands. |
 | **3. Decision layer** | Auto ≥0.95 / Clarify 0.80–0.95 / Escalate <0.80 | `scorer.aggregate` + `router.decide` ✓ — thresholds + `RoutingDecision` enum live in `backend/models/validation_result.py`. | Nothing. Done. |
 | **4a. ERP read/write** | Firestore read + write | Emulator live; `products` (35) + `customers` (10) + `meta/master_data` seeded ✓. **Read side** in validator package (`MasterDataRepo` over typed records) ✓. **Write side** in `backend/persistence/` — `FirestoreOrderStore` + `FirestoreExceptionStore` with `source_message_id` idempotency; `IntakeCoordinator` routes `RoutingDecision` → store with full customer/product snapshots; composite index for `find_pending_clarify(thread_id)` shipped ✓. | Nothing. Done. |
-| **4b. Clarify email** | Gemini-generated email asking for missing fields | — | Part of Track A (router stage). |
+| **4b. Clarify email** | Gemini-generated email asking for missing fields | `ClarifyEmail(subject, body)` output schema + `build_clarify_email_agent()` factory (gemini-3-flash-preview) + state-injected `clarify_email.py` prompt template ✓ (Track A Steps 2+3). `clarify_body` field on `ExceptionRecord`; `IntakeCoordinator.process(..., clarify_body=...)` persists inline on PENDING_CLARIFY, drops on ESCALATE ✓ (Track A Step 1). | ClarifyStage (Track A Step 4f) wires the child LlmAgent into the SequentialAgent. No Gmail send — body-generation only per plan. |
 | **4c. Human dashboard** | Firestore real-time + approve/reject/edit | — | **Track D** — read-only list + exception view. Approve/reject deferred. |
-| **Orchestration** | ADK SequentialAgent wiring stages | Stub `backend/my_agent/agent.py` ⚠ | **Track A**: replace stub with real SequentialAgent. |
+| **Orchestration** | ADK SequentialAgent wiring stages | **Track A in flight on master** (no worktree — per-plan decision): Step 1 contracts (clarify_body + coordinator signature) ✓ · Step 2 `ClarifyEmail`/`RunSummary` models + `clarify_email.py`/`summary.py` prompt templates ✓ · Step 3 `build_clarify_email_agent()` + `build_summary_agent()` LlmAgent factories (gemini-3-flash-preview) ✓ · Step 4a `IngestStage` (BaseAgent #1: path/raw-EML heuristic, body-only attachment synthesis, state flows via `EventActions.state_delta`) ✓. Stub `backend/my_agent/agent.py` still present ⚠ (Step 5 replaces). | Steps 4b-4h: ReplyShortCircuitStage, ClassifyStage, ParseStage, ValidateStage, ClarifyStage, PersistStage, FinalizeStage (7 remaining BaseAgent stages). Step 5 assemble `SequentialAgent`. Step 6 emulator integration test. Step 7 smoke evalset (4 cases). Step 8 `adk web` manual smoke. Step 9 close-out status update. |
 | **5. Learning loop** | Corrections update SOP rules in Firestore | — | Deferred entirely per cut-list. |
 | **Eval / quality gate** | (implicit in spec) | — | **Track E**: `adk eval` + 3 golden-file evalsets. |
 | **Deploy** | Cloud Run + Firebase Hosting | — | `adk deploy cloud_run` for agent (inside Track A). Dashboard deploy TBD. |
@@ -38,9 +38,9 @@ Snapshot taken 2026-04-20 at end of planning session. Maps every stage of the Gl
 
 **Read + judgment + persist are complete** — classify + extract + typed output + master data + realistic fixtures + envelope contract + inject CLI + Firestore emulator with seeded master data + typed async read repo + `OrderValidator` (3-tier SKU matcher, customer resolver, price tolerance, qty sanity, scorer, threshold-based router) + `FirestoreOrderStore` / `FirestoreExceptionStore` + `IntakeCoordinator` end-to-end against the emulator.
 
-**The "surface" half is still open** — orchestrate the agent, generate clarify emails, surface to a dashboard, eval, demo.
+**Track A (agent orchestration) is ~40% in** — contracts bumped, models + prompts + LlmAgent factories in, first BaseAgent stage (`IngestStage`) landed. Seven stages + root assembly + integration tests + smoke evalset + status close-out remain.
 
-That's **~3.5 worktrees** left (read side of `feat/persistence` landed 2026-04-21; Track V validator landed 2026-04-21; **Track P write side + coordinator landed 2026-04-22**; agent orchestration, clarify generation, dashboard, eval, demo remain). Roughly **~80% of total code lines are done**. The next critical-path branch is `feat/agent-orchestration` — wires `EmailEnvelope → ParsedDocument → IntakeCoordinator.process()` and replaces the `backend/my_agent/agent.py` stub with a real `SequentialAgent`. `feat/eval` can land in parallel.
+That's **Track A (partial) + Track D (dashboard) + Track E (eval) + Track Demo** left. Track V, Track P (read+write), and the first wave of Track A all landed on master. Roughly **~85% of total code lines are done**. Track A completes the full `EmailEnvelope → ClassifiedDocument → ParsedDocument → ValidationResult → (ClarifyEmail) → ProcessResult → RunSummary` pipeline; `feat/eval` can proceed in parallel once Step 5 assembles the root agent.
 
 ## Built-vs-missing inventory
 
@@ -115,32 +115,63 @@ firebase/firestore.indexes.json                                         ✓ comp
 tests/unit/conftest.py                                                  ✓ FakeAsyncClient extended with create/set/update + SERVER_TIMESTAMP resolution + where/order_by/limit query support (additive — Track V tests unaffected)
 tests/unit/test_order_store.py                                          ✓ 10 tests: write, server-timestamp, idempotency, get None/hit, schema_version, snapshot round-trip, status enum, validation guards, multi-doc independence
 tests/unit/test_exception_store.py                                      ✓ 14 tests: save/get, idempotency, find_pending_clarify (4 query-shape tests), update_with_reply lifecycle (4 tests), full ParsedDocument + ValidationResult round-trips
-tests/unit/test_coordinator.py                                          ✓ 11 tests: AUTO_APPROVE / CLARIFY / ESCALATE routing, dedupe, snapshots, agent_version, reason concatenation, thread_id fallback
+tests/unit/test_coordinator.py                                          ✓ 14 tests: AUTO_APPROVE / CLARIFY / ESCALATE routing, dedupe, snapshots, agent_version, reason concatenation, thread_id fallback + clarify_body written on CLARIFY / dropped on ESCALATE / defaults None (Track A Step 1)
+tests/unit/test_exception_store.py                                      ✓ 15 tests (was 14): adds clarify_body round-trip + schema_version==2 assertion (Track A Step 1)
 tests/integration/test_order_store_emulator.py                          ✓ 4 emulator tests: round-trip, idempotency under collision, None on miss, distinct-doc independence
 tests/integration/test_exception_store_emulator.py                      ✓ 4 emulator tests: round-trip, find_pending_clarify (composite index), update_with_reply, full lifecycle
 tests/integration/test_coordinator_emulator.py                          ✓ 2 emulator tests: end-to-end AUTO_APPROVE + CLARIFY against real validator + seeded master data
+backend/models/exception_record.py (schema v2)                          ✓ adds clarify_body: Optional[str], schema_version default 1→2 (4bf008e, Track A Step 1)
+backend/persistence/coordinator.py (signature)                          ✓ IntakeCoordinator.process(..., clarify_body: Optional[str] = None) — PENDING_CLARIFY persists the body inline; ESCALATE drops it defensively (4bf008e, Track A Step 1)
+backend/models/clarify_email.py                                         ✓ ClarifyEmail(subject, body) output schema with ConfigDict(extra="forbid") — feeds build_clarify_email_agent() (bc0bab5, Track A Step 2)
+backend/models/run_summary.py                                           ✓ RunSummary(orders_created, exceptions_opened, docs_skipped, summary) — feeds build_summary_agent() (bc0bab5, Track A Step 2)
+backend/prompts/clarify_email.py                                        ✓ SYSTEM_PROMPT + INSTRUCTION_TEMPLATE with {customer_name}/{original_subject}/{reason} state-key placeholders for ADK runtime injection (bc0bab5, Track A Step 2)
+backend/prompts/summary.py                                              ✓ SYSTEM_PROMPT + INSTRUCTION_TEMPLATE with {orders_created}/{exceptions_opened}/{docs_skipped}/{reply_handled} placeholders (bc0bab5, Track A Step 2)
+backend/my_agent/agents/__init__.py                                     ✓ factory-package marker (eebbd35, Track A Step 3)
+backend/my_agent/agents/clarify_email_agent.py                          ✓ build_clarify_email_agent() → fresh LlmAgent per call, gemini-3-flash-preview, output_schema=ClarifyEmail, output_key="clarify_email"; persona + instruction template concatenated into LlmAgent.instruction (the supported path; global_instruction is deprecated, system_instruction is not a constructor field per llm_agent.py:874-876) (eebbd35, Track A Step 3)
+backend/my_agent/agents/summary_agent.py                                ✓ build_summary_agent() → fresh LlmAgent, same model/pattern, output_schema=RunSummary, output_key="run_summary" (eebbd35, Track A Step 3)
+tests/unit/test_llm_agent_factories.py                                  ✓ 3 smoke tests: per-factory config (name/model/output_schema identity/output_key/placeholder presence) + distinct-instance guard via id() (eebbd35, Track A Step 3)
+backend/my_agent/stages/__init__.py                                     ✓ stages-package marker (63780e9, Track A Step 4a)
+backend/my_agent/stages/ingest.py                                       ✓ IngestStage(BaseAgent) — reads ctx.user_content.parts[0].text, heuristic path-vs-raw-EML (MIME-header + blank-line sniff), parses via parse_eml (raw content routed through NamedTemporaryFile since parse_eml is Path-only), synthesizes body.txt EmailAttachment when envelope.attachments is empty, writes envelope.model_dump(mode="json") via EventActions.state_delta; name: str = INGEST_STAGE_NAME class default (63780e9, Track A Step 4a)
+tests/unit/test_stage_ingest.py                                         ✓ 8 tests: path input / raw EML input via tempfile / empty user_content → ValueError / nonexistent path → EmlParseError / body-only synthesis / MIME-header heuristic / whitespace-only user_content / author-and-name (63780e9, Track A Step 4a)
 ```
 
-### Missing (this sprint's work, mapped to branches)
+### Missing (this sprint's work, mapped to branches / Track A steps)
 
 ```
-backend/persistence/embeddings_index.py    → feat/embeddings (unblocks SKU tier-3; find_product_by_embedding is stubbed today)
-backend/my_agent/agent.py (rewrite)        → feat/agent-orchestration
-backend/my_agent/stages/                   → feat/agent-orchestration
-scripts/run_demo.py                        → feat/demo-script
-scripts/run_eval.py                        → feat/eval
-tests/eval/*.evalset.json                  → feat/eval
-frontend/                                  → feat/dashboard
+backend/persistence/embeddings_index.py           → feat/embeddings (unblocks SKU tier-3; find_product_by_embedding is stubbed today)
+backend/my_agent/agent.py (rewrite of stub)       → Track A Step 5 (assemble root SequentialAgent)
+backend/my_agent/stages/reply_shortcircuit.py     → Track A Step 4b (detect in_reply_to + find_pending_clarify + update_with_reply)
+backend/my_agent/stages/classify.py               → Track A Step 4c (per-attachment classify; drops non-PO with skipped event; asyncio.to_thread wraps the sync LlamaClassify call)
+backend/my_agent/stages/parse.py                  → Track A Step 4d (per-classified-doc LlamaExtract; flattens parsed.sub_documents into (filename, sub_doc_index, parsed, sub_doc) tuples)
+backend/my_agent/stages/validate.py               → Track A Step 4e (per-sub-doc validator.validate)
+backend/my_agent/stages/clarify.py                → Track A Step 4f (per-CLARIFY-tier validation result, invokes build_clarify_email_agent() child via child.run_async(ctx), copies state["clarify_email"] → state["clarify_bodies"][flat_index])
+backend/my_agent/stages/persist.py                → Track A Step 4g (per-sub-doc coordinator.process(..., clarify_body=...))
+backend/my_agent/stages/finalize.py               → Track A Step 4h (invokes build_summary_agent() child; RunSummary dict lands on state["run_summary"])
+tests/unit/test_stage_{reply_shortcircuit,classify,parse,validate,clarify,persist,finalize}.py  → Track A Steps 4b-4h
+tests/unit/test_orchestrator_build.py             → Track A Step 5 (asserts root SequentialAgent topology + stage names)
+tests/integration/test_orchestrator_emulator.py   → Track A Step 6 (end-to-end Runner + real validator + real coordinator + real emulator + stubbed clarify/summary; drives patterson_po-28491.wrapper.eml)
+tests/eval/smoke.evalset.json                     → Track A Step 7 (4 cases: patterson AUTO, redline, CLARIFY-forcing, birch_valley reply)
+tests/eval/eval_config.json                       → Track A Step 7
+tests/eval/fixtures/seed_birch_valley_exception.py → Track A Step 7 (pre-seeds PENDING_CLARIFY before the reply case)
+scripts/run_demo.py                               → feat/demo-script
+tests/eval/*.evalset.json (full 3-scenario)       → feat/eval (Track E — tightens Track A Step 7 thresholds)
+scripts/run_eval.py                               → feat/eval
+frontend/                                         → feat/dashboard
 ```
 
 **Fixture wrappers complete (2026-04-21):** all 10 non-`.eml` fixtures now have `{body.txt,wrapper.eml}` pairs. `tests/unit/test_eml_parser.py` parametrizes over every `.eml` under `data/` and runs 44 checks (envelope parse + attachment byte round-trip) — all green. Patterson adhoc CSV uses `--attachment-mime application/octet-stream` because its UTF-8 BOM (a known_ambiguity) would be mangled by the default `text/csv` re-encoding path; scaffold script grew an `--attachment-mime` flag to support this.
 
 ## What to build first
 
-With Track V and Track P (write side + coordinator) landed, the critical path moves to:
+Track A is in flight on master (no worktree) under subagent-driven development. Steps 1 through 4a landed; remaining work in priority order:
 
-1. **`feat/agent-orchestration`** — replace the `backend/my_agent/agent.py` stub with a real ADK `SequentialAgent` that wires `EmailEnvelope → ParsedDocument → IntakeCoordinator.process()`. Coordinator already exposes the right surface (`process(parsed, envelope) → ProcessResult`); orchestration just owns the iteration over `parsed_doc.sub_documents`, the per-stage callbacks, and the clarify-email send-side (which writes `clarify_message_id` onto the existing exception via a follow-up update path on `ExceptionStore`).
-2. **`feat/eval`** — `tests/eval/*.evalset.json` golden files authored alongside the 3 demo scenarios. The coordinator now returns deterministic `ProcessResult` objects against the seeded emulator — easy to snapshot.
+1. **Track A Steps 4b-4h** (seven more `BaseAgent` stages): ReplyShortCircuitStage, ClassifyStage, ParseStage, ValidateStage, ClarifyStage, PersistStage, FinalizeStage. Each is constructor-injected with its dependency (exception_store / classify_fn / parse_fn / validator / clarify_agent / coordinator / summary_agent), reads its inputs from `session.state`, yields Events with `EventActions.state_delta`. Per-stage unit test against real `InvocationContext` + `InMemorySessionService` (the pattern `IngestStage` established — `SimpleNamespace` ducking doesn't work because `BaseAgent.run_async` calls `parent_context.model_copy`).
+2. **Track A Step 5** — `build_root_agent()` assembles the eight stages into a `SequentialAgent`; topology test asserts stage order + names.
+3. **Track A Step 6** — end-to-end integration test against the Firestore emulator with stubbed clarify/summary LlmAgents (deterministic output).
+4. **Track A Step 7** — `tests/eval/smoke.evalset.json` with 4 cases; `adk eval` gated by `GOOGLE_API_KEY`.
+5. **Track A Step 8** — manual `adk web .` smoke (operator types a fixture path, watches events stream).
+6. **Track A Step 9** — close out this status doc.
+7. **`feat/eval`** — full 3-scenario golden set (parallel to Track A after Step 5 lands; Step 7's smoke set is the first draft that Track E tightens).
 
 **Parallel but deferrable:**
 - `feat/embeddings` — seed Gemini `text-embedding-004` vectors for the 35 products into Firestore + replace the stub at `backend/tools/order_validator/tools/master_data_repo.py:find_product_by_embedding`. Not on the critical path; tier-1/2 matching demos fine without it.
@@ -157,11 +188,14 @@ All cross-worktree coordination types are now on master. Future branches import 
 - `EmailEnvelope`, `EmailAttachment` → `backend/ingestion/email_envelope.py` **✓ on master (2026-04-20)**
 - `ValidationResult`, `RoutingDecision`, `LineItemValidation` → `backend/models/validation_result.py` **✓ on master (2026-04-21)**
 - `OrderRecord`, `CustomerSnapshot`, `ProductSnapshot`, `OrderLine`, `OrderStatus` → `backend/models/order_record.py` **✓ on master (3202120, 2026-04-22)**
-- `ExceptionRecord`, `ExceptionStatus` → `backend/models/exception_record.py` **✓ on master (3202120, 2026-04-22)**
+- `ExceptionRecord` (schema v2, now with `clarify_body`), `ExceptionStatus` → `backend/models/exception_record.py` **✓ on master (4bf008e, 2026-04-22)**
 - `OrderStore`, `ExceptionStore` Protocols → `backend/persistence/base.py` **✓ on master (3202120, 2026-04-22)**
-- `IntakeCoordinator`, `ProcessResult` → `backend/persistence/coordinator.py` **✓ on feat/persistence-writes (b63b94d) — lands on master via merge**
+- `IntakeCoordinator.process(..., clarify_body=None)`, `ProcessResult` → `backend/persistence/coordinator.py` **✓ on master (4bf008e, 2026-04-22)**
+- `ClarifyEmail`, `RunSummary` (LlmAgent `output_schema` contracts) → `backend/models/clarify_email.py`, `backend/models/run_summary.py` **✓ on master (bc0bab5, 2026-04-22)**
+- `build_clarify_email_agent()`, `build_summary_agent()` (LlmAgent factories, fresh-per-call) → `backend/my_agent/agents/` **✓ on master (eebbd35, 2026-04-22)**
+- `IngestStage`, `INGEST_STAGE_NAME` → `backend/my_agent/stages/ingest.py` **✓ on master (63780e9, 2026-04-22)**
 
-No more coordination commits needed. `feat/agent-orchestration` and `feat/eval` can fork freely.
+`feat/eval` can fork freely as soon as Track A Step 5 (root_agent) lands — that's the surface `adk eval` binds to.
 
 ## Connections
 
