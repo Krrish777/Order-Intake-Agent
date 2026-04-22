@@ -3,9 +3,12 @@
 Produced by :class:`backend.persistence.coordinator.IntakeCoordinator` when
 validation returns ``RoutingDecision.CLARIFY`` or ``RoutingDecision.ESCALATE``.
 One mutable document accumulates state across the exception's lifetime —
-``clarify_message_id`` is filled when the clarify email goes out (Track A),
-``reply_message_id`` when the reply arrives, ``resolved_to_order_id`` when
-a human approves the exception and it promotes to an order.
+``clarify_body`` is written at create time for CLARIFY-tier cases (the
+Gemini-generated "what's missing" email rendered by the orchestrator),
+``clarify_message_id`` is filled when the clarify email is actually sent
+(Gmail integration, deferred), ``reply_message_id`` when the reply arrives,
+``resolved_to_order_id`` when a human approves the exception and it promotes
+to an order.
 
 The full :class:`~backend.models.parsed_document.ParsedDocument` and
 :class:`~backend.models.validation_result.ValidationResult` are embedded
@@ -68,10 +71,11 @@ class ExceptionRecord(BaseModel):
     reply_message_id: Optional[str] = None
     status: ExceptionStatus
     reason: str
+    clarify_body: Optional[str] = None
     parsed_doc: ParsedDocument
     validation_result: ValidationResult
     resolved_to_order_id: Optional[str] = None
-    schema_version: int = 1
+    schema_version: int = 2
     created_at: datetime
     updated_at: datetime
 
