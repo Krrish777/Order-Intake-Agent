@@ -192,8 +192,7 @@ def test_mixed_attachments_splits_po_from_others() -> None:
     assert classified[0]["document_intent"] == "purchase_order"
 
     assert len(skipped) == 2
-    filenames = {entry["filename"] for entry in skipped}
-    assert filenames == {"invoice.pdf", "spam.txt"}
+    assert [entry["filename"] for entry in skipped] == ["invoice.pdf", "spam.txt"]
     for entry in skipped:
         assert entry["stage"] == CLASSIFY_STAGE_NAME
         assert set(entry.keys()) == {"filename", "stage", "reason"}
