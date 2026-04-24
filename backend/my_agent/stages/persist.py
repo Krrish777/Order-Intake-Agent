@@ -65,6 +65,12 @@ from backend.persistence.coordinator import IntakeCoordinator
 
 PERSIST_STAGE_NAME: Final[str] = "persist_stage"
 
+_ACTION_FOR_KIND: dict[str, str] = {
+    "order": "order_persisted",
+    "exception": "exception_opened",
+    "duplicate": "duplicate_seen",
+}
+
 
 class PersistStage(AuditedStage):
     """BaseAgent that routes each parsed sub-doc through the coordinator.
@@ -184,6 +190,25 @@ class PersistStage(AuditedStage):
                 order_index=entry["sub_doc_index"],
                 clarify_body=body,
                 precomputed_validation=precomputed,
+            )
+            action = _ACTION_FOR_KIND[result.kind]
+            _lc_payload: dict[str, Any] = {
+                "filename": entry["filename"],
+                "sub_doc_index": entry["sub_doc_index"],
+            }
+            if result.order is not None:
+                _lc_payload["order_id"] = result.order.source_message_id
+            if result.exception is not None:
+                _lc_payload["exception_id"] = result.exception.source_message_id
+            await self._audit_logger.emit(
+                correlation_id=ctx.session.state.get("correlation_id", ""),
+                session_id=ctx.session.id,
+                source_message_id=self._extract_source_message_id(ctx.session.state),
+                stage="lifecycle",
+                phase="lifecycle",
+                action=action,
+                outcome=result.kind,
+                payload=_lc_payload,
             )
             process_results.append(
                 {
