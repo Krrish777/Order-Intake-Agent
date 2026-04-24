@@ -39,3 +39,18 @@ class FirestoreOrderStore:
         if not snap.exists:
             return None
         return OrderRecord(**snap.to_dict())
+
+    async def update_with_confirmation(
+        self, source_message_id: str, confirmation_body: str
+    ) -> OrderRecord:
+        doc_ref = (
+            self._client.collection(ORDERS_COLLECTION).document(source_message_id)
+        )
+        # Field-mask update: only the confirmation_body changes. The
+        # Firestore async SDK's ``.update()`` raises NotFound if the
+        # document is absent — the caller contract is that this is only
+        # invoked after ``save()`` in the same invocation, so that's
+        # exactly the failure mode we want to surface.
+        await doc_ref.update({"confirmation_body": confirmation_body})
+        snap = await doc_ref.get()
+        return OrderRecord(**snap.to_dict())
