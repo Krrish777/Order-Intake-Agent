@@ -2,6 +2,17 @@ rules_version='2'
 
 service cloud.firestore {
   match /databases/{database}/documents {
+    // Track D: audit_log is append-only — every stage invocation + 5
+    // lifecycle actions write one row via AuditLogger.emit. Updates and
+    // deletes are denied at the rule level so a compromised pipeline
+    // still cannot tamper with its own audit trail. Keep this block
+    // ABOVE the catch-all below so the more specific match wins.
+    match /audit_log/{doc} {
+      allow read:   if request.auth != null;
+      allow create: if request.auth != null;
+      allow update, delete: if false;
+    }
+
     match /{document=**} {
       // This rule allows anyone with your database reference to view, edit,
       // and delete all data in your database. It is useful for getting
