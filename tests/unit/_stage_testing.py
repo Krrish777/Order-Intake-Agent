@@ -99,12 +99,19 @@ def make_stage_ctx(
 
 def collect_events(
     run_async: AsyncGenerator[Event, None],
-) -> list[Event]:
+):
     """Drain ``stage.run_async(ctx)`` into a list.
 
-    Thin wrapper around ``asyncio.run`` — keeps the ``async for`` bleed
-    out of the test bodies. Pass the raw generator (``stage.run_async(ctx)``)
-    and get back a list of :class:`Event`.
+    Works in both synchronous and asynchronous call sites:
+
+    * **Sync tests** (``def test_...``) — call without ``await``; the
+      function detects no running event loop and calls ``asyncio.run``
+      internally, returning a plain ``list[Event]``.
+    * **Async tests** (``async def test_...``) — call with ``await``; the
+      function detects a running event loop and returns a coroutine that
+      the caller awaits, yielding a ``list[Event]``.
+
+    Pass the raw generator (``stage.run_async(ctx)``) in either case.
     """
 
     async def _drain() -> list[Event]:
@@ -113,7 +120,13 @@ def collect_events(
             events.append(event)
         return events
 
-    return asyncio.run(_drain())
+    try:
+        asyncio.get_running_loop()
+        # Running inside an async context — return an awaitable coroutine.
+        return _drain()
+    except RuntimeError:
+        # No running event loop — drive it ourselves.
+        return asyncio.run(_drain())
 
 
 def final_state_delta(events: Iterable[Event]) -> dict[str, Any]:
