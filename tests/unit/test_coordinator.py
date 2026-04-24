@@ -30,6 +30,7 @@ from backend.models.validation_result import (
     RoutingDecision,
     ValidationResult,
 )
+from backend.tools.order_validator.tools.duplicate_check import compute_content_hash
 
 
 # ----------------------------------------------------- helpers
@@ -470,3 +471,39 @@ async def test_no_precomputed_validation_falls_back_to_validator(fake_client):
 
     assert result.kind == "order"
     validator.validate.assert_awaited_once()
+
+
+class TestCoordinatorPopulatesDenormalizedFields:
+    """Schema v3 denormalized fields on OrderRecord (customer_id, po_number,
+    content_hash) — needed for Firestore composite indexes used by
+    dup-detection queries."""
+
+    async def test_order_record_carries_customer_id_and_po_number(self, fake_client):
+        """Schema v3: OrderRecord.customer_id and .po_number come from
+        resolved customer + parsed doc, denormalized for Firestore query
+        performance on the dup-detection composite indexes."""
+        coord, _validator, _repo = _make_coord(
+            fake_client,
+            _validation(RoutingDecision.AUTO_APPROVE, customer=_sample_customer()),
+        )
+
+        result = await coord.process(_parsed_doc(), _envelope())
+
+        assert result.order.customer_id == "CUST-00042"
+        assert result.order.po_number == "PO-12345"
+
+    async def test_order_record_content_hash_matches_compute_function(self, fake_client):
+        """OrderRecord.content_hash must equal compute_content_hash called
+        on the same customer_id + ExtractedOrder, so find_duplicate's
+        content-hash branch is a byte-for-byte match on retry."""
+        coord, _validator, _repo = _make_coord(
+            fake_client,
+            _validation(RoutingDecision.AUTO_APPROVE, customer=_sample_customer()),
+        )
+        parsed = _parsed_doc()
+
+        result = await coord.process(parsed, _envelope())
+
+        extracted = parsed.sub_documents[0]
+        expected_hash = compute_content_hash("CUST-00042", extracted)
+        assert result.order.content_hash == expected_hash
