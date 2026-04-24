@@ -141,6 +141,22 @@ class FinalizeStage(AuditedStage):
             else last_run_summary
         )
 
+        await self._audit_logger.emit(
+            correlation_id=ctx.session.state.get("correlation_id", ""),
+            session_id=ctx.session.id,
+            source_message_id=self._extract_source_message_id(ctx.session.state),
+            stage="lifecycle",
+            phase="lifecycle",
+            action="run_finalized",
+            outcome="ok",
+            payload={
+                "orders_created": orders_created,
+                "exceptions_opened": exceptions_opened,
+                "docs_skipped": docs_skipped,
+                "reply_handled": reply_handled,
+            },
+        )
+
         yield Event(
             author=FINALIZE_STAGE_NAME,
             actions=EventActions(

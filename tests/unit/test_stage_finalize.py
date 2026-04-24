@@ -263,6 +263,53 @@ def test_run_summary_lands_on_state() -> None:
 
 
 @pytest.mark.asyncio
+async def test_run_finalized_lifecycle_emit() -> None:
+    """After the summary agent yields and counts are captured, one lifecycle
+    emit with action='run_finalized' and correct payload fields."""
+    stub = {
+        "orders_created": 1,
+        "exceptions_opened": 1,
+        "docs_skipped": 1,
+        "summary": "1 order, 1 exception, 1 skipped.",
+    }
+    fake = _make_summary_fake(responses=[stub])
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=audit_logger)
+    ctx = _make_ctx(
+        stage,
+        process_results=[
+            _process_result(filename="a.pdf", sub_doc_index=0, kind="order"),
+            _process_result(filename="b.pdf", sub_doc_index=0, kind="exception"),
+        ],
+        skipped_docs=[
+            {"filename": "c.pdf", "stage": "classify_stage", "reason": "invoice"},
+        ],
+        reply_handled=False,
+    )
+
+    async for _ in stage.run_async(ctx):
+        pass
+
+    lifecycle_calls = [
+        c
+        for c in audit_logger.emit.await_args_list
+        if c.kwargs.get("action") == "run_finalized"
+    ]
+    assert len(lifecycle_calls) == 1, (
+        f"Expected 1 run_finalized emit, got {len(lifecycle_calls)}"
+    )
+    call_kwargs = lifecycle_calls[0].kwargs
+    assert call_kwargs["stage"] == "lifecycle"
+    assert call_kwargs["phase"] == "lifecycle"
+    assert call_kwargs["outcome"] == "ok"
+    payload = call_kwargs["payload"]
+    assert payload["orders_created"] == 1
+    assert payload["exceptions_opened"] == 1
+    assert payload["docs_skipped"] == 1
+    assert payload["reply_handled"] is False
+
+
+@pytest.mark.asyncio
 async def test_stage_emits_entered_and_exited_audit_events() -> None:
     stub = {
         "orders_created": 0,
