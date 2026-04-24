@@ -6,6 +6,8 @@ date: 2026-04-24
 parent: "research/Order-Intake-Sprint-Status.md"
 source_spec_row: "§4 row 'Duplicate detection (check #1)'"
 status: approved-for-implementation
+amendments:
+  - "2026-04-24 (writing-plans-pass): four code-vs-spec mismatches corrected inline — (1) ExtractedOrder field is `line_items`, not `lines`; (2) OrderLineItem.sku and OrderLineItem.quantity are both `Optional`, hash must skip None-sku lines and coerce quantity to `float`; (3) OrderRecord has no top-level `customer_id` or `po_number` — adding both as denormalized fields for query-side (not just `content_hash`); (4) OrderLineItem.quantity is `Optional[float]`, not `int`."
 tags:
   - design-spec
   - track-c
@@ -77,10 +79,14 @@ def compute_content_hash(customer_id: str, order: ExtractedOrder) -> str:
     """customer_id + sorted [(raw_sku, qty)] → sha256 hex.
 
     Deterministic: same inputs always yield same hash.
-    Order-independent: shuffling order.lines yields same hash.
+    Order-independent: shuffling order.line_items yields same hash.
+    Skips lines where sku is None (can't hash meaningfully).
+    Quantity is coerced to float, None treated as 0.0.
     """
     lines = sorted(
-        (line.sku.strip(), line.quantity) for line in order.lines
+        (line.sku.strip(), float(line.quantity or 0.0))
+        for line in order.line_items
+        if line.sku is not None
     )
     canonical = f"{customer_id}|" + "|".join(
         f"{sku}:{qty}" for sku, qty in lines
@@ -139,10 +145,14 @@ async def find_duplicate(
 
 ### Modified — `backend/models/order_record.py`
 
-- Add `content_hash: str` as a **required** field on `OrderRecord`. Not `Optional` — every new order must carry it.
+Three new top-level fields on `OrderRecord` — denormalization is deliberate, so composite Firestore indexes can hit flat field paths (avoids the nested-field index complexity that `customer.customer_id` would require):
+
+- Add `customer_id: str` (required) — denormalized copy of `customer.customer_id`. Duplicates the nested value but enables flat-path queries.
+- Add `po_number: Optional[str]` (default `None`) — carries through from `ExtractedOrder.po_number`.
+- Add `content_hash: str` (required) — from `compute_content_hash`.
 - Bump `schema_version` default `2 → 3`.
-- Every `OrderRecord` construction site in the codebase must be updated; there's exactly one (`IntakeCoordinator.process`).
-- All test fixtures that construct `OrderRecord` directly must pass `content_hash`.
+- Production construction sites: one — `IntakeCoordinator.process`.
+- Test construction sites: 3 files — `tests/unit/test_order_store.py`, `tests/unit/test_stage_persist.py`, `tests/integration/test_order_store_emulator.py` — each fixture needs `customer_id`, `po_number`, and `content_hash` passed.
 
 ### Modified — `backend/tools/order_validator/validator.py`
 
@@ -200,7 +210,12 @@ from backend.tools.order_validator.tools.duplicate_check import compute_content_
 
 order_record = OrderRecord(
     ...,
-    content_hash=compute_content_hash(customer.customer_id, extracted_order),
+    customer_id=customer.customer_id,           # denormalized
+    po_number=extracted_order.po_number,        # from ExtractedOrder
+    content_hash=compute_content_hash(          # computed at persist time
+        customer.customer_id,
+        extracted_order,
+    ),
     schema_version=3,
 )
 ```
