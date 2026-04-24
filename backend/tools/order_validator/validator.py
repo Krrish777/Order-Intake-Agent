@@ -26,6 +26,7 @@ from backend.models.validation_result import (
 from backend.tools.order_validator.router import decide
 from backend.tools.order_validator.scorer import aggregate
 from backend.tools.order_validator.tools.customer_resolver import resolve_customer
+from backend.tools.order_validator.tools.duplicate_check import find_duplicate
 from backend.tools.order_validator.tools.master_data_repo import MasterDataRepo
 from backend.tools.order_validator.tools.price_check import check_price
 from backend.tools.order_validator.tools.qty_check import check_qty
@@ -48,9 +49,41 @@ class OrderValidator:
     def __init__(self, repo: MasterDataRepo) -> None:
         self._repo = repo
 
-    async def validate(self, order: ExtractedOrder) -> ValidationResult:
+    async def validate(
+        self,
+        order: ExtractedOrder,
+        *,
+        source_message_id: str,
+    ) -> ValidationResult:
         customer = await resolve_customer(order, self._repo)
 
+        # ── Duplicate preflight ────────────────────────────────────────
+        # Runs only when customer is resolved — unresolved customers
+        # already ESCALATE below via the existing path.
+        if customer is not None:
+            existing_id = await find_duplicate(
+                self._repo.firestore_client,
+                customer_id=customer.customer_id,
+                order=order,
+                source_message_id=source_message_id,
+                po_number=order.po_number,
+            )
+            if existing_id is not None:
+                _log.info(
+                    "duplicate_detected",
+                    customer_id=customer.customer_id,
+                    existing_order_id=existing_id,
+                    source_message_id=source_message_id,
+                )
+                return ValidationResult(
+                    customer=customer,
+                    lines=[],
+                    aggregate_confidence=1.0,
+                    decision=RoutingDecision.ESCALATE,
+                    rationale=f"duplicate of {existing_id}",
+                )
+
+        # ── Full validation ladder ─────────────────────────────────────
         lines: list[LineItemValidation] = []
         for idx, line in enumerate(order.line_items):
             product, tier, conf = await match_sku(line, self._repo, customer)

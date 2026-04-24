@@ -120,9 +120,16 @@ class ValidateStage(BaseAgent):
 
         validation_results: list[dict[str, Any]] = []
 
+        # Pull message_id once for the dup-preflight kwarg; fall back to ""
+        # so stage tests that don't seed envelope still exercise the validator.
+        envelope: dict[str, Any] = ctx.session.state.get("envelope") or {}
+        msg_id: str = envelope.get("message_id") or ""
+
         for entry in parsed_docs:
             order = ExtractedOrder.model_validate(entry["sub_doc"])
-            validation: ValidationResult = await self._validator.validate(order)
+            validation: ValidationResult = await self._validator.validate(
+                order, source_message_id=msg_id
+            )
             validation_results.append(
                 {
                     "filename": entry["filename"],

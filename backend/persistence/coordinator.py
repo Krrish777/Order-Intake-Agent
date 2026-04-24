@@ -105,7 +105,10 @@ class IntakeCoordinator:
         if precomputed_validation is not None:
             validation = precomputed_validation
         else:
-            validation = await self._validator.validate(extracted_order)
+            validation = await self._validator.validate(
+                extracted_order,
+                source_message_id=envelope.message_id,
+            )
 
         if validation.decision is RoutingDecision.AUTO_APPROVE:
             order = await self._build_order_record(
