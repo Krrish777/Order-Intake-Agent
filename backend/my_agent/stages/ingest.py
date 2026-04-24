@@ -16,6 +16,7 @@ or as a PDF/XLSX attachment.
 from __future__ import annotations
 
 import tempfile
+import uuid
 from pathlib import Path
 from typing import Any, AsyncGenerator, Final
 
@@ -83,10 +84,14 @@ class IngestStage(AuditedStage):
             )
             envelope = envelope.model_copy(update={"attachments": [synthetic]})
 
+        correlation_id = uuid.uuid4().hex
         yield Event(
             author=INGEST_STAGE_NAME,
             actions=EventActions(
-                state_delta={"envelope": envelope.model_dump(mode="json")}
+                state_delta={
+                    "envelope": envelope.model_dump(mode="json"),
+                    "correlation_id": correlation_id,
+                }
             ),
             content=types.Content(
                 role="model",
@@ -100,6 +105,15 @@ class IngestStage(AuditedStage):
                     )
                 ],
             ),
+        )
+        await self._audit_logger.emit(
+            correlation_id=correlation_id,
+            session_id=ctx.session.id,
+            source_message_id=envelope.message_id,
+            stage="lifecycle",
+            phase="lifecycle",
+            action="envelope_received",
+            payload={"attachment_count": len(envelope.attachments)},
         )
 
 

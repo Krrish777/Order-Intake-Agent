@@ -174,3 +174,43 @@ async def test_stage_emits_entered_and_exited_audit_events() -> None:
     phases = [c.kwargs["phase"] for c in calls]
     assert "entered" in phases
     assert "exited" in phases
+
+
+@pytest.mark.asyncio
+class TestIngestStageCorrelationIdAndLifecycle:
+    async def test_seeds_correlation_id_in_state_delta(self) -> None:
+        audit_logger = AsyncMock(spec=AuditLogger)
+        stage = IngestStage(audit_logger=audit_logger)
+        ctx = make_stage_ctx(
+            stage=stage,
+            user_text=str(WRAPPER_EML),
+        )
+
+        events = await collect_events(stage.run_async(ctx))
+        deltas = [
+            e.actions.state_delta
+            for e in events
+            if e.actions and e.actions.state_delta
+        ]
+        # correlation_id seeded in the SAME state_delta as envelope
+        seeded_corr = [d.get("correlation_id") for d in deltas if "correlation_id" in d]
+        assert len(seeded_corr) == 1
+        assert isinstance(seeded_corr[0], str)
+        assert len(seeded_corr[0]) == 32  # uuid4().hex length
+
+    async def test_emits_envelope_received_lifecycle_with_attachment_count(self) -> None:
+        audit_logger = AsyncMock(spec=AuditLogger)
+        stage = IngestStage(audit_logger=audit_logger)
+        ctx = make_stage_ctx(
+            stage=stage,
+            user_text=str(WRAPPER_EML),
+        )
+
+        await collect_events(stage.run_async(ctx))
+
+        lifecycle_calls = [
+            c for c in audit_logger.emit.await_args_list
+            if c.kwargs.get("action") == "envelope_received"
+        ]
+        assert len(lifecycle_calls) == 1
+        assert "attachment_count" in lifecycle_calls[0].kwargs["payload"]
