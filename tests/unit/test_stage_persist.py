@@ -611,3 +611,111 @@ async def test_stage_emits_entered_and_exited_audit_events() -> None:
     phases = [c.kwargs["phase"] for c in calls]
     assert "entered" in phases
     assert "exited" in phases
+
+
+# ---------------------------------------------------------------- lifecycle emits
+
+
+class TestPersistStageLifecycleEmits:
+    """PersistStage emits one lifecycle audit event per coordinator.process call,
+    with action name derived from result.kind."""
+
+    @pytest.mark.asyncio
+    async def test_order_persisted_lifecycle_emit(self) -> None:
+        """kind='order' → action='order_persisted' with order_id in payload."""
+        coordinator = AsyncMock(spec=IntakeCoordinator)
+        order = _sample_order_record(source_message_id="<msg-order@example.com>")
+        coordinator.process.return_value = ProcessResult(kind="order", order=order)
+        audit_logger = AsyncMock(spec=AuditLogger)
+        stage = PersistStage(coordinator=coordinator, audit_logger=audit_logger)
+        ctx = _make_ctx(
+            stage,
+            envelope=_envelope_dict(),
+            parsed_docs=[_parsed_docs_entry(filename="po-001.pdf", sub_doc_index=0)],
+        )
+
+        async for _ in stage.run_async(ctx):
+            pass
+
+        lifecycle_calls = [
+            c for c in audit_logger.emit.await_args_list
+            if c.kwargs.get("phase") == "lifecycle"
+        ]
+        assert len(lifecycle_calls) == 1
+        kw = lifecycle_calls[0].kwargs
+        assert kw["action"] == "order_persisted"
+        assert kw["outcome"] == "order"
+        assert kw["payload"]["filename"] == "po-001.pdf"
+        assert kw["payload"]["sub_doc_index"] == 0
+        assert kw["payload"]["order_id"] == "<msg-order@example.com>"
+        assert "exception_id" not in kw["payload"]
+
+    @pytest.mark.asyncio
+    async def test_exception_opened_lifecycle_emit(self) -> None:
+        """kind='exception' → action='exception_opened' with exception_id in payload."""
+        coordinator = AsyncMock(spec=IntakeCoordinator)
+        exc = _sample_exception_record(
+            source_message_id="<msg-exc@example.com>",
+            status=ExceptionStatus.PENDING_CLARIFY,
+            clarify_body="Hi Pat, can you confirm the SKU?",
+        )
+        coordinator.process.return_value = ProcessResult(kind="exception", exception=exc)
+        audit_logger = AsyncMock(spec=AuditLogger)
+        stage = PersistStage(coordinator=coordinator, audit_logger=audit_logger)
+        ctx = _make_ctx(
+            stage,
+            envelope=_envelope_dict(),
+            parsed_docs=[_parsed_docs_entry(filename="x.pdf", sub_doc_index=0)],
+            clarify_bodies={
+                "x.pdf#0": {
+                    "subject": "Re: clarification",
+                    "body": "Hi Pat, can you confirm the SKU?",
+                }
+            },
+        )
+
+        async for _ in stage.run_async(ctx):
+            pass
+
+        lifecycle_calls = [
+            c for c in audit_logger.emit.await_args_list
+            if c.kwargs.get("phase") == "lifecycle"
+        ]
+        assert len(lifecycle_calls) == 1
+        kw = lifecycle_calls[0].kwargs
+        assert kw["action"] == "exception_opened"
+        assert kw["outcome"] == "exception"
+        assert kw["payload"]["filename"] == "x.pdf"
+        assert kw["payload"]["sub_doc_index"] == 0
+        assert kw["payload"]["exception_id"] == "<msg-exc@example.com>"
+        assert "order_id" not in kw["payload"]
+
+    @pytest.mark.asyncio
+    async def test_duplicate_seen_lifecycle_emit(self) -> None:
+        """kind='duplicate' → action='duplicate_seen'; payload has no order_id or
+        exception_id when both result.order and result.exception are None."""
+        coordinator = AsyncMock(spec=IntakeCoordinator)
+        coordinator.process.return_value = ProcessResult(kind="duplicate")
+        audit_logger = AsyncMock(spec=AuditLogger)
+        stage = PersistStage(coordinator=coordinator, audit_logger=audit_logger)
+        ctx = _make_ctx(
+            stage,
+            envelope=_envelope_dict(),
+            parsed_docs=[_parsed_docs_entry(filename="dup.pdf", sub_doc_index=0)],
+        )
+
+        async for _ in stage.run_async(ctx):
+            pass
+
+        lifecycle_calls = [
+            c for c in audit_logger.emit.await_args_list
+            if c.kwargs.get("phase") == "lifecycle"
+        ]
+        assert len(lifecycle_calls) == 1
+        kw = lifecycle_calls[0].kwargs
+        assert kw["action"] == "duplicate_seen"
+        assert kw["outcome"] == "duplicate"
+        assert kw["payload"]["filename"] == "dup.pdf"
+        assert kw["payload"]["sub_doc_index"] == 0
+        assert "order_id" not in kw["payload"]
+        assert "exception_id" not in kw["payload"]
