@@ -80,6 +80,11 @@ class OrderRecord(BaseModel):
     doc id gives us idempotency for free against Pub/Sub redelivery.
     ``thread_id`` propagates from the envelope so clarify-reply threads
     correlate correctly if the order is later revised.
+
+    ``confirmation_body`` is populated post-save by
+    :class:`~backend.my_agent.stages.confirm.ConfirmStage` when it
+    renders a customer confirmation email. ``None`` until that stage
+    runs; stays ``None`` forever for non-AUTO_APPROVE paths.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -92,7 +97,8 @@ class OrderRecord(BaseModel):
     confidence: float = Field(..., ge=0.0, le=1.0)
     status: OrderStatus = OrderStatus.PERSISTED
     processed_by_agent_version: str
-    schema_version: int = 1
+    confirmation_body: Optional[str] = None
+    schema_version: int = 2
     created_at: datetime
 
 
