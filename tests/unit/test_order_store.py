@@ -42,6 +42,8 @@ def _sample_order(
             payment_terms="Net 30",
             contact_email="ap@ohiovalley.example.com",
         ),
+        customer_id="CUST-00001",
+        content_hash="a" * 64,
         lines=[
             OrderLine(
                 line_number=0,
@@ -169,7 +171,8 @@ async def test_save_preserves_schema_version_default(fake_client):
     assert fetched is not None
     # Bumped 1 → 2 when ``confirmation_body`` was added on the
     # ConfirmStage leg (AUTO_APPROVE confirmation email).
-    assert fetched.schema_version == 2
+    # Bumped 2 → 3 (Track C) when denormalized query fields were added.
+    assert fetched.schema_version == 3
 
 
 async def test_save_preserves_nested_snapshots_through_roundtrip(fake_client):
@@ -302,3 +305,92 @@ async def test_update_with_confirmation_overwrites(fake_client):
     reread = await store.get(saved.source_message_id)
     assert reread is not None
     assert reread.confirmation_body == "second draft"
+
+
+# New test — appended to tests/unit/test_order_store.py
+
+import pytest
+from pydantic import ValidationError
+
+
+def _minimal_customer_snapshot() -> CustomerSnapshot:
+    return CustomerSnapshot(
+        customer_id="CUST-00042",
+        name="Acme Corp",
+        bill_to=AddressRecord(
+            street1="100 Industrial Way",
+            city="Dayton",
+            state="OH",
+            zip="45402",
+            country="USA",
+        ),
+        payment_terms="Net 30",
+    )
+
+
+class TestOrderRecordSchemaV3:
+    def test_schema_version_default_is_3(self):
+        record = OrderRecord(
+            source_message_id="msg-1",
+            thread_id="thr-1",
+            customer=_minimal_customer_snapshot(),
+            customer_id="CUST-00042",
+            po_number="PO-123",
+            content_hash="a" * 64,
+            lines=[],
+            order_total=0.0,
+            confidence=1.0,
+            processed_by_agent_version="track-a-v0.2",
+            created_at=datetime.now(timezone.utc),
+        )
+        assert record.schema_version == 3
+
+    def test_customer_id_is_required(self):
+        with pytest.raises(ValidationError) as exc_info:
+            OrderRecord(
+                source_message_id="msg-1",
+                thread_id="thr-1",
+                customer=_minimal_customer_snapshot(),
+                # customer_id omitted
+                po_number="PO-123",
+                content_hash="a" * 64,
+                lines=[],
+                order_total=0.0,
+                confidence=1.0,
+                processed_by_agent_version="track-a-v0.2",
+                created_at=datetime.now(timezone.utc),
+            )
+        assert "customer_id" in str(exc_info.value)
+
+    def test_content_hash_is_required(self):
+        with pytest.raises(ValidationError) as exc_info:
+            OrderRecord(
+                source_message_id="msg-1",
+                thread_id="thr-1",
+                customer=_minimal_customer_snapshot(),
+                customer_id="CUST-00042",
+                po_number="PO-123",
+                # content_hash omitted
+                lines=[],
+                order_total=0.0,
+                confidence=1.0,
+                processed_by_agent_version="track-a-v0.2",
+                created_at=datetime.now(timezone.utc),
+            )
+        assert "content_hash" in str(exc_info.value)
+
+    def test_po_number_defaults_to_none(self):
+        record = OrderRecord(
+            source_message_id="msg-1",
+            thread_id="thr-1",
+            customer=_minimal_customer_snapshot(),
+            customer_id="CUST-00042",
+            # po_number omitted
+            content_hash="a" * 64,
+            lines=[],
+            order_total=0.0,
+            confidence=1.0,
+            processed_by_agent_version="track-a-v0.2",
+            created_at=datetime.now(timezone.utc),
+        )
+        assert record.po_number is None

@@ -31,6 +31,7 @@ from backend.models.validation_result import (
     ValidationResult,
 )
 from backend.persistence.base import ExceptionStore, OrderStore
+from backend.tools.order_validator.tools.duplicate_check import compute_content_hash
 from backend.tools.order_validator.tools.master_data_repo import MasterDataRepo
 
 
@@ -141,12 +142,16 @@ class IntakeCoordinator:
     ) -> OrderRecord:
         # AUTO_APPROVE means validation.customer is set and all lines passed.
         assert validation.customer is not None
+        customer_id = validation.customer.customer_id
         lines = await self._build_order_lines(extracted, validation.lines)
         order_total = sum(line.line_total for line in lines)
         return OrderRecord(
             source_message_id=doc_id,
             thread_id=thread_id,
             customer=_customer_snapshot(validation.customer),
+            customer_id=customer_id,
+            po_number=extracted.po_number,
+            content_hash=compute_content_hash(customer_id, extracted),
             lines=lines,
             order_total=order_total,
             confidence=validation.aggregate_confidence,
