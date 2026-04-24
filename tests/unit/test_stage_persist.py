@@ -131,6 +131,8 @@ def _sample_order_record(
             payment_terms="Net 30",
             contact_email="ap@birchvalley.example.com",
         ),
+        customer_id="CUST-00001",
+        content_hash="a" * 64,
         lines=[
             OrderLine(
                 line_number=0,

@@ -85,6 +85,15 @@ class OrderRecord(BaseModel):
     :class:`~backend.my_agent.stages.confirm.ConfirmStage` when it
     renders a customer confirmation email. ``None`` until that stage
     runs; stays ``None`` forever for non-AUTO_APPROVE paths.
+
+    Schema v3 (2026-04-24, Track C) adds three denormalized query-side
+    fields — duplicated from nested / parsed-doc state so the composite
+    Firestore indexes for duplicate detection can hit flat field paths:
+
+    * ``customer_id`` — denormalized from ``customer.customer_id``
+    * ``po_number`` — from ``ExtractedOrder.po_number``
+    * ``content_hash`` — from
+      :func:`backend.tools.order_validator.tools.duplicate_check.compute_content_hash`
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -92,13 +101,16 @@ class OrderRecord(BaseModel):
     source_message_id: str
     thread_id: str
     customer: CustomerSnapshot
+    customer_id: str
+    po_number: Optional[str] = None
+    content_hash: str
     lines: list[OrderLine]
     order_total: float
     confidence: float = Field(..., ge=0.0, le=1.0)
     status: OrderStatus = OrderStatus.PERSISTED
     processed_by_agent_version: str
     confirmation_body: Optional[str] = None
-    schema_version: int = 2
+    schema_version: int = 3
     created_at: datetime
 
 

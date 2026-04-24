@@ -61,6 +61,8 @@ def _order(source_message_id: str) -> OrderRecord:
             ),
             payment_terms="Net 30",
         ),
+        customer_id="CUST-INT-TEST",
+        content_hash="a" * 64,
         lines=[
             OrderLine(
                 line_number=0,
