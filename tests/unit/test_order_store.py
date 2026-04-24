@@ -242,3 +242,63 @@ async def test_save_preserves_distinct_orders_independently(fake_client):
     assert set(bucket.keys()) == {"msg-A", "msg-B"}
     assert (await store.get("msg-A")) is not None
     assert (await store.get("msg-B")) is not None
+
+
+# ---------------------------------------- update_with_confirmation
+
+
+async def test_update_with_confirmation_sets_body_on_existing_doc(fake_client):
+    """Happy path: doc exists → field is written → subsequent get()
+    returns the body."""
+    from backend.persistence.orders_store import FirestoreOrderStore
+
+    store = FirestoreOrderStore(fake_client)
+    saved = await store.save(_sample_order())
+
+    updated = await store.update_with_confirmation(
+        saved.source_message_id,
+        confirmation_body="Thanks Tony — order confirmed, $127.40.",
+    )
+    assert updated.confirmation_body == "Thanks Tony — order confirmed, $127.40."
+
+    reread = await store.get(saved.source_message_id)
+    assert reread is not None
+    assert reread.confirmation_body == "Thanks Tony — order confirmed, $127.40."
+
+
+async def test_update_with_confirmation_raises_when_doc_missing(fake_client):
+    """Update on a non-existent doc is a caller bug — fail fast, do not
+    silently create. ConfirmStage only invokes this for orders that
+    PersistStage just persisted this invocation."""
+    import pytest
+    from google.api_core.exceptions import NotFound
+
+    from backend.persistence.orders_store import FirestoreOrderStore
+
+    store = FirestoreOrderStore(fake_client)
+    with pytest.raises(NotFound):
+        await store.update_with_confirmation(
+            "<never-existed@example.com>",
+            confirmation_body="should not land",
+        )
+
+
+async def test_update_with_confirmation_overwrites(fake_client):
+    """Re-calling overwrites the previous body. Every pipeline run
+    regenerates a fresh confirmation; no idempotency skip."""
+    from backend.persistence.orders_store import FirestoreOrderStore
+
+    store = FirestoreOrderStore(fake_client)
+    saved = await store.save(_sample_order())
+
+    await store.update_with_confirmation(
+        saved.source_message_id,
+        confirmation_body="first draft",
+    )
+    await store.update_with_confirmation(
+        saved.source_message_id,
+        confirmation_body="second draft",
+    )
+    reread = await store.get(saved.source_message_id)
+    assert reread is not None
+    assert reread.confirmation_body == "second draft"

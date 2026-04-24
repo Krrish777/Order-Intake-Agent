@@ -33,6 +33,17 @@ class OrderStore(Protocol):
         """Load by Firestore doc id. ``None`` if absent."""
         ...
 
+    async def update_with_confirmation(
+        self, source_message_id: str, confirmation_body: str
+    ) -> OrderRecord:
+        """Write ``confirmation_body`` onto an already-persisted order.
+
+        Raises when the doc does not exist — callers should only invoke
+        this for orders that were just persisted by ``save()`` in the
+        same pipeline invocation. Overwrites any prior confirmation_body
+        on re-call (no idempotency skip — a re-run regenerates)."""
+        ...
+
 
 class ExceptionStore(Protocol):
     """Write + read + lifecycle surface for the ``exceptions`` collection."""
