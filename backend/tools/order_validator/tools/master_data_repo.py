@@ -66,6 +66,13 @@ class MasterDataRepo:
         self._products_cache: Optional[list[ProductRecord]] = None
         self._customers_cache: Optional[list[CustomerRecord]] = None
 
+    @property
+    def firestore_client(self) -> AsyncClient:
+        """Exposed for Track C duplicate_check.find_duplicate, which needs
+        a raw async client for ``orders`` collection queries (master data
+        is in products/customers collections; dup detection spans orders)."""
+        return self._client
+
     # ------------------------------------------------------------------ products
 
     async def get_product(self, sku: str) -> Optional[ProductRecord]:
