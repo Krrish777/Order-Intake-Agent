@@ -202,8 +202,22 @@ class ConfirmStage(AuditedStage):
                 order_ref, body_str
             )
 
-            key = f"{entry['filename']}#{entry['sub_doc_index']}"
-            confirmation_bodies[key] = body_value
+            body_key = f"{entry['filename']}#{entry['sub_doc_index']}"
+            await self._audit_logger.emit(
+                correlation_id=ctx.session.state.get("correlation_id", ""),
+                session_id=ctx.session.id,
+                source_message_id=self._extract_source_message_id(ctx.session.state),
+                stage="lifecycle",
+                phase="lifecycle",
+                action="email_drafted",
+                outcome="ok",
+                payload={
+                    "order_id": order_ref,
+                    "body_key": body_key,
+                },
+            )
+
+            confirmation_bodies[body_key] = body_value
 
         yield Event(
             author=CONFIRM_STAGE_NAME,
