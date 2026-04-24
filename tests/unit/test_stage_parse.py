@@ -15,9 +15,11 @@ that forwards the stage-specific state keys.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
+
+from backend.audit.logger import AuditLogger
 
 from backend.ingestion.email_envelope import EmailAttachment, EmailEnvelope
 from backend.models.classified_document import ClassifiedDocument
@@ -150,7 +152,7 @@ def test_reply_handled_no_ops() -> None:
     """reply_handled=True → parse_fn never called; parsed_docs empty;
     skipped_docs preserved from prior state."""
     parse_fn = MagicMock()
-    stage = ParseStage(parse_fn=parse_fn)
+    stage = ParseStage(parse_fn=parse_fn, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("po.pdf")])
     prior_skipped = [
         {
@@ -178,7 +180,7 @@ def test_reply_handled_no_ops() -> None:
 
 def test_missing_envelope_state_raises() -> None:
     parse_fn = MagicMock()
-    stage = ParseStage(parse_fn=parse_fn)
+    stage = ParseStage(parse_fn=parse_fn, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=None,
@@ -193,7 +195,7 @@ def test_missing_envelope_state_raises() -> None:
 
 def test_missing_classified_docs_state_raises() -> None:
     parse_fn = MagicMock()
-    stage = ParseStage(parse_fn=parse_fn)
+    stage = ParseStage(parse_fn=parse_fn, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("po.pdf")])
     # NOTE: classified_docs intentionally omitted (None).
     ctx = _make_ctx(stage, env)
@@ -208,7 +210,7 @@ def test_empty_classified_docs_yields_empty_parsed_docs() -> None:
     """All attachments were non-PO → classified_docs is []. parse_fn never
     called, parsed_docs is [], existing skipped_docs preserved."""
     parse_fn = MagicMock()
-    stage = ParseStage(parse_fn=parse_fn)
+    stage = ParseStage(parse_fn=parse_fn, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("spam.txt")])
     prior_skipped = [
         {
@@ -240,7 +242,7 @@ def test_single_classified_doc_single_subdoc_flattens_to_one_entry() -> None:
         assert got_filename == "po-001.pdf"
         return _parsed_document(sub_documents=[_extracted_order(po_number="PO-001")])
 
-    stage = ParseStage(parse_fn=fake)
+    stage = ParseStage(parse_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(
         attachments=[_make_attachment("po-001.pdf", content=content)]
     )
@@ -277,7 +279,7 @@ def test_single_classified_doc_multiple_subdocs_flattens_per_sub_doc() -> None:
     def fake(content: bytes, filename: str) -> ParsedDocument:
         return _parsed_document(sub_documents=sub_docs)
 
-    stage = ParseStage(parse_fn=fake)
+    stage = ParseStage(parse_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("bundle.pdf")])
     ctx = _make_ctx(
         stage,
@@ -322,7 +324,7 @@ def test_multiple_classified_docs_flattens_all() -> None:
     def fake(content: bytes, filename: str) -> ParsedDocument:
         return returns_by_filename[filename]
 
-    stage = ParseStage(parse_fn=fake)
+    stage = ParseStage(parse_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(
         attachments=[
             _make_attachment("po-a.pdf", content=b"A-bytes"),
@@ -371,7 +373,7 @@ def test_parser_returns_zero_subdocs_appended_to_skipped_docs() -> None:
             rationale="No line-item table detected.",
         )
 
-    stage = ParseStage(parse_fn=fake)
+    stage = ParseStage(parse_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("ambiguous.pdf")])
     prior_skipped = [
         {
@@ -409,7 +411,7 @@ def test_parse_fn_raising_propagates() -> None:
     def fake(content: bytes, filename: str) -> ParsedDocument:
         raise RuntimeError("LlamaExtract timeout")
 
-    stage = ParseStage(parse_fn=fake)
+    stage = ParseStage(parse_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("po.pdf")])
     ctx = _make_ctx(
         stage,
@@ -419,3 +421,28 @@ def test_parse_fn_raising_propagates() -> None:
 
     with pytest.raises(RuntimeError, match="LlamaExtract timeout"):
         collect_events(stage.run_async(ctx))
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    parse_fn = MagicMock()
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = ParseStage(parse_fn=parse_fn, audit_logger=audit_logger)
+    env = _make_envelope(attachments=[_make_attachment("po.pdf")])
+    ctx = _make_ctx(
+        stage,
+        env,
+        reply_handled=True,
+        classified_docs=[_classified_dict(filename="po.pdf")],
+    )
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

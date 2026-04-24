@@ -27,7 +27,6 @@ from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -35,12 +34,13 @@ from google.genai import types
 from pydantic import PrivateAttr
 
 from backend.ingestion.email_envelope import EmailEnvelope
+from backend.my_agent.stages._audited import AuditedStage
 from backend.persistence.base import ExceptionStore
 
 REPLY_SHORTCIRCUIT_STAGE_NAME: Final[str] = "reply_shortcircuit_stage"
 
 
-class ReplyShortCircuitStage(BaseAgent):
+class ReplyShortCircuitStage(AuditedStage):
     """BaseAgent that correlates clarify replies to pending exceptions.
 
     Dep-injection choice: **PrivateAttr** (pattern B). ADK's ``BaseAgent``
@@ -54,11 +54,11 @@ class ReplyShortCircuitStage(BaseAgent):
     name: str = REPLY_SHORTCIRCUIT_STAGE_NAME
     _exception_store: ExceptionStore = PrivateAttr()
 
-    def __init__(self, *, exception_store: ExceptionStore, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, exception_store: ExceptionStore, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._exception_store = exception_store
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         envelope_dict = ctx.session.state.get("envelope")

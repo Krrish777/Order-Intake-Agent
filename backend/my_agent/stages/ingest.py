@@ -17,9 +17,8 @@ from __future__ import annotations
 
 import tempfile
 from pathlib import Path
-from typing import AsyncGenerator, Final
+from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -27,6 +26,7 @@ from google.genai import types
 
 from backend.ingestion.email_envelope import EmailAttachment, EmailEnvelope
 from backend.ingestion.eml_parser import parse_eml
+from backend.my_agent.stages._audited import AuditedStage
 
 INGEST_STAGE_NAME: Final[str] = "ingest_stage"
 
@@ -52,17 +52,20 @@ def _looks_like_raw_eml(text: str) -> bool:
     return any(head.startswith(prefix) for prefix in _MIME_HEADER_PREFIXES)
 
 
-class IngestStage(BaseAgent):
-    """BaseAgent that materialises an :class:`EmailEnvelope` on session state.
+class IngestStage(AuditedStage):
+    """AuditedStage that materialises an :class:`EmailEnvelope` on session state.
 
-    Constructed with no arguments — the agent's ``name`` is baked in via the
-    default on the Pydantic field, mirroring how :class:`SequentialAgent`
+    Constructed with ``audit_logger`` only — the agent's ``name`` is baked in
+    via the default on the Pydantic field, mirroring how :class:`SequentialAgent`
     keeps its own ``name`` assignable-but-defaulted.
     """
 
     name: str = INGEST_STAGE_NAME
 
-    async def _run_async_impl(  # type: ignore[override]
+    def __init__(self, *, audit_logger: Any) -> None:
+        super().__init__(audit_logger=audit_logger)
+
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         text = _extract_user_text(ctx)

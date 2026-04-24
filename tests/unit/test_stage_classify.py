@@ -13,10 +13,11 @@ that forwards the stage-specific state keys.
 from __future__ import annotations
 
 from datetime import datetime, timezone
-from unittest.mock import MagicMock
+from unittest.mock import AsyncMock, MagicMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
 from backend.ingestion.email_envelope import EmailAttachment, EmailEnvelope
 from backend.models.classified_document import ClassifiedDocument
 from backend.my_agent.stages.classify import CLASSIFY_STAGE_NAME, ClassifyStage
@@ -97,7 +98,7 @@ def test_reply_handled_no_ops() -> None:
     """reply_handled=True → classify_fn never called; classified_docs empty;
     skipped_docs preserved from prior state."""
     classify_fn = MagicMock()
-    stage = ClassifyStage(classify_fn=classify_fn)
+    stage = ClassifyStage(classify_fn=classify_fn, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(
         attachments=[_make_attachment("a.pdf"), _make_attachment("b.pdf")]
     )
@@ -116,7 +117,7 @@ def test_single_purchase_order_attachment() -> None:
     def fake(content: bytes, filename: str) -> ClassifiedDocument:
         return _classified(filename=filename, intent="purchase_order", confidence=0.95)
 
-    stage = ClassifyStage(classify_fn=fake)
+    stage = ClassifyStage(classify_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("po-001.pdf")])
     ctx = _make_ctx(stage, env)
 
@@ -141,7 +142,7 @@ def test_mixed_attachments_splits_po_from_others() -> None:
         intent, conf = intents_by_filename[filename]
         return _classified(filename=filename, intent=intent, confidence=conf)
 
-    stage = ClassifyStage(classify_fn=fake)
+    stage = ClassifyStage(classify_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(
         attachments=[
             _make_attachment("po.pdf"),
@@ -177,7 +178,7 @@ def test_all_non_po_attachments_all_skipped() -> None:
     def fake(content: bytes, filename: str) -> ClassifiedDocument:
         return _classified(filename=filename, intent="invoice", confidence=0.80)
 
-    stage = ClassifyStage(classify_fn=fake)
+    stage = ClassifyStage(classify_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(
         attachments=[
             _make_attachment("a.pdf"),
@@ -196,7 +197,7 @@ def test_all_non_po_attachments_all_skipped() -> None:
 
 def test_missing_envelope_state_raises() -> None:
     classify_fn = MagicMock()
-    stage = ClassifyStage(classify_fn=classify_fn)
+    stage = ClassifyStage(classify_fn=classify_fn, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, envelope=None)
 
     with pytest.raises(ValueError, match="requires IngestStage"):
@@ -207,7 +208,7 @@ def test_missing_envelope_state_raises() -> None:
 
 def test_empty_attachments_list_yields_empty_lists() -> None:
     classify_fn = MagicMock()
-    stage = ClassifyStage(classify_fn=classify_fn)
+    stage = ClassifyStage(classify_fn=classify_fn, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[])
     ctx = _make_ctx(stage, env)
 
@@ -223,9 +224,32 @@ def test_classify_fn_raising_propagates() -> None:
     def fake(content: bytes, filename: str) -> ClassifiedDocument:
         raise RuntimeError("LlamaClassify timeout")
 
-    stage = ClassifyStage(classify_fn=fake)
+    stage = ClassifyStage(classify_fn=fake, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(attachments=[_make_attachment("po.pdf")])
     ctx = _make_ctx(stage, env)
 
     with pytest.raises(RuntimeError, match="LlamaClassify timeout"):
         collect_events(stage.run_async(ctx))
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    def fake(content: bytes, filename: str) -> object:
+        from backend.models.classified_document import ClassifiedDocument
+        return _classified(filename=filename, intent="purchase_order")
+
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = ClassifyStage(classify_fn=fake, audit_logger=audit_logger)
+    env = _make_envelope(attachments=[_make_attachment("po.pdf")])
+    ctx = _make_ctx(stage, env, reply_handled=True)
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

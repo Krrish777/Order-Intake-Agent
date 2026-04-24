@@ -20,6 +20,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
+
 from backend.models.parsed_document import ExtractedOrder, OrderLineItem
 from backend.models.validation_result import (
     LineItemValidation,
@@ -125,7 +127,7 @@ def test_reply_handled_no_ops() -> None:
     """reply_handled=True → validator never called; validation_results empty;
     skipped_docs preserved from prior state."""
     validator = AsyncMock(spec=OrderValidator)
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     prior_skipped = [
         {
             "filename": "invoice.pdf",
@@ -150,7 +152,7 @@ def test_reply_handled_no_ops() -> None:
 
 def test_missing_parsed_docs_raises() -> None:
     validator = AsyncMock(spec=OrderValidator)
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     # NOTE: parsed_docs intentionally omitted.
     ctx = _make_ctx(stage)
 
@@ -162,7 +164,7 @@ def test_missing_parsed_docs_raises() -> None:
 
 def test_empty_parsed_docs_yields_empty_results() -> None:
     validator = AsyncMock(spec=OrderValidator)
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, parsed_docs=[])
 
     events = collect_events(stage.run_async(ctx))
@@ -178,7 +180,7 @@ def test_single_parsed_doc_auto_approve() -> None:
     validator.validate.return_value = _validation_result(
         decision=RoutingDecision.AUTO_APPROVE, aggregate_confidence=0.97
     )
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         parsed_docs=[
@@ -228,7 +230,7 @@ def test_multi_parsed_docs_mixed_routing() -> None:
             rationale="Customer could not be resolved.",
         ),
     ]
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     parsed_docs = [
         _parsed_docs_entry(
             filename="bundle.pdf",
@@ -271,7 +273,7 @@ def test_multi_parsed_docs_mixed_routing() -> None:
 def test_validator_raising_propagates() -> None:
     validator = AsyncMock(spec=OrderValidator)
     validator.validate.side_effect = RuntimeError("master data unreachable")
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, parsed_docs=[_parsed_docs_entry()])
 
     with pytest.raises(RuntimeError, match="master data unreachable"):
@@ -286,7 +288,7 @@ def test_skipped_docs_passthrough() -> None:
     validator.validate.return_value = _validation_result(
         decision=RoutingDecision.CLARIFY, aggregate_confidence=0.82
     )
-    stage = ValidateStage(validator=validator)
+    stage = ValidateStage(validator=validator, audit_logger=AsyncMock(spec=AuditLogger))
     prior_skipped = [
         {
             "filename": "invoice.pdf",
@@ -313,3 +315,22 @@ def test_skipped_docs_passthrough() -> None:
     assert delta["skipped_docs"] == prior_skipped
     assert len(delta["validation_results"]) == 1
     assert delta["validation_results"][0]["validation"]["decision"] == "clarify"
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    audit_logger = AsyncMock(spec=AuditLogger)
+    validator = AsyncMock(spec=OrderValidator)
+    stage = ValidateStage(validator=validator, audit_logger=audit_logger)
+    ctx = _make_ctx(stage, reply_handled=True, parsed_docs=[])
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

@@ -22,6 +22,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.exception_record import ExceptionRecord, ExceptionStatus
 from backend.models.parsed_document import (
@@ -139,7 +140,7 @@ def _make_exception(
 
 def test_no_in_reply_to_sets_reply_handled_false() -> None:
     store = AsyncMock(spec=ExceptionStore)
-    stage = ReplyShortCircuitStage(exception_store=store)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(in_reply_to=None)
     ctx = _make_ctx(stage, env)
 
@@ -154,7 +155,7 @@ def test_no_in_reply_to_sets_reply_handled_false() -> None:
 def test_empty_in_reply_to_sets_reply_handled_false() -> None:
     """Empty string is semantically the same as missing — not a reply."""
     store = AsyncMock(spec=ExceptionStore)
-    stage = ReplyShortCircuitStage(exception_store=store)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(in_reply_to="")
     ctx = _make_ctx(stage, env)
 
@@ -169,7 +170,7 @@ def test_empty_in_reply_to_sets_reply_handled_false() -> None:
 def test_in_reply_to_with_no_pending_match_sets_reply_handled_false() -> None:
     store = AsyncMock(spec=ExceptionStore)
     store.find_pending_clarify.return_value = None
-    stage = ReplyShortCircuitStage(exception_store=store)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(in_reply_to="<msg-abc@x.com>", thread_id="thread-xyz")
     ctx = _make_ctx(stage, env)
 
@@ -208,7 +209,7 @@ def test_in_reply_to_with_pending_match_advances_exception() -> None:
     store.find_pending_clarify.return_value = parent
     store.update_with_reply.return_value = advanced
 
-    stage = ReplyShortCircuitStage(exception_store=store)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope(
         message_id="<reply-001@customer.com>",
         in_reply_to="<clarify-001@us.com>",
@@ -233,7 +234,7 @@ def test_in_reply_to_with_pending_match_advances_exception() -> None:
 
 def test_missing_envelope_state_raises() -> None:
     store = AsyncMock(spec=ExceptionStore)
-    stage = ReplyShortCircuitStage(exception_store=store)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, envelope=None)
 
     with pytest.raises(ValueError, match="requires IngestStage"):
@@ -247,9 +248,30 @@ def test_update_with_reply_raises_propagates() -> None:
     store.find_pending_clarify.return_value = parent
     store.update_with_reply.side_effect = ValueError("status guard")
 
-    stage = ReplyShortCircuitStage(exception_store=store)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     env = _make_envelope()
     ctx = _make_ctx(stage, env)
 
     with pytest.raises(ValueError, match="status guard"):
         collect_events(stage.run_async(ctx))
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    store = AsyncMock(spec=ExceptionStore)
+    store.find_pending_clarify.return_value = None
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = ReplyShortCircuitStage(exception_store=store, audit_logger=audit_logger)
+    env = _make_envelope(in_reply_to=None)
+    ctx = _make_ctx(stage, env)
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

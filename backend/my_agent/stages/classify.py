@@ -35,7 +35,6 @@ import asyncio
 from collections.abc import Callable
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -44,6 +43,7 @@ from pydantic import PrivateAttr
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.classified_document import ClassifiedDocument
+from backend.my_agent.stages._audited import AuditedStage
 
 CLASSIFY_STAGE_NAME: Final[str] = "classify_stage"
 
@@ -53,7 +53,7 @@ CLASSIFY_STAGE_NAME: Final[str] = "classify_stage"
 ClassifyFn = Callable[[bytes, str], ClassifiedDocument]
 
 
-class ClassifyStage(BaseAgent):
+class ClassifyStage(AuditedStage):
     """BaseAgent that classifies each attachment and splits PO from non-PO.
 
     Dep-injection choice: **PrivateAttr** (pattern B) — same rationale as
@@ -66,11 +66,11 @@ class ClassifyStage(BaseAgent):
     name: str = CLASSIFY_STAGE_NAME
     _classify_fn: ClassifyFn = PrivateAttr()
 
-    def __init__(self, *, classify_fn: ClassifyFn, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, classify_fn: ClassifyFn, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._classify_fn = classify_fn
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         # Short-circuit: a clarify reply was handled upstream. Write empty

@@ -20,9 +20,11 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.my_agent.stages.clarify import CLARIFY_STAGE_NAME, ClarifyStage
 from tests.unit._stage_testing import (
@@ -147,7 +149,7 @@ def test_reply_handled_no_ops() -> None:
     """reply_handled=True → child NEVER invoked; clarify_bodies={};
     skipped_docs preserved."""
     fake = _make_clarify_fake()
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     prior_skipped = [
         {
             "filename": "invoice.pdf",
@@ -173,7 +175,7 @@ def test_reply_handled_no_ops() -> None:
 
 def test_missing_validation_results_raises() -> None:
     fake = _make_clarify_fake()
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, envelope=_envelope_dict())
 
     with pytest.raises(ValueError, match="requires ValidateStage"):
@@ -184,7 +186,7 @@ def test_missing_validation_results_raises() -> None:
 
 def test_missing_envelope_raises() -> None:
     fake = _make_clarify_fake()
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, validation_results=[_validation_entry()])
 
     with pytest.raises(ValueError, match="requires IngestStage"):
@@ -197,7 +199,7 @@ def test_no_clarify_tier_results_yields_empty_bodies() -> None:
     """validation_results holds only AUTO + ESCALATE entries → child
     never invoked; clarify_bodies=={}."""
     fake = _make_clarify_fake()
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         validation_results=[
@@ -222,7 +224,7 @@ def test_single_clarify_entry_produces_one_body() -> None:
         "body": "Hi Birch Valley team, could you confirm the quantity on line 0?",
     }
     fake = _make_clarify_fake(responses=[response])
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         validation_results=[
@@ -250,7 +252,7 @@ def test_multiple_clarify_entries_produces_multiple_bodies() -> None:
     response_a = {"subject": "Re: PO A", "body": "Body for A"}
     response_b = {"subject": "Re: PO B", "body": "Body for B"}
     fake = _make_clarify_fake(responses=[response_a, response_b])
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
 
     entry_a = _validation_entry(
         filename="bundle.pdf",
@@ -307,7 +309,7 @@ def test_child_never_emits_clarify_email_raises() -> None:
     → ClarifyStage re-raises a clear RuntimeError."""
     # responses=None → fake yields no final clarify_email event.
     fake = _make_clarify_fake(responses=None)
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         validation_results=[
@@ -329,7 +331,7 @@ def test_prompt_state_keys_seeded_from_validation_and_envelope() -> None:
     fake = _make_clarify_fake(
         responses=[{"subject": "Re: stub", "body": "stub"}]
     )
-    stage = ClarifyStage(clarify_agent=fake)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
 
     entry = _validation_entry(
         filename="po.pdf",
@@ -359,3 +361,28 @@ def test_prompt_state_keys_seeded_from_validation_and_envelope() -> None:
         "Line 0: quantity missing | "
         "Line 1: unit_price 5.49 vs catalog 4.10 (+33.9%)"
     )
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    fake = _make_clarify_fake()
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = ClarifyStage(clarify_agent=fake, audit_logger=audit_logger)
+    ctx = _make_ctx(
+        stage,
+        reply_handled=True,
+        validation_results=[],
+        envelope=_envelope_dict(),
+        skipped_docs=[],
+    )
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

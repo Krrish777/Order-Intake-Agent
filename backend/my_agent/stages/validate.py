@@ -42,7 +42,6 @@ from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -51,12 +50,13 @@ from pydantic import PrivateAttr
 
 from backend.models.parsed_document import ExtractedOrder
 from backend.models.validation_result import ValidationResult
+from backend.my_agent.stages._audited import AuditedStage
 from backend.tools.order_validator import OrderValidator
 
 VALIDATE_STAGE_NAME: Final[str] = "validate_stage"
 
 
-class ValidateStage(BaseAgent):
+class ValidateStage(AuditedStage):
     """BaseAgent that validates each extracted order against master data.
 
     Dep-injection choice: **PrivateAttr** (pattern B) — for template
@@ -69,11 +69,11 @@ class ValidateStage(BaseAgent):
     name: str = VALIDATE_STAGE_NAME
     _validator: OrderValidator = PrivateAttr()
 
-    def __init__(self, *, validator: OrderValidator, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, validator: OrderValidator, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._validator = validator
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         # Short-circuit: a clarify reply was handled upstream. Emit the

@@ -25,8 +25,11 @@ seeding order and values.
 from __future__ import annotations
 
 from typing import Any
+from unittest.mock import AsyncMock
 
 import pytest
+
+from backend.audit.logger import AuditLogger
 
 from backend.my_agent.stages.finalize import FINALIZE_STAGE_NAME, FinalizeStage
 from tests.unit._stage_testing import (
@@ -106,7 +109,7 @@ def test_runs_even_when_reply_handled() -> None:
         "summary": "Clarify reply handled; no new orders this run.",
     }
     fake = _make_summary_fake(responses=[stub])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[],
@@ -129,7 +132,7 @@ def test_runs_even_when_reply_handled() -> None:
 def test_counts_auto_approve_orders() -> None:
     """Two kind=='order' ProcessResults → orders_created seeded as 2."""
     fake = _make_summary_fake(responses=[])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[
@@ -151,7 +154,7 @@ def test_counts_auto_approve_orders() -> None:
 def test_counts_exceptions() -> None:
     """Three kind=='exception' ProcessResults → exceptions_opened=3."""
     fake = _make_summary_fake(responses=[])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[
@@ -176,7 +179,7 @@ def test_counts_mixed_and_skipped() -> None:
     docs_skipped=3. Duplicates intentionally don't count as orders or
     exceptions (RunSummary schema has no duplicates field)."""
     fake = _make_summary_fake(responses=[])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[
@@ -206,7 +209,7 @@ def test_empty_state_yields_zero_counts() -> None:
     """Completely empty state → all counts 0, reply_handled False.
     Summary agent STILL invoked once (no short-circuit)."""
     fake = _make_summary_fake(responses=[])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage)
 
     collect_events(stage.run_async(ctx))
@@ -223,7 +226,7 @@ def test_summary_agent_never_emits_run_summary_raises() -> None:
     """Fake responds with ``None`` (emit event without run_summary key)
     → FinalizeStage raises RuntimeError."""
     fake = _make_summary_fake(responses=[None])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, process_results=[])
 
     with pytest.raises(RuntimeError, match="did not produce run_summary"):
@@ -242,7 +245,7 @@ def test_run_summary_lands_on_state() -> None:
         "summary": "Processed 3 documents: 2 orders persisted, 1 needs clarification.",
     }
     fake = _make_summary_fake(responses=[payload])
-    stage = FinalizeStage(summary_agent=fake)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[
@@ -257,3 +260,28 @@ def test_run_summary_lands_on_state() -> None:
 
     assert delta["run_summary"] == payload
     assert any(e.author == FINALIZE_STAGE_NAME for e in events)
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    stub = {
+        "orders_created": 0,
+        "exceptions_opened": 0,
+        "docs_skipped": 0,
+        "summary": "test run",
+    }
+    fake = _make_summary_fake(responses=[stub])
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = FinalizeStage(summary_agent=fake, audit_logger=audit_logger)
+    ctx = _make_ctx(stage, process_results=[], reply_handled=False)
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

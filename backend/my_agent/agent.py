@@ -64,6 +64,7 @@ from typing import Any, Final
 
 from google.adk.agents import LlmAgent, SequentialAgent
 
+from backend.audit.logger import AuditLogger
 from .agents.clarify_email_agent import build_clarify_email_agent
 from .agents.confirmation_email_agent import build_confirmation_email_agent
 from .agents.summary_agent import build_summary_agent
@@ -105,6 +106,7 @@ def build_root_agent(
     confirm_agent: Any,
     exception_store: ExceptionStore,
     order_store: OrderStore,
+    audit_logger: AuditLogger,
 ) -> SequentialAgent:
     """Build the root :class:`SequentialAgent` wiring all 9 Track A stages.
 
@@ -157,15 +159,15 @@ def build_root_agent(
         nine sub_agents in canonical order.
     """
     sub_agents = [
-        IngestStage(),
-        ReplyShortCircuitStage(exception_store=exception_store),
-        ClassifyStage(classify_fn=classify_fn),
-        ParseStage(parse_fn=parse_fn),
-        ValidateStage(validator=validator),
-        ClarifyStage(clarify_agent=clarify_agent),
-        PersistStage(coordinator=coordinator),
-        ConfirmStage(confirm_agent=confirm_agent, order_store=order_store),
-        FinalizeStage(summary_agent=summary_agent),
+        IngestStage(audit_logger=audit_logger),
+        ReplyShortCircuitStage(exception_store=exception_store, audit_logger=audit_logger),
+        ClassifyStage(classify_fn=classify_fn, audit_logger=audit_logger),
+        ParseStage(parse_fn=parse_fn, audit_logger=audit_logger),
+        ValidateStage(validator=validator, audit_logger=audit_logger),
+        ClarifyStage(clarify_agent=clarify_agent, audit_logger=audit_logger),
+        PersistStage(coordinator=coordinator, audit_logger=audit_logger),
+        ConfirmStage(confirm_agent=confirm_agent, order_store=order_store, audit_logger=audit_logger),
+        FinalizeStage(summary_agent=summary_agent, audit_logger=audit_logger),
     ]
     return SequentialAgent(name=ROOT_AGENT_NAME, sub_agents=sub_agents)
 
@@ -213,6 +215,8 @@ def _build_default_root_agent() -> SequentialAgent:
     summary_agent: LlmAgent = build_summary_agent()
     confirm_agent: LlmAgent = build_confirmation_email_agent()
 
+    audit_logger = AuditLogger(client=client, agent_version=AGENT_VERSION)
+
     return build_root_agent(
         classify_fn=classify_document,
         parse_fn=parse_document,
@@ -223,6 +227,7 @@ def _build_default_root_agent() -> SequentialAgent:
         confirm_agent=confirm_agent,
         exception_store=exception_store,
         order_store=order_store,
+        audit_logger=audit_logger,
     )
 
 

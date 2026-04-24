@@ -39,7 +39,6 @@ import asyncio
 from collections.abc import Callable
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -48,6 +47,7 @@ from pydantic import PrivateAttr
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.parsed_document import ParsedDocument
+from backend.my_agent.stages._audited import AuditedStage
 
 PARSE_STAGE_NAME: Final[str] = "parse_stage"
 
@@ -60,7 +60,7 @@ PARSE_STAGE_NAME: Final[str] = "parse_stage"
 ParseFn = Callable[[bytes, str], ParsedDocument]
 
 
-class ParseStage(BaseAgent):
+class ParseStage(AuditedStage):
     """BaseAgent that parses each PO attachment and flattens sub-documents.
 
     Dep-injection choice: **PrivateAttr** (pattern B) — same rationale as
@@ -72,11 +72,11 @@ class ParseStage(BaseAgent):
     name: str = PARSE_STAGE_NAME
     _parse_fn: ParseFn = PrivateAttr()
 
-    def __init__(self, *, parse_fn: ParseFn, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, parse_fn: ParseFn, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._parse_fn = parse_fn
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         # Short-circuit: a clarify reply was handled upstream. Emit the
