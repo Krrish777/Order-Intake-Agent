@@ -206,6 +206,17 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
             }
         ],
     )
+    # ConfirmStage stub — AUTO_APPROVE fires the confirmation leg, so
+    # unlike clarify_agent this one must actually emit a valid payload.
+    confirm_agent = FakeChildLlmAgent(
+        output_key="confirmation_email",
+        responses=[
+            {
+                "subject": "Re: stubbed PO — confirmed",
+                "body": "Stubbed confirmation body for integration test.",
+            }
+        ],
+    )
 
     try:
         root_agent = build_root_agent(
@@ -215,7 +226,9 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
             coordinator=coordinator,
             clarify_agent=clarify_agent,
             summary_agent=summary_agent,
+            confirm_agent=confirm_agent,
             exception_store=exception_store,
+            order_store=order_store,
         )
 
         # --- Runner setup ------------------------------------------------
