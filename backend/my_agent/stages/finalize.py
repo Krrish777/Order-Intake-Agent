@@ -36,17 +36,18 @@ from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
 from google.genai import types
 from pydantic import PrivateAttr
 
+from backend.my_agent.stages._audited import AuditedStage
+
 FINALIZE_STAGE_NAME: Final[str] = "finalize_stage"
 
 
-class FinalizeStage(BaseAgent):
+class FinalizeStage(AuditedStage):
     """BaseAgent that invokes the summary LlmAgent with deterministic counts.
 
     Note: this stage coerces ``'reply_handled'`` to a ``bool`` on
@@ -67,11 +68,11 @@ class FinalizeStage(BaseAgent):
     name: str = FINALIZE_STAGE_NAME
     _summary_agent: Any = PrivateAttr()
 
-    def __init__(self, *, summary_agent: Any, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, summary_agent: Any, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._summary_agent = summary_agent
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         process_results: list[dict[str, Any]] = list(

@@ -51,7 +51,6 @@ from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -61,12 +60,13 @@ from pydantic import PrivateAttr
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.parsed_document import ParsedDocument
 from backend.models.validation_result import ValidationResult
+from backend.my_agent.stages._audited import AuditedStage
 from backend.persistence.coordinator import IntakeCoordinator
 
 PERSIST_STAGE_NAME: Final[str] = "persist_stage"
 
 
-class PersistStage(BaseAgent):
+class PersistStage(AuditedStage):
     """BaseAgent that routes each parsed sub-doc through the coordinator.
 
     Dep-injection choice: **PrivateAttr** (pattern B) — for template
@@ -79,11 +79,11 @@ class PersistStage(BaseAgent):
     name: str = PERSIST_STAGE_NAME
     _coordinator: IntakeCoordinator = PrivateAttr()
 
-    def __init__(self, *, coordinator: IntakeCoordinator, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, coordinator: IntakeCoordinator, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._coordinator = coordinator
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         # Short-circuit: a clarify reply was handled upstream. Emit the

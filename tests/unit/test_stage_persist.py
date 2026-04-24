@@ -24,6 +24,8 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
+
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.exception_record import ExceptionRecord, ExceptionStatus
 from backend.models.master_records import AddressRecord
@@ -236,7 +238,7 @@ def test_reply_handled_no_ops() -> None:
     """reply_handled=True → coordinator never called; process_results empty;
     skipped_docs preserved from prior state."""
     coordinator = AsyncMock(spec=IntakeCoordinator)
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     prior_skipped = [
         {
             "filename": "invoice.pdf",
@@ -262,7 +264,7 @@ def test_reply_handled_no_ops() -> None:
 
 def test_missing_envelope_raises() -> None:
     coordinator = AsyncMock(spec=IntakeCoordinator)
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     # NOTE: envelope intentionally omitted.
     ctx = _make_ctx(stage, parsed_docs=[_parsed_docs_entry()])
 
@@ -274,7 +276,7 @@ def test_missing_envelope_raises() -> None:
 
 def test_missing_parsed_docs_raises() -> None:
     coordinator = AsyncMock(spec=IntakeCoordinator)
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     # NOTE: parsed_docs intentionally omitted.
     ctx = _make_ctx(stage, envelope=_envelope_dict())
 
@@ -286,7 +288,7 @@ def test_missing_parsed_docs_raises() -> None:
 
 def test_empty_parsed_docs_yields_empty_results() -> None:
     coordinator = AsyncMock(spec=IntakeCoordinator)
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, envelope=_envelope_dict(), parsed_docs=[])
 
     events = collect_events(stage.run_async(ctx))
@@ -304,7 +306,7 @@ def test_single_auto_approve_path() -> None:
     coordinator.process.return_value = ProcessResult(
         kind="order", order=_sample_order_record()
     )
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=_envelope_dict(),
@@ -351,7 +353,7 @@ def test_single_clarify_path_threads_body_through() -> None:
             clarify_body="Hi Pat, ...",
         ),
     )
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=_envelope_dict(),
@@ -391,7 +393,7 @@ def test_single_escalate_path_no_clarify_body() -> None:
             clarify_body=None,
         ),
     )
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=_envelope_dict(),
@@ -441,7 +443,7 @@ def test_multi_entry_preserves_order() -> None:
             ),
         ),
     ]
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     parsed_docs = [
         _parsed_docs_entry(
             filename="bundle.pdf",
@@ -493,7 +495,7 @@ def test_multi_entry_preserves_order() -> None:
 def test_coordinator_raising_propagates() -> None:
     coordinator = AsyncMock(spec=IntakeCoordinator)
     coordinator.process.side_effect = RuntimeError("firestore unreachable")
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=_envelope_dict(),
@@ -513,7 +515,7 @@ def test_precomputed_validation_threaded_through_to_coordinator() -> None:
     coordinator.process.return_value = ProcessResult(
         kind="order", order=_sample_order_record()
     )
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     vr = _sample_validation_result(decision=RoutingDecision.AUTO_APPROVE)
     ctx = _make_ctx(
         stage,
@@ -548,7 +550,7 @@ def test_missing_validation_results_falls_back_to_none() -> None:
     coordinator.process.return_value = ProcessResult(
         kind="order", order=_sample_order_record()
     )
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=_envelope_dict(),
@@ -571,7 +573,7 @@ def test_malformed_clarify_body_raises() -> None:
     ``clarify_body=None``.
     """
     coordinator = AsyncMock(spec=IntakeCoordinator)
-    stage = PersistStage(coordinator=coordinator)
+    stage = PersistStage(coordinator=coordinator, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         envelope=_envelope_dict(),
@@ -585,3 +587,27 @@ def test_malformed_clarify_body_raises() -> None:
         collect_events(stage.run_async(ctx))
 
     assert coordinator.process.await_count == 0
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    coordinator = AsyncMock(spec=IntakeCoordinator)
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = PersistStage(coordinator=coordinator, audit_logger=audit_logger)
+    ctx = _make_ctx(
+        stage,
+        reply_handled=True,
+        envelope=_envelope_dict(),
+        parsed_docs=[],
+    )
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

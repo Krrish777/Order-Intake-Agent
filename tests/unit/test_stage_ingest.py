@@ -20,9 +20,11 @@ from __future__ import annotations
 
 import base64
 from pathlib import Path
+from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
 from backend.ingestion.eml_parser import EmlParseError
 from backend.my_agent.stages.ingest import INGEST_STAGE_NAME, IngestStage
 from tests.unit._stage_testing import collect_events, final_state_delta, make_stage_ctx
@@ -40,7 +42,7 @@ CLARIFY_REPLY_EML = REPO_ROOT / "data" / "email" / "birch_valley_clarify_reply.e
 
 
 def test_path_input_parses_eml_into_envelope_state() -> None:
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text=str(WRAPPER_EML))
 
     events = collect_events(stage.run_async(ctx))
@@ -54,7 +56,7 @@ def test_path_input_parses_eml_into_envelope_state() -> None:
 
 def test_raw_eml_input_parses_via_tempfile() -> None:
     raw = WRAPPER_EML.read_text(encoding="utf-8")
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text=raw)
 
     events = collect_events(stage.run_async(ctx))
@@ -68,7 +70,7 @@ def test_raw_eml_input_parses_via_tempfile() -> None:
 
 
 def test_empty_user_content_raises() -> None:
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text=None)
 
     with pytest.raises(ValueError, match="IngestStage requires user message"):
@@ -77,7 +79,7 @@ def test_empty_user_content_raises() -> None:
 
 def test_empty_text_user_content_raises() -> None:
     """Whitespace-only text counts as empty per the fail-fast contract."""
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text="   \n  ")
 
     with pytest.raises(ValueError, match="IngestStage requires user message"):
@@ -86,7 +88,7 @@ def test_empty_text_user_content_raises() -> None:
 
 def test_nonexistent_path_raises_eml_parse_error(tmp_path: Path) -> None:
     missing = tmp_path / "does-not-exist.eml"
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text=str(missing))
 
     with pytest.raises(EmlParseError):
@@ -94,7 +96,7 @@ def test_nonexistent_path_raises_eml_parse_error(tmp_path: Path) -> None:
 
 
 def test_body_only_email_synthesizes_body_attachment() -> None:
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text=str(CLARIFY_REPLY_EML))
 
     events = collect_events(stage.run_async(ctx))
@@ -117,7 +119,7 @@ def test_heuristic_recognizes_raw_eml_by_mime_header() -> None:
     raw = WRAPPER_EML.read_text(encoding="utf-8")
     # Sanity check the fixture actually starts with a MIME header.
     assert raw.lower().startswith("from:")
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text=raw)
 
     events = collect_events(stage.run_async(ctx))
@@ -133,7 +135,7 @@ def test_path_starting_with_from_routes_as_path_when_no_blank_line() -> None:
     must take the path branch, not the raw-EML branch. Proves the heuristic
     requires *both* a MIME-header prefix AND a blank line — neither alone.
     """
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     ctx = make_stage_ctx(stage=stage, user_text="From_Suppliers/msg.eml")
 
     with pytest.raises(EmlParseError):
@@ -141,7 +143,7 @@ def test_path_starting_with_from_routes_as_path_when_no_blank_line() -> None:
 
 
 def test_author_and_name_set_correctly() -> None:
-    stage = IngestStage()
+    stage = IngestStage(audit_logger=AsyncMock(spec=AuditLogger))
     assert stage.name == INGEST_STAGE_NAME
 
     ctx = make_stage_ctx(stage=stage, user_text=str(WRAPPER_EML))
@@ -151,3 +153,24 @@ def test_author_and_name_set_correctly() -> None:
     ingest_events = [e for e in events if e.author == INGEST_STAGE_NAME]
     assert ingest_events
     assert any(e.actions.state_delta.get("envelope") for e in ingest_events)
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = IngestStage(audit_logger=audit_logger)
+    ctx = make_stage_ctx(
+        stage=stage,
+        user_text=str(WRAPPER_EML),
+    )
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases

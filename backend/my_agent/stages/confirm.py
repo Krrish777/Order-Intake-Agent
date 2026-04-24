@@ -49,7 +49,6 @@ from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -57,12 +56,13 @@ from google.genai import types
 from pydantic import PrivateAttr
 
 from backend.ingestion.email_envelope import EmailEnvelope
+from backend.my_agent.stages._audited import AuditedStage
 from backend.persistence.base import OrderStore
 
 CONFIRM_STAGE_NAME: Final[str] = "confirm_stage"
 
 
-class ConfirmStage(BaseAgent):
+class ConfirmStage(AuditedStage):
     """BaseAgent that drafts confirmation emails for AUTO_APPROVE orders.
 
     Dep-injection choice: **PrivateAttr typed as ``Any`` for the child
@@ -81,13 +81,14 @@ class ConfirmStage(BaseAgent):
         *,
         confirm_agent: Any,
         order_store: OrderStore,
+        audit_logger: Any,
         **kwargs: Any,
     ) -> None:
-        super().__init__(**kwargs)
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._confirm_agent = confirm_agent
         self._order_store = order_store
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         # Short-circuit: a clarify reply was handled upstream. Emit the

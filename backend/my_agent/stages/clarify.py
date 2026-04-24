@@ -41,7 +41,6 @@ from __future__ import annotations
 
 from typing import Any, AsyncGenerator, Final
 
-from google.adk.agents import BaseAgent
 from google.adk.agents.invocation_context import InvocationContext
 from google.adk.events.event import Event
 from google.adk.events.event_actions import EventActions
@@ -50,11 +49,12 @@ from pydantic import PrivateAttr
 
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.models.validation_result import ValidationResult
+from backend.my_agent.stages._audited import AuditedStage
 
 CLARIFY_STAGE_NAME: Final[str] = "clarify_stage"
 
 
-class ClarifyStage(BaseAgent):
+class ClarifyStage(AuditedStage):
     """BaseAgent that drafts clarify emails for CLARIFY-tier validations.
 
     Dep-injection choice: **PrivateAttr typed as ``Any``**. The real
@@ -71,11 +71,11 @@ class ClarifyStage(BaseAgent):
     name: str = CLARIFY_STAGE_NAME
     _clarify_agent: Any = PrivateAttr()
 
-    def __init__(self, *, clarify_agent: Any, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *, clarify_agent: Any, audit_logger: Any, **kwargs: Any) -> None:
+        super().__init__(audit_logger=audit_logger, **kwargs)
         self._clarify_agent = clarify_agent
 
-    async def _run_async_impl(  # type: ignore[override]
+    async def _audited_run(
         self, ctx: InvocationContext
     ) -> AsyncGenerator[Event, None]:
         # Short-circuit: a clarify reply was handled upstream. Emit the

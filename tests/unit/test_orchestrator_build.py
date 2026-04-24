@@ -25,8 +25,12 @@ Module-level env:
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock
+
 import pytest
 from google.adk.agents import SequentialAgent
+
+from backend.audit.logger import AuditLogger
 
 from backend.models.classified_document import ClassifiedDocument
 from backend.models.parsed_document import ParsedDocument
@@ -123,6 +127,7 @@ def _make_deps() -> dict:
         "confirm_agent": FakeChildLlmAgent(output_key="confirmation_email"),
         "exception_store": _FakeExceptionStore(),
         "order_store": _FakeOrderStore(),
+        "audit_logger": AsyncMock(spec=AuditLogger),
     }
 
 
@@ -246,3 +251,26 @@ def test_build_root_agent_missing_dep_raises() -> None:
 
     with pytest.raises(TypeError):
         build_root_agent(**deps)  # type: ignore[misc]
+
+
+@pytest.mark.asyncio
+async def test_build_root_agent_requires_audit_logger_kwarg() -> None:
+    """Missing audit_logger should raise TypeError."""
+    deps = _make_deps()
+    deps.pop("audit_logger")
+
+    with pytest.raises(TypeError, match="audit_logger"):
+        build_root_agent(**deps)  # type: ignore[misc]
+
+
+@pytest.mark.asyncio
+async def test_every_stage_gets_the_same_audit_logger_instance() -> None:
+    """All 9 stages must share one AuditLogger instance — guards against
+    someone accidentally passing different loggers per stage."""
+    audit_logger = AsyncMock(spec=AuditLogger)
+    deps = _make_deps()
+    deps["audit_logger"] = audit_logger
+    root = build_root_agent(**deps)
+
+    for sub_agent in root.sub_agents:
+        assert sub_agent._audit_logger is audit_logger

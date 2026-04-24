@@ -25,6 +25,7 @@ from unittest.mock import AsyncMock
 
 import pytest
 
+from backend.audit.logger import AuditLogger
 from backend.ingestion.email_envelope import EmailEnvelope
 from backend.my_agent.stages.confirm import CONFIRM_STAGE_NAME, ConfirmStage
 from backend.persistence.base import OrderStore
@@ -164,7 +165,7 @@ def test_reply_handled_no_ops() -> None:
     skipped_docs preserved; store never called."""
     fake = _make_confirm_fake()
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     prior_skipped = [
         {
             "filename": "invoice.pdf",
@@ -192,7 +193,7 @@ def test_reply_handled_no_ops() -> None:
 def test_missing_process_results_raises() -> None:
     fake = _make_confirm_fake()
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, envelope=_envelope_dict())
 
     with pytest.raises(ValueError, match="requires PersistStage"):
@@ -205,7 +206,7 @@ def test_missing_process_results_raises() -> None:
 def test_missing_envelope_raises() -> None:
     fake = _make_confirm_fake()
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(stage, process_results=[_process_entry()])
 
     with pytest.raises(ValueError, match="requires IngestStage"):
@@ -220,7 +221,7 @@ def test_no_auto_approve_entries_yields_empty_bodies() -> None:
     confirmation_bodies=={}; store never called."""
     fake = _make_confirm_fake()
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[
@@ -247,7 +248,7 @@ def test_single_auto_approve_entry_produces_one_body() -> None:
     }
     fake = _make_confirm_fake(responses=[response])
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
 
     order = _order_dict(source_message_id="m-42@example.com")
     ctx = _make_ctx(
@@ -277,7 +278,7 @@ def test_multiple_mixed_entries_filters_to_orders_only() -> None:
     resp_b = {"subject": "Re: B", "body": "body B"}
     fake = _make_confirm_fake(responses=[resp_a, resp_b])
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
 
     order_a = _order_dict(
         source_message_id="a@x", customer_name="Alpha Corp", order_total=50.0
@@ -323,7 +324,7 @@ def test_multiple_mixed_entries_filters_to_orders_only() -> None:
 def test_child_never_emits_confirmation_email_raises() -> None:
     fake = _make_confirm_fake(responses=None)
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
     ctx = _make_ctx(
         stage,
         process_results=[_process_entry()],
@@ -344,7 +345,7 @@ def test_prompt_state_keys_seeded_from_order_and_envelope() -> None:
         responses=[{"subject": "Re: stub", "body": "stub"}]
     )
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
 
     order = _order_dict(
         source_message_id="ref-xyz",
@@ -380,7 +381,7 @@ def test_store_update_call_count_matches_bodies() -> None:
     resp = {"subject": "Re: fresh", "body": "fresh confirmation body"}
     fake = _make_confirm_fake(responses=[resp])
     store = AsyncMock(spec=OrderStore)
-    stage = ConfirmStage(confirm_agent=fake, order_store=store)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=AsyncMock(spec=AuditLogger))
 
     ctx = _make_ctx(
         stage,
@@ -397,3 +398,28 @@ def test_store_update_call_count_matches_bodies() -> None:
     assert fake.call_count == 1
     assert store.update_with_confirmation.await_count == 1
     assert list(delta["confirmation_bodies"].keys()) == ["fresh.pdf#0"]
+
+
+@pytest.mark.asyncio
+async def test_stage_emits_entered_and_exited_audit_events() -> None:
+    fake = _make_confirm_fake()
+    store = AsyncMock(spec=OrderStore)
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=audit_logger)
+    ctx = _make_ctx(
+        stage,
+        reply_handled=True,
+        process_results=[],
+        envelope=_envelope_dict(),
+    )
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+    except Exception:
+        pass
+
+    calls = audit_logger.emit.await_args_list
+    phases = [c.kwargs["phase"] for c in calls]
+    assert "entered" in phases
+    assert "exited" in phases
