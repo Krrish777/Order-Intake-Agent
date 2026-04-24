@@ -100,6 +100,7 @@ from google.adk.runners import Runner
 from google.adk.sessions.in_memory_session_service import InMemorySessionService
 from google.genai import types
 
+from backend.audit.logger import AuditLogger
 from backend.models.order_record import OrderRecord
 from backend.my_agent.agent import AGENT_VERSION, build_root_agent
 from backend.persistence.coordinator import IntakeCoordinator
@@ -220,6 +221,7 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
     )
 
     try:
+        audit_logger = AuditLogger(client=client, agent_version=AGENT_VERSION)
         root_agent = build_root_agent(
             classify_fn=classify_document,
             parse_fn=parse_document,
@@ -230,6 +232,7 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
             confirm_agent=confirm_agent,
             exception_store=exception_store,
             order_store=order_store,
+            audit_logger=audit_logger,
         )
 
         # --- Runner setup ------------------------------------------------
@@ -468,6 +471,7 @@ async def test_duplicate_submission_escalates_and_skips_confirmation() -> None:
             ],
             name="fake_summary_dup",
         )
+        audit_logger = AuditLogger(client=client, agent_version=AGENT_VERSION)
         root_agent = build_root_agent(
             classify_fn=classify_document,
             parse_fn=parse_document,
@@ -481,6 +485,7 @@ async def test_duplicate_submission_escalates_and_skips_confirmation() -> None:
             confirm_agent=confirm_agent,
             exception_store=exception_store,
             order_store=order_store,
+            audit_logger=audit_logger,
         )
 
         # ── Step 4: drive the pipeline ───────────────────────────────────
