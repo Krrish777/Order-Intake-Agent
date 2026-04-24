@@ -401,6 +401,42 @@ def test_store_update_call_count_matches_bodies() -> None:
 
 
 @pytest.mark.asyncio
+async def test_email_drafted_lifecycle_emit() -> None:
+    """After update_with_confirmation succeeds, one lifecycle emit with
+    action='email_drafted' and correct order_id + body_key payload."""
+    response = {"subject": "Re: PO confirmed", "body": "Your order is confirmed."}
+    fake = _make_confirm_fake(responses=[response])
+    store = AsyncMock(spec=OrderStore)
+    audit_logger = AsyncMock(spec=AuditLogger)
+    stage = ConfirmStage(confirm_agent=fake, order_store=store, audit_logger=audit_logger)
+
+    order = _order_dict(source_message_id="m-99@example.com")
+    ctx = _make_ctx(
+        stage,
+        process_results=[_process_entry(filename="po.txt", sub_doc_index=0, order=order)],
+        envelope=_envelope_dict(subject="PO re-order"),
+    )
+
+    async for _ in stage.run_async(ctx):
+        pass
+
+    lifecycle_calls = [
+        c
+        for c in audit_logger.emit.await_args_list
+        if c.kwargs.get("action") == "email_drafted"
+    ]
+    assert len(lifecycle_calls) == 1, (
+        f"Expected 1 email_drafted emit, got {len(lifecycle_calls)}"
+    )
+    call_kwargs = lifecycle_calls[0].kwargs
+    assert call_kwargs["stage"] == "lifecycle"
+    assert call_kwargs["phase"] == "lifecycle"
+    assert call_kwargs["outcome"] == "ok"
+    assert call_kwargs["payload"]["order_id"] == "m-99@example.com"
+    assert call_kwargs["payload"]["body_key"] == "po.txt#0"
+
+
+@pytest.mark.asyncio
 async def test_stage_emits_entered_and_exited_audit_events() -> None:
     fake = _make_confirm_fake()
     store = AsyncMock(spec=OrderStore)
