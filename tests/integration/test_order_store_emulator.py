@@ -128,3 +128,19 @@ async def test_distinct_orders_persist_independently(store):
     b = await store.get(b_id)
     assert a is not None and a.source_message_id == a_id
     assert b is not None and b.source_message_id == b_id
+
+
+async def test_update_with_confirmation_persists_to_emulator(store):
+    """Happy path on a real emulator: save → update_with_confirmation →
+    fresh get() reflects the new body. Mirrors the fake-client unit test
+    to lock in SDK parity for the field-mask update path."""
+    msg_id = f"int-msg-{uuid.uuid4().hex}"
+    await store.save(_order(msg_id))
+
+    body = "Tony — confirmed, $127.40. Shipping ground."
+    updated = await store.update_with_confirmation(msg_id, confirmation_body=body)
+    assert updated.confirmation_body == body
+
+    reread = await store.get(msg_id)
+    assert reread is not None
+    assert reread.confirmation_body == body
