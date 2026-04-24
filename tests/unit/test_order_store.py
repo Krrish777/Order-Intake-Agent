@@ -167,7 +167,9 @@ async def test_save_preserves_schema_version_default(fake_client):
     fetched = await store.get(saved.source_message_id)
 
     assert fetched is not None
-    assert fetched.schema_version == 1
+    # Bumped 1 → 2 when ``confirmation_body`` was added on the
+    # ConfirmStage leg (AUTO_APPROVE confirmation email).
+    assert fetched.schema_version == 2
 
 
 async def test_save_preserves_nested_snapshots_through_roundtrip(fake_client):
