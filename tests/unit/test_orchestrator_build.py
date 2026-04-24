@@ -33,6 +33,7 @@ from backend.models.parsed_document import ParsedDocument
 from backend.my_agent.agent import ROOT_AGENT_NAME, build_root_agent
 from backend.my_agent.stages.clarify import CLARIFY_STAGE_NAME, ClarifyStage
 from backend.my_agent.stages.classify import CLASSIFY_STAGE_NAME, ClassifyStage
+from backend.my_agent.stages.confirm import CONFIRM_STAGE_NAME, ConfirmStage
 from backend.my_agent.stages.finalize import FINALIZE_STAGE_NAME, FinalizeStage
 from backend.my_agent.stages.ingest import INGEST_STAGE_NAME, IngestStage
 from backend.my_agent.stages.parse import PARSE_STAGE_NAME, ParseStage
@@ -93,6 +94,14 @@ class _FakeExceptionStore:
     """
 
 
+class _FakeOrderStore:
+    """Duck-typed stand-in for :class:`OrderStore`.
+
+    ConfirmStage's dep attr is a PrivateAttr of type :class:`OrderStore`
+    (a typing.Protocol); same Pydantic isinstance-avoidance as above.
+    """
+
+
 # ------------------------------------------------------------------ fixtures
 
 
@@ -111,7 +120,9 @@ def _make_deps() -> dict:
         "coordinator": _FakeCoordinator(),
         "clarify_agent": FakeChildLlmAgent(output_key="clarify_email"),
         "summary_agent": FakeChildLlmAgent(output_key="run_summary"),
+        "confirm_agent": FakeChildLlmAgent(output_key="confirmation_email"),
         "exception_store": _FakeExceptionStore(),
+        "order_store": _FakeOrderStore(),
     }
 
 
@@ -148,6 +159,7 @@ def test_build_root_agent_sub_agents_in_canonical_order() -> None:
         VALIDATE_STAGE_NAME,
         CLARIFY_STAGE_NAME,
         PERSIST_STAGE_NAME,
+        CONFIRM_STAGE_NAME,
         FINALIZE_STAGE_NAME,
     ]
 
@@ -167,11 +179,12 @@ def test_build_root_agent_sub_agents_are_expected_types() -> None:
     assert isinstance(root.sub_agents[4], ValidateStage)
     assert isinstance(root.sub_agents[5], ClarifyStage)
     assert isinstance(root.sub_agents[6], PersistStage)
-    assert isinstance(root.sub_agents[7], FinalizeStage)
+    assert isinstance(root.sub_agents[7], ConfirmStage)
+    assert isinstance(root.sub_agents[8], FinalizeStage)
 
 
 def test_build_root_agent_rejects_positional_args() -> None:
-    """All seven deps are keyword-only — passing any positionally raises.
+    """All deps are keyword-only — passing any positionally raises.
 
     Kwarg-only guarantees downstream call sites stay readable and
     prevents accidental positional swaps if the dep list ever grows.
@@ -185,7 +198,9 @@ def test_build_root_agent_rejects_positional_args() -> None:
             coordinator=deps["coordinator"],
             clarify_agent=deps["clarify_agent"],
             summary_agent=deps["summary_agent"],
+            confirm_agent=deps["confirm_agent"],
             exception_store=deps["exception_store"],
+            order_store=deps["order_store"],
         )
 
 

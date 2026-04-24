@@ -2,11 +2,11 @@
 
 This module exposes three things:
 
-* :func:`build_root_agent` — a **pure factory** that takes the seven
+* :func:`build_root_agent` — a **pure factory** that takes the nine
   dependencies the pipeline stages need (two raw callables, one
-  validator, one coordinator, two :class:`~google.adk.agents.LlmAgent`
-  children, and one exception-store) and returns a freshly-constructed
-  :class:`~google.adk.agents.SequentialAgent` wiring the eight stage
+  validator, one coordinator, three :class:`~google.adk.agents.LlmAgent`
+  children, and two stores) and returns a freshly-constructed
+  :class:`~google.adk.agents.SequentialAgent` wiring the nine stage
   instances in the canonical order.
 * :func:`_build_default_root_agent` — a private helper that constructs
   the production deps (async Firestore client, ``MasterDataRepo``,
@@ -49,7 +49,11 @@ exact sequence:
        each parsed order through the :class:`IntakeCoordinator` into
        ``orders`` (auto-approve) or ``exceptions`` (clarify / escalate)
        in Firestore.
-    8. :class:`~backend.my_agent.stages.finalize.FinalizeStage` —
+    8. :class:`~backend.my_agent.stages.confirm.ConfirmStage` — for
+       every freshly AUTO_APPROVE'd order, draft a customer-facing
+       confirmation email via the injected confirmation :class:`LlmAgent`
+       and write the body onto the persisted ``OrderRecord``.
+    9. :class:`~backend.my_agent.stages.finalize.FinalizeStage` —
        invoke the summary :class:`LlmAgent` with deterministic counts
        and publish the resulting ``run_summary`` on session state.
 """
@@ -61,16 +65,18 @@ from typing import Any, Final
 from google.adk.agents import LlmAgent, SequentialAgent
 
 from .agents.clarify_email_agent import build_clarify_email_agent
+from .agents.confirmation_email_agent import build_confirmation_email_agent
 from .agents.summary_agent import build_summary_agent
 from .stages.clarify import ClarifyStage
 from .stages.classify import ClassifyFn, ClassifyStage
+from .stages.confirm import ConfirmStage
 from .stages.finalize import FinalizeStage
 from .stages.ingest import IngestStage
 from .stages.parse import ParseFn, ParseStage
 from .stages.persist import PersistStage
 from .stages.reply_shortcircuit import ReplyShortCircuitStage
 from .stages.validate import ValidateStage
-from backend.persistence.base import ExceptionStore
+from backend.persistence.base import ExceptionStore, OrderStore
 from backend.persistence.coordinator import IntakeCoordinator
 from backend.persistence.exceptions_store import FirestoreExceptionStore
 from backend.persistence.orders_store import FirestoreOrderStore
@@ -85,7 +91,7 @@ ROOT_AGENT_NAME: Final[str] = "order_intake_pipeline"
 #: Sentinel recorded on every persisted ``OrderRecord`` /
 #: ``ExceptionRecord`` so downstream analytics can distinguish records
 #: written by Track A (this pipeline) from manually-ingested rows.
-AGENT_VERSION: Final[str] = "track-a-v0.1"
+AGENT_VERSION: Final[str] = "track-a-v0.2"
 
 
 def build_root_agent(
@@ -96,9 +102,11 @@ def build_root_agent(
     coordinator: IntakeCoordinator,
     clarify_agent: Any,
     summary_agent: Any,
+    confirm_agent: Any,
     exception_store: ExceptionStore,
+    order_store: OrderStore,
 ) -> SequentialAgent:
-    """Build the root :class:`SequentialAgent` wiring all 8 Track A stages.
+    """Build the root :class:`SequentialAgent` wiring all 9 Track A stages.
 
     Pure factory: no global state, no side effects, no singletons. Every
     dep is keyword-only (prevents accidental positional swaps when the
@@ -109,7 +117,7 @@ def build_root_agent(
 
     The stages are wired in the canonical order (documented in the
     module docstring): ``ingest → reply_shortcircuit → classify →
-    parse → validate → clarify → persist → finalize``.
+    parse → validate → clarify → persist → confirm → finalize``.
 
     Args:
         classify_fn: Sync callable ``(content, filename) -> ClassifiedDocument``.
@@ -130,15 +138,23 @@ def build_root_agent(
             :class:`ClarifyStage` and driven via ``run_async``.
         summary_agent: :class:`LlmAgent` (or duck-type) that writes the
             one/two-sentence run recap. Held by :class:`FinalizeStage`.
+        confirm_agent: :class:`LlmAgent` (or duck-type) that drafts
+            customer-facing order-confirmation emails for AUTO_APPROVE
+            orders. Held by :class:`ConfirmStage` and driven via
+            ``run_async``.
         exception_store: :class:`ExceptionStore` for the
             :class:`ReplyShortCircuitStage`'s pending-clarify lookup.
             Note this is a *separate* reference from whatever store the
             ``coordinator`` holds internally — in practice they share
             the same underlying Firestore client.
+        order_store: :class:`OrderStore` for the :class:`ConfirmStage`'s
+            post-save ``update_with_confirmation`` write. Shares the
+            Firestore client with the ``coordinator``'s internal order
+            store in production.
 
     Returns:
         A :class:`SequentialAgent` with ``name=ROOT_AGENT_NAME`` and
-        eight sub_agents in canonical order.
+        nine sub_agents in canonical order.
     """
     sub_agents = [
         IngestStage(),
@@ -148,6 +164,7 @@ def build_root_agent(
         ValidateStage(validator=validator),
         ClarifyStage(clarify_agent=clarify_agent),
         PersistStage(coordinator=coordinator),
+        ConfirmStage(confirm_agent=confirm_agent, order_store=order_store),
         FinalizeStage(summary_agent=summary_agent),
     ]
     return SequentialAgent(name=ROOT_AGENT_NAME, sub_agents=sub_agents)
@@ -194,6 +211,7 @@ def _build_default_root_agent() -> SequentialAgent:
 
     clarify_agent: LlmAgent = build_clarify_email_agent()
     summary_agent: LlmAgent = build_summary_agent()
+    confirm_agent: LlmAgent = build_confirmation_email_agent()
 
     return build_root_agent(
         classify_fn=classify_document,
@@ -202,7 +220,9 @@ def _build_default_root_agent() -> SequentialAgent:
         coordinator=intake_coordinator,
         clarify_agent=clarify_agent,
         summary_agent=summary_agent,
+        confirm_agent=confirm_agent,
         exception_store=exception_store,
+        order_store=order_store,
     )
 
 
