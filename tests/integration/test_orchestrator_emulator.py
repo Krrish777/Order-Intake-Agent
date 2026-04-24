@@ -1,4 +1,4 @@
-"""End-to-end integration test for the assembled 8-stage Order Intake pipeline.
+"""End-to-end integration tests for the assembled 9-stage Order Intake pipeline.
 
 This is the first full drive of the :class:`SequentialAgent` returned by
 :func:`backend.my_agent.agent.build_root_agent` against a real Firestore
@@ -91,6 +91,7 @@ One test this pass: the AUTO_APPROVE smoke path for
 from __future__ import annotations
 
 import os
+import re
 import uuid
 from pathlib import Path
 
@@ -322,4 +323,254 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
         doc_ref = client.collection(ORDERS_COLLECTION).document(message_id)
         await doc_ref.delete()
     finally:
+        await repo.aclose()
+
+
+async def test_duplicate_submission_escalates_and_skips_confirmation() -> None:
+    """Prove the dup-detection path through the full 9-stage pipeline.
+
+    Design: instead of running the pipeline twice (which would require two
+    LlamaCloud round-trips and an AUTO_APPROVE first run — currently
+    Patterson fails price checks so it always ESCALATEs on a clean run),
+    we *directly seed* a fake prior order in Firestore and then run the
+    pipeline once with a modified-Message-ID copy of the patterson EML.
+
+    Seeding a prior order:
+    * Doc id: ``"seeded-prior-order-for-dup-test"`` (a deterministic sentinel).
+    * ``customer_id="CUST-00042"`` (Patterson's canonical id in master data).
+    * ``po_number="PO-28491"`` (from the patterson .eml subject / PDF).
+    * ``created_at`` = now (within the 90-day duplicate-detection window).
+
+    When the pipeline runs on the modified EML, ValidateStage calls
+    ``OrderValidator.validate()`` which calls ``find_duplicate()``. The
+    query matches the seeded order by PO# + customer_id, returns the seeded
+    doc id, and the validator returns
+    ``RoutingDecision.ESCALATE`` with ``rationale = "duplicate of <seeded_id>"``.
+    PersistStage routes to the ``exceptions`` collection.
+    ConfirmStage sees no ``kind=="order"`` entries and skips.
+
+    Asserts:
+    * ``run_summary.orders_created == 0`` (stub echoes this back).
+    * ``run_summary.exceptions_opened == 1`` (stub echoes this back).
+    * ``process_results[0].result.kind == "exception"`` (deterministic from
+      PersistStage's state_delta — no stub involved).
+    * ``confirm_agent.call_count == 0`` — ConfirmStage must not invoke it.
+    * The persisted ``ExceptionRecord.reason`` contains "duplicate of".
+    """
+    import datetime
+
+    from backend.models.master_records import AddressRecord
+    from backend.models.order_record import CustomerSnapshot, OrderRecord, OrderStatus
+    from backend.persistence.orders_store import FirestoreOrderStore
+    from google.cloud.firestore_v1 import SERVER_TIMESTAMP
+
+    if not _PATTERSON_EML.exists():
+        pytest.skip(f"fixture missing: {_PATTERSON_EML}")
+
+    # ── Shared deps ─────────────────────────────────────────────────────
+    client = get_async_client()
+    repo = MasterDataRepo(client)
+    validator = OrderValidator(repo=repo)
+    order_store = FirestoreOrderStore(client)
+    exception_store = FirestoreExceptionStore(client)
+    coordinator = IntakeCoordinator(
+        validator=validator,
+        order_store=order_store,
+        exception_store=exception_store,
+        repo=repo,
+        agent_version=f"{AGENT_VERSION}-int-dup-test",
+    )
+
+    # Sentinel doc id for the seeded prior order. Deterministic so
+    # repeated runs see the same key (idempotent cleanup).
+    SEEDED_ORDER_ID = "seeded-prior-order-for-dup-test"
+    dup_eml_message_id: str | None = None
+
+    try:
+        # ── Step 1: seed a fake prior order directly in Firestore ────────
+        # We write raw Firestore payload rather than going through the full
+        # coordinator.process() path because Patterson currently fails price
+        # checks (causing ESCALATE on a live pipeline run) — the seeded order
+        # is the "ground truth prior" that the dup detector should find.
+        seeded_payload = {
+            "source_message_id": SEEDED_ORDER_ID,
+            "thread_id": SEEDED_ORDER_ID,
+            "customer": {
+                "customer_id": "CUST-00042",
+                "name": "Patterson Industrial Supply Co.",
+                "bill_to": {
+                    "street1": "1 Patterson Dr",
+                    "street2": None,
+                    "city": "Atlanta",
+                    "state": "GA",
+                    "zip": "30301",
+                    "country": "US",
+                },
+                "payment_terms": "Net 45",
+                "contact_email": "g.prescott@patterson-indust.com",
+            },
+            "customer_id": "CUST-00042",
+            "po_number": "PO-28491",
+            # content_hash intentionally empty string — dup check queries
+            # on PO# first and returns on the first hit, so content_hash
+            # never needs to match for this test.
+            "content_hash": "",
+            "lines": [],
+            "order_total": 0.0,
+            "confidence": 0.99,
+            "status": OrderStatus.PERSISTED.value,
+            "processed_by_agent_version": f"{AGENT_VERSION}-seeded",
+            "confirmation_body": None,
+            "schema_version": 3,
+            "created_at": SERVER_TIMESTAMP,
+        }
+        seeded_ref = client.collection(ORDERS_COLLECTION).document(SEEDED_ORDER_ID)
+        # Use set() (not create()) so repeated runs overwrite rather than fail.
+        await seeded_ref.set(seeded_payload)
+
+        # ── Step 2: build modified EML with a different Message-ID ───────
+        # IngestStage produces a fresh envelope.message_id so the coordinator's
+        # doc-id dedup (orders/<message_id> already exists?) does NOT fire.
+        # The PO# match in find_duplicate() fires instead.
+        eml_bytes = _PATTERSON_EML.read_bytes()
+        eml_text = eml_bytes.decode("utf-8", errors="replace")
+        new_msg_id = f"<dup-test-{uuid.uuid4().hex}@example.com>"
+        eml_text_v2 = re.sub(
+            r"(?im)^(message-id:)\s*<[^>]*>",
+            rf"\1 {new_msg_id}",
+            eml_text,
+            count=1,
+        )
+        assert new_msg_id in eml_text_v2, (
+            f"Message-ID replacement failed; raw header may not match regex. "
+            f"new_msg_id={new_msg_id!r}"
+        )
+
+        # ── Step 3: build the pipeline with fresh stubs ─────────────────
+        # confirm_agent stub uses responses=[] (no canned response).
+        # If ConfirmStage accidentally invokes it, the stub emits
+        # {"stub": True} which is missing "body" → ConfirmStage raises
+        # RuntimeError. This is the loud tripwire.
+        confirm_agent = FakeChildLlmAgent(
+            output_key="confirmation_email",
+            responses=[],
+            name="fake_confirm_dup",
+        )
+        summary_agent = FakeChildLlmAgent(
+            output_key="run_summary",
+            responses=[
+                {
+                    "orders_created": 0,
+                    "exceptions_opened": 1,
+                    "docs_skipped": 0,
+                    "summary": "dup escalated — stubbed for dup integration test",
+                }
+            ],
+            name="fake_summary_dup",
+        )
+        root_agent = build_root_agent(
+            classify_fn=classify_document,
+            parse_fn=parse_document,
+            validator=validator,
+            coordinator=coordinator,
+            clarify_agent=FakeChildLlmAgent(
+                output_key="clarify_email",
+                responses=[{"subject": "Re: stub", "body": "stub body"}],
+            ),
+            summary_agent=summary_agent,
+            confirm_agent=confirm_agent,
+            exception_store=exception_store,
+            order_store=order_store,
+        )
+
+        # ── Step 4: drive the pipeline ───────────────────────────────────
+        session_service = InMemorySessionService()
+        session_id = f"int-dup-{uuid.uuid4().hex}"
+        await session_service.create_session(
+            app_name=_APP_NAME, user_id=_USER_ID, session_id=session_id
+        )
+        runner = Runner(
+            app_name=_APP_NAME,
+            agent=root_agent,
+            session_service=session_service,
+        )
+        new_message = types.Content(
+            role="user",
+            parts=[types.Part.from_text(text=eml_text_v2)],
+        )
+        events = []
+        async for event in runner.run_async(
+            user_id=_USER_ID, session_id=session_id, new_message=new_message
+        ):
+            events.append(event)
+        assert events, "Runner yielded zero events — pipeline did not run"
+
+        session = await session_service.get_session(
+            app_name=_APP_NAME, user_id=_USER_ID, session_id=session_id
+        )
+        assert session is not None, "Session disappeared mid-run"
+        state = session.state
+
+        # Capture dup run's message_id for cleanup.
+        envelope_state = state.get("envelope")
+        assert envelope_state is not None, "IngestStage did not seed envelope"
+        dup_eml_message_id = envelope_state["message_id"]
+
+        # ── Step 5: assert run_summary (stub echoes deterministic counts) ─
+        assert state.get("run_summary") is not None, "FinalizeStage did not publish run_summary"
+        run_summary = state["run_summary"]
+        assert run_summary["orders_created"] == 0, (
+            f"expected 0 orders_created; got {run_summary}"
+        )
+        assert run_summary["exceptions_opened"] == 1, (
+            f"expected 1 exceptions_opened; got {run_summary}"
+        )
+
+        # ── Step 6: assert process_results (Runner-committed state_delta) ─
+        # process_results is written by PersistStage via state_delta —
+        # it survives the ADK Runner boundary (unlike direct mutations
+        # on ctx.session.state, which are NOT committed back to the session
+        # store by InMemorySessionService + Runner).
+        process_results = state.get("process_results", [])
+        assert len(process_results) == 1, (
+            f"expected 1 process_result; got {process_results}"
+        )
+        result_entry = process_results[0]
+        assert result_entry["result"]["kind"] == "exception", (
+            f"expected kind='exception'; got {result_entry['result']['kind']!r}"
+        )
+
+        # ── Step 7: confirm_agent must NOT have been invoked ─────────────
+        assert confirm_agent.call_count == 0, (
+            f"confirm_agent was called {confirm_agent.call_count} time(s); "
+            "it must not be called when the result kind is 'exception'"
+        )
+
+        # ── Step 8: assert the persisted ExceptionRecord ─────────────────
+        # The dup exception lands under exceptions/<dup_eml_message_id>.
+        persisted_exc = await exception_store.get(dup_eml_message_id)
+        assert persisted_exc is not None, (
+            f"expected exceptions/{dup_eml_message_id} in emulator; got nothing"
+        )
+        assert "duplicate of" in persisted_exc.reason.lower(), (
+            f"exception reason should contain 'duplicate of'; got: {persisted_exc.reason!r}"
+        )
+        assert SEEDED_ORDER_ID in persisted_exc.reason, (
+            f"exception reason should name the seeded order id {SEEDED_ORDER_ID!r}; "
+            f"got: {persisted_exc.reason!r}"
+        )
+
+    finally:
+        # Cleanup: delete the seeded prior order and the dup exception.
+        try:
+            seeded_ref = client.collection(ORDERS_COLLECTION).document(SEEDED_ORDER_ID)
+            await seeded_ref.delete()
+        except Exception:
+            pass
+        if dup_eml_message_id is not None:
+            try:
+                exc_ref = client.collection("exceptions").document(dup_eml_message_id)
+                await exc_ref.delete()
+            except Exception:
+                pass
         await repo.aclose()
