@@ -203,6 +203,8 @@ Note: the original "Track D = read-only dashboard" has been rescoped to "Track D
 
 Each track goes through its own session: superpowers:brainstorming → design spec → superpowers:writing-plans → plan doc → new session uses superpowers:executing-plans. Track C is first through this flow.
 
+**Session-end state 2026-04-24 (cd1cede):** Five of seven post-Track-A tracks (C, D, A1, A2, A3) are spec+plan complete and ready to execute in fresh sessions. Tracks B (Generator-Judge quality gate) and E (Embedding Tier 3) remain for the next session. Full handoff doc with per-track commit SHAs + remaining-track scope sketches + resumption instructions at `docs/superpowers/SESSION-HANDOFF-2026-04-24.md`.
+
 **Parallel / deferrable (per `Glacis-Order-Intake.md`):**
 - `feat/embeddings` — Tier 3 product match for the 3-tier SKU ladder.
 - Post-MVP Gmail push ingestion, Learning Loop, quality-gate judge, auto-merge reply path, and the deployment surface (Cloud Run + Firebase Hosting). All mapped to phases 2-4 in the roadmap.
