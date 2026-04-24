@@ -130,6 +130,21 @@ class ValidateStage(AuditedStage):
             validation: ValidationResult = await self._validator.validate(
                 order, source_message_id=msg_id
             )
+            await self._audit_logger.emit(
+                correlation_id=ctx.session.state.get("correlation_id", ""),
+                session_id=ctx.session.id,
+                source_message_id=self._extract_source_message_id(ctx.session.state),
+                stage="lifecycle",
+                phase="lifecycle",
+                action="routing_decided",
+                outcome=validation.decision.value,
+                payload={
+                    "filename": entry["filename"],
+                    "sub_doc_index": entry["sub_doc_index"],
+                    "confidence": validation.aggregate_confidence,
+                    "customer_id": validation.customer.customer_id if validation.customer else None,
+                },
+            )
             validation_results.append(
                 {
                     "filename": entry["filename"],

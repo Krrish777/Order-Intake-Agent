@@ -334,3 +334,40 @@ async def test_stage_emits_entered_and_exited_audit_events() -> None:
     phases = [c.kwargs["phase"] for c in calls]
     assert "entered" in phases
     assert "exited" in phases
+
+
+@pytest.mark.asyncio
+async def test_validate_emits_routing_decided_per_sub_doc() -> None:
+    """For each entry in parsed_docs, ValidateStage emits a lifecycle
+    'routing_decided' event with outcome=<decision.value> and payload
+    carrying confidence + customer_id."""
+    validation = _validation_result(
+        decision=RoutingDecision.AUTO_APPROVE,
+        aggregate_confidence=0.97,
+    )
+
+    validator = AsyncMock(spec=OrderValidator)
+    validator.validate = AsyncMock(return_value=validation)
+    audit_logger = AsyncMock(spec=AuditLogger)
+
+    stage = ValidateStage(validator=validator, audit_logger=audit_logger)
+    ctx = make_stage_ctx(
+        stage=stage,
+        state={
+            "correlation_id": "c1",
+            "envelope": {"message_id": "m1"},
+            "parsed_docs": [
+                _parsed_docs_entry(filename="po-001.pdf", sub_doc_index=0),
+            ],
+        },
+    )
+    await collect_events(stage.run_async(ctx))
+
+    routing_calls = [
+        c for c in audit_logger.emit.await_args_list
+        if c.kwargs.get("action") == "routing_decided"
+    ]
+    assert len(routing_calls) == 1
+    assert routing_calls[0].kwargs["outcome"] == "auto_approve"
+    assert "confidence" in routing_calls[0].kwargs["payload"]
+    assert "customer_id" in routing_calls[0].kwargs["payload"]
