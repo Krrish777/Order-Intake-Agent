@@ -1,0 +1,319 @@
+{
+  "id": "90bdeac7-d49b-4888-9508-6191e08b7d68",
+  "appName": "order_intake",
+  "userId": "user",
+  "state": {
+    "__session_metadata__": {
+      "displayName": "data/email/birch_valley_clarify_reply.eml"
+    },
+    "envelope": {
+      "message_id": "<177670563340.19724.459494955414530210@birchvalleyfarmeq.com>",
+      "in_reply_to": "<20260420091512.9A31.stanbirch@birchvalleyfarmeq.com>",
+      "references": [
+        "<20260420091512.9A31.stanbirch@birchvalleyfarmeq.com>"
+      ],
+      "thread_id": "<20260420091512.9A31.stanbirch@birchvalleyfarmeq.com>",
+      "from_addr": "Stan Birchwood <stan.birch@birchvalleyfarmeq.com>",
+      "to_addr": "orders@grafton-reese.com",
+      "subject": "Re: Need by tomorrow - Hirshey planter",
+      "received_at": "2026-04-20T14:27:00-04:00",
+      "body_text": "Sorry - meant 3/8-16 thread, standard coarse. 1 inch length, hex cap. Yellow zinc like always.\n\nBlue tubing is the 100ft roll, same as last month.\n\n- Stan\n(btw Hirsheys are still breathing down my neck)\n",
+      "attachments": [
+        {
+          "filename": "body.txt",
+          "content_type": "text/plain",
+          "content": "U29ycnkgLSBtZWFudCAzLzgtMTYgdGhyZWFkLCBzdGFuZGFyZCBjb2Fyc2UuIDEgaW5jaCBsZW5ndGgsIGhleCBjYXAuIFllbGxvdyB6aW5jIGxpa2UgYWx3YXlzLgoKQmx1ZSB0dWJpbmcgaXMgdGhlIDEwMGZ0IHJvbGwsIHNhbWUgYXMgbGFzdCBtb250aC4KCi0gU3RhbgooYnR3IEhpcnNoZXlzIGFyZSBzdGlsbCBicmVhdGhpbmcgZG93biBteSBuZWNrKQo="
+        }
+      ],
+      "source_path": "data\\email\\birch_valley_clarify_reply.eml"
+    },
+    "reply_handled": false,
+    "classified_docs": [],
+    "skipped_docs": [
+      {
+        "filename": "body.txt",
+        "stage": "classify_stage",
+        "reason": "intent=inquiry (confidence=0.85)"
+      }
+    ],
+    "parsed_docs": [],
+    "validation_results": [],
+    "clarify_bodies": {},
+    "process_results": [],
+    "run_summary": {
+      "orders_created": 0,
+      "exceptions_opened": 0,
+      "docs_skipped": 1,
+      "summary": "The pipeline processed one document that was classified as non-PO and skipped. No orders or exceptions were generated during this run."
+    }
+  },
+  "events": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "data/email/birch_valley_clarify_reply.eml"
+          }
+        ],
+        "role": "user"
+      },
+      "invocationId": "e-5f158454-5445-4012-8902-774491c6ad2d",
+      "author": "user",
+      "actions": {
+        "stateDelta": {},
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "81580119-71fc-4e8e-b80c-4212b5bd4e8e",
+      "timestamp": 1777004089.5426514
+    },
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Ingested <177670563340.19724.459494955414530210@birchvalleyfarmeq.com> (1 attachment)"
+          }
+        ],
+        "role": "model"
+      },
+      "invocationId": "",
+      "author": "ingest_stage",
+      "actions": {
+        "stateDelta": {
+          "envelope": {
+            "message_id": "<177670563340.19724.459494955414530210@birchvalleyfarmeq.com>",
+            "in_reply_to": "<20260420091512.9A31.stanbirch@birchvalleyfarmeq.com>",
+            "references": [
+              "<20260420091512.9A31.stanbirch@birchvalleyfarmeq.com>"
+            ],
+            "thread_id": "<20260420091512.9A31.stanbirch@birchvalleyfarmeq.com>",
+            "from_addr": "Stan Birchwood <stan.birch@birchvalleyfarmeq.com>",
+            "to_addr": "orders@grafton-reese.com",
+            "subject": "Re: Need by tomorrow - Hirshey planter",
+            "received_at": "2026-04-20T14:27:00-04:00",
+            "body_text": "Sorry - meant 3/8-16 thread, standard coarse. 1 inch length, hex cap. Yellow zinc like always.\n\nBlue tubing is the 100ft roll, same as last month.\n\n- Stan\n(btw Hirsheys are still breathing down my neck)\n",
+            "attachments": [
+              {
+                "filename": "body.txt",
+                "content_type": "text/plain",
+                "content": "U29ycnkgLSBtZWFudCAzLzgtMTYgdGhyZWFkLCBzdGFuZGFyZCBjb2Fyc2UuIDEgaW5jaCBsZW5ndGgsIGhleCBjYXAuIFllbGxvdyB6aW5jIGxpa2UgYWx3YXlzLgoKQmx1ZSB0dWJpbmcgaXMgdGhlIDEwMGZ0IHJvbGwsIHNhbWUgYXMgbGFzdCBtb250aC4KCi0gU3RhbgooYnR3IEhpcnNoZXlzIGFyZSBzdGlsbCBicmVhdGhpbmcgZG93biBteSBuZWNrKQo="
+              }
+            ],
+            "source_path": "data\\email\\birch_valley_clarify_reply.eml"
+          }
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "e41aaef2-6c1d-49f6-a7d0-f58848fa17a9",
+      "timestamp": 1777004089.5582435
+    },
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "reply detected but no pending clarify found for thread <20260420091512.9A31.stanbirch@birchvalleyfarmeq.com> — downstream will process as a new email"
+          }
+        ],
+        "role": "model"
+      },
+      "invocationId": "",
+      "author": "reply_shortcircuit_stage",
+      "actions": {
+        "stateDelta": {
+          "reply_handled": false
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "dbc65ca2-6a37-4f87-8571-c9a824c962dd",
+      "timestamp": 1777004089.9420114
+    },
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Classified 1 attachment(s): 0 purchase_order, 1 skipped"
+          }
+        ],
+        "role": "model"
+      },
+      "invocationId": "",
+      "author": "classify_stage",
+      "actions": {
+        "stateDelta": {
+          "classified_docs": [],
+          "skipped_docs": [
+            {
+              "filename": "body.txt",
+              "stage": "classify_stage",
+              "reason": "intent=inquiry (confidence=0.85)"
+            }
+          ]
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "a40c7dfc-9e75-4351-bc00-95137d2c15d4",
+      "timestamp": 1777004111.332523
+    },
+    {
+      "invocationId": "",
+      "author": "parse_stage",
+      "actions": {
+        "stateDelta": {
+          "parsed_docs": [],
+          "skipped_docs": [
+            {
+              "filename": "body.txt",
+              "stage": "classify_stage",
+              "reason": "intent=inquiry (confidence=0.85)"
+            }
+          ]
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "cb149d21-8d1d-4898-a8ff-1861437e188a",
+      "timestamp": 1777004111.3479934
+    },
+    {
+      "invocationId": "",
+      "author": "validate_stage",
+      "actions": {
+        "stateDelta": {
+          "validation_results": [],
+          "skipped_docs": [
+            {
+              "filename": "body.txt",
+              "stage": "classify_stage",
+              "reason": "intent=inquiry (confidence=0.85)"
+            }
+          ]
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "31e33fe4-01ba-40c5-ba55-20a42d0fe8ea",
+      "timestamp": 1777004111.3591871
+    },
+    {
+      "invocationId": "",
+      "author": "clarify_stage",
+      "actions": {
+        "stateDelta": {
+          "clarify_bodies": {},
+          "skipped_docs": [
+            {
+              "filename": "body.txt",
+              "stage": "classify_stage",
+              "reason": "intent=inquiry (confidence=0.85)"
+            }
+          ]
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "a17be909-f6e0-434f-a9ec-d55991d26521",
+      "timestamp": 1777004111.369344
+    },
+    {
+      "invocationId": "",
+      "author": "persist_stage",
+      "actions": {
+        "stateDelta": {
+          "process_results": [],
+          "skipped_docs": [
+            {
+              "filename": "body.txt",
+              "stage": "classify_stage",
+              "reason": "intent=inquiry (confidence=0.85)"
+            }
+          ]
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "5b2c22de-b805-48b7-9ab7-e51395663bd1",
+      "timestamp": 1777004111.3800502
+    },
+    {
+      "modelVersion": "gemini-3-flash-preview",
+      "content": {
+        "parts": [
+          {
+            "text": "{\"orders_created\":0,\"exceptions_opened\":0,\"docs_skipped\":1,\"summary\":\"The pipeline processed one document that was classified as non-PO and skipped. No orders or exceptions were generated during this run.\"}",
+            "thoughtSignature": "EpENCo4NAQw51sfFQEmd9tSAAtMpXp4Ag2evQGe_y0QKd_69gQ6yfW_ADEw3ePODXj6Qp3Zrn9v7ixClrAiHqYtvSHKCCPOsFyWgCBgUtSZbx29oJlsMOqwYhKTgvCU1nN3NMOmrTfTcAzJmfpKEgWT5rHVOKZqUh4QHYaYiZ4XMTD2-RyROVNAAWL-FphNCX2JnY3xm1LsG5MIu9zAF073bmv863kMnltIJztXuDddZcGjtneGWnDL65sdGsBGRR0lpqrEV_PQYDlstEaAkg5NXc91XfoE1P3OrwRuYjhgfIK7WnnnqlJIxQm-wSar-CJcJ49b3V03UJoaa3N_NCqJcGTPlMd2FXZ8ppO8A_grs9Lj4fetK6VipRxC2tA-u3GB6BQaGAZDV2W71VNtDbZcYHQjKMbYOXxII6GewLfnMJ25K9k4dbm5cC36m753lnaH8XxJkNleeJWBSSpJU9b5XY7s5AHLcbaGIHA7qI0_-oSK_L3GOrJtiYdD8N-YMUk--wRoqkQ_itMacc5OBM508av17mhDFnXLAaAs9KgAPAkxLDyj-O18-OJfe-8FdgHLKBlFS98NTn1Gm0eGQ59DQx2gTjchA-T0NVSrm5WUTYZQGdjHnO2t7oO1q3lZSHNI_Bf8KXHANMfzTT5Cg7HsUe2KHxpCvxvRNjJWoUFGfOKs7NFZUVnjNQF-sTEXhdQXBf2v6itszcAZ5vShVHOHVMj9tcak-v62oH0A_fGZfHu2-u2XNX8SqVQ-57ToxTI8s5CqJo55NrydJXdHhaJtHhHqOQ6fRssPhXimMaBLtfRzfwfSywgFYBmj5By4Qji9yarISAE4V_OLya0hM6A891XPnsY3jjVgEkPLK41-C5u0QrN0aODhHc7pzebUaOddTtYkKXLykmi6wYbIqkHZuFbTCYGBgQ_yYngq9rxvU_Nj3ZuS0C0nbXVUGWbO1r-ElMuLUjnlcVuSI-r5Qr1-_cekjTRKiyaPXTtLAVp1KBYClLmHlo-XS2fPfKv95Ufm6Qp_fNhC8AV7R5j3Rc8MftwQMKcCwsYQU9e0geRnYHvsKtT8FzSHjr_ULOJJ9_p9fhgNgxEhHoip0kFr2RjnMz8wNy0ty09__3abEJwyXJQOrisKtR952IuLKOoe40-Zuk69Q1YBO75tMIekKjo60ltnV99YkRCKQnGWyUu-0BkxL_ERsf3hLn4CNAH5KVXeXdH93saYlrRyQgJmgsokPQ6eUwaRZ_DJFb3eRgnIn8-Mr5gCasM4Udvb2PrK16wly8kjqDH6ZMc6npkhoBWclzEN7YCYDr8_xOE1iQVo1LaUP93ihsxTko0zX6_YMJ4iGcnQg7P9x7evNxLs1V0cM4P6dbDn86ZZg8LBLfmPErUo6cTFMbxeB029UFRwQbo04XbkClMsqD8LgAY5CUswgM-hP4n_0qczNNcbu-U1W8BLu-Pmg9h63tSc9v93w93kkYktNV-lULfAbCHvs8hLV3d0j3ehyJNrymsl28anDAp8g6oFimu1ByJqHc_k6dWUdnNvNwY_vFNHNUGoe2QZA0R8hg0cfoktU2WXZYYj_gnlejBOoXVWd1uzrYFVUsSFa3ScC_xM2vSXksKv2wyvhTqlGF-f0C4UD1H9z_FEWtJPuINK2w_kbSEbwv7Q0quqvxaA3P1cfbSZEJi2vqTZn-U3Vg7oVLPHvQelRIjbP1ITNbDLqSeOZJTqgfDKkDlS9vFhfS2Z7rOFAUtw4Zz3MIfAEGDXmgTyUl0SQwIcQ2YPYaxDVi8UwSi6wibCoWsmyzHJm5Zysv91Enhg3S7y41Cg_0Bu4eCZvfcq_0UbIBfcbyNd9QfWnNWiwj8Hex-0L-wc3UFUHSCaAXYQUCT8p3QUF-WH15gD0iqlc3S247oh8x4H2hnXHS9zISzverwWfRH5j3SjwBdfUHAyT3SMeJM-8KEy0W7CdJ670E0lkbojgisCrDgv-hbnTYDH1R_YZv0pUZ4UmzPhRRPKfsdSZia-5d7l9MDhcRcsiktf4nKUeloYFzWmxZuY7mbuXv-Ag-ueII81Yc809IrbvaW0elRj0hcyMFi33DINXFeAtIUmQwjMdkUyOZjT3MChxc9b7N0I2WdmxFJu3nFtc9kaZyonzCRWvzqOvyR22HSZPhtSD1yRrwu7GQEZ9USiRGIDF8wi0DpWMlAc4kxyDT4amg9oQHfOiOgrheIrDqyK16C_RhMUEP9m5E8tsvBzPIuVNlw=="
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "usageMetadata": {
+        "candidatesTokenCount": 48,
+        "promptTokenCount": 432,
+        "promptTokensDetails": [
+          {
+            "modality": "TEXT",
+            "tokenCount": 432
+          }
+        ],
+        "thoughtsTokenCount": 468,
+        "totalTokenCount": 948
+      },
+      "invocationId": "e-5f158454-5445-4012-8902-774491c6ad2d",
+      "author": "run_summary_agent",
+      "actions": {
+        "stateDelta": {
+          "run_summary": {
+            "orders_created": 0,
+            "exceptions_opened": 0,
+            "docs_skipped": 1,
+            "summary": "The pipeline processed one document that was classified as non-PO and skipped. No orders or exceptions were generated during this run."
+          }
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "01cf651d-6833-4f92-9924-87f99cbfca83",
+      "timestamp": 1777004111.390347
+    },
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "Run summary: 0 order(s), 0 exception(s), 1 skipped"
+          }
+        ],
+        "role": "model"
+      },
+      "invocationId": "",
+      "author": "finalize_stage",
+      "actions": {
+        "stateDelta": {
+          "run_summary": {
+            "orders_created": 0,
+            "exceptions_opened": 0,
+            "docs_skipped": 1,
+            "summary": "The pipeline processed one document that was classified as non-PO and skipped. No orders or exceptions were generated during this run."
+          }
+        },
+        "artifactDelta": {},
+        "requestedAuthConfigs": {},
+        "requestedToolConfirmations": {}
+      },
+      "id": "ba89c5ba-7e05-4e36-bf51-bb40920e518c",
+      "timestamp": 1777004116.9084258
+    }
+  ],
+  "lastUpdateTime": 1777004116.9084258
+}
