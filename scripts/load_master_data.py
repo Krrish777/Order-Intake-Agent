@@ -16,6 +16,22 @@ DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "masters"
 DEFAULT_PROJECT = "demo-order-intake-local"
 
 
+def _embed_text_for_product(p: dict) -> str:
+    """Compose the text string fed to text-embedding-004 for one catalog item.
+
+    Includes short_description (customer-shorthand form), long_description
+    (canonical/detailed form), and category (+ subcategory if present).
+    The embedding model uses the combined context to map customer
+    shorthand onto canonical SKUs.
+    """
+    short = p["short_description"].rstrip(".")
+    long_ = p["long_description"].rstrip(".")
+    cat = p.get("category", "")
+    sub = p.get("subcategory", "")
+    suffix = f"{cat}/{sub}" if sub else cat
+    return f"{short}. {long_}. Category: {suffix}."
+
+
 def _client() -> firestore.Client:
     project = os.environ.get("GOOGLE_CLOUD_PROJECT", DEFAULT_PROJECT)
     return firestore.Client(project=project)
