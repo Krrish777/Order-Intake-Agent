@@ -33,6 +33,8 @@ from typing import Optional
 
 from google.cloud.firestore import AsyncClient
 from google.cloud.firestore_v1.async_document import AsyncDocumentReference
+from google.cloud.firestore_v1.base_vector_query import DistanceMeasure
+from google.cloud.firestore_v1.vector import Vector
 from google.genai import Client as GenAIClient
 from google.genai.types import EmbedContentConfig
 from rapidfuzz import fuzz, process
@@ -259,20 +261,53 @@ class MasterDataRepo:
         query: str,
         k: int = DEFAULT_EMBEDDING_TOP_K,
     ) -> list[EmbeddingMatch]:
-        """Layer-2 semantic SKU match. **Stub for Sprint 1** — always
-        returns ``[]``.
+        """Layer-2 semantic SKU match: embed the customer query, run
+        ``find_nearest`` against the ``description_embedding`` field, and
+        return similarity-scored ``EmbeddingMatch`` candidates in
+        descending-score order.
 
-        When implemented, this method will embed ``query`` via Gemini
-        ``text-embedding-004`` and call Firestore
-        :meth:`~google.cloud.firestore.AsyncVectorQuery.find_nearest`
-        against the ``description_embedding`` field on ``products``.
-        The sku_matcher ladder calls it unconditionally — the stub
-        returning ``[]`` is equivalent to "no semantic matches above
-        threshold", so swapping the real implementation in later is a
-        one-method change.
+        Fail-open contract:
+
+        * Degenerate input (empty query, whitespace only, ``k < 1``) →
+          ``[]`` with no API call.
+        * Embedding API exception → ``[]`` (logged via ``_embed_query``).
+        * Firestore ``find_nearest`` exception → bubbles (caller is
+          responsible; this is an infrastructure failure worth surfacing).
+
+        Scores are in ``[0.0, 1.0]`` via ``similarity = 1 - cosine_distance / 2``,
+        clamped. Caller (``sku_matcher``) compares ``matches[0].score``
+        against ``EMBEDDING_THRESHOLD``.
         """
-        _log.debug("layer2_stub_called", query=query, k=k)
-        return []
+        if not query or not query.strip() or k < 1:
+            return []
+
+        query_vec = await self._embed_query(query)
+        if query_vec is None:
+            return []
+
+        vector_query = (
+            self._client
+                .collection(PRODUCTS_COLLECTION)
+                .find_nearest(
+                    vector_field="description_embedding",
+                    query_vector=Vector(query_vec),
+                    distance_measure=DistanceMeasure.COSINE,
+                    limit=k,
+                    distance_result_field="__distance",
+                )
+        )
+
+        matches: list[EmbeddingMatch] = []
+        async for snap in vector_query.stream():
+            data = snap.to_dict() or {}
+            distance = float(data.get("__distance", 2.0))
+            similarity = max(0.0, min(1.0, 1.0 - distance / 2.0))
+            matches.append(EmbeddingMatch(
+                sku=snap.id,
+                score=similarity,
+                source="firestore_findnearest",
+            ))
+        return matches
 
     # ------------------------------------------------------------------- cleanup
 
