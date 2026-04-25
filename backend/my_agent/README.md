@@ -72,6 +72,58 @@ dependency graph (async Firestore client, `MasterDataRepo`,
 If your emulator isn't up or credentials are missing, the import will
 fail loudly at launch time — that's by design.
 
+## Gmail ingress (Track A1, polling)
+
+One-time setup:
+
+1. Create an OAuth 2.0 Desktop-application client in
+   [Google Cloud Console → APIs & Services → Credentials](https://console.cloud.google.com/apis/credentials).
+   Download the JSON as `credentials.json`.
+
+2. Enable the Gmail API on the same project:
+   [APIs & Services → Library → Gmail API → Enable](https://console.cloud.google.com/apis/library/gmail.googleapis.com).
+
+3. Run the OAuth bootstrap:
+
+   ```bash
+   uv run python scripts/gmail_auth_init.py path/to/credentials.json
+   ```
+
+   A browser pops up. Sign in with the Gmail account the agent will read.
+   Grant the `gmail.modify` permission.
+
+4. Copy the three printed lines into `.env`:
+
+   ```
+   GMAIL_CLIENT_ID=...
+   GMAIL_CLIENT_SECRET=...
+   GMAIL_REFRESH_TOKEN=...
+   ```
+
+Run the poller:
+
+```bash
+uv run python scripts/gmail_poll.py
+```
+
+Every 30 seconds the poller pulls messages from the inbox that do NOT carry
+the `orderintake-processed` Gmail label, drives each through the 9-stage
+pipeline, then applies the label. Ctrl-C exits cleanly.
+
+**What to watch for:**
+
+- Structured log line `gmail_message_processed` per successful run — carries `gmail_id` + `source_message_id`.
+- Structured log line `gmail_message_failed` on any per-message error — the message stays unlabeled and will be retried next poll.
+- Audit log entries (if Track D has landed) under one `correlation_id` per Gmail message.
+- The `orderintake-processed` label appearing on messages in Gmail's UI.
+
+**Limitations (in scope only for Track A1):**
+
+- Polling only. Push-based ingestion via `users.watch()` + Pub/Sub + Cloud Run is Track A3.
+- Read-side only. Outbound `messages.send` for clarify / confirmation bodies is Track A2.
+- Single-inbox only. Multi-inbox deployment lives in Track A3.
+- No Secret Manager. Credentials live in `.env`.
+
 ## What to type in the UI
 
 `IngestStage` accepts either of:
