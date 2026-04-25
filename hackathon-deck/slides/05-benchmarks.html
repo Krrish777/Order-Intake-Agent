@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>05 · This is being solved at the top</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  .frame { position: absolute; inset: 80px 120px 120px 120px; display: flex; flex-direction: column; }
+  .header { margin-bottom: 48px; max-width: 1200px; }
+  .header .eyebrow { display: block; margin-bottom: 18px; }
+  .header h1 { margin: 0 0 20px; }
+  .header .lede { font-size: 26px; line-height: 1.45; color: var(--ink); max-width: 1000px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+    margin-bottom: 40px;
+  }
+  .card {
+    background: var(--cream-soft);
+    padding: 36px 32px 32px;
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    position: relative;
+    overflow: hidden;
+  }
+  .card::before {
+    content: "";
+    position: absolute;
+    top: 0; left: 0;
+    width: 48px; height: 4px;
+    background: var(--terracotta);
+  }
+  .card .company {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 500;
+    color: var(--teal);
+    letter-spacing: -0.01em;
+  }
+  .card .industry {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--ink-muted);
+  }
+  .card .metric {
+    font-family: var(--font-display);
+    font-size: 54px;
+    font-weight: 500;
+    line-height: 1;
+    color: var(--terracotta-dk);
+    letter-spacing: -0.02em;
+    margin-top: 10px;
+  }
+  .card .metric .small { font-size: 26px; }
+  .card .claim { font-size: 17px; color: var(--ink); line-height: 1.4; margin-top: auto; }
+
+  .footnote {
+    border-top: 1px solid var(--rule);
+    padding-top: 18px;
+    font-size: 16px;
+    color: var(--ink-muted);
+    max-width: 1400px;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body class="slide">
+
+<div class="frame">
+
+  <div class="header">
+    <span class="eyebrow">The proof · 01</span>
+    <h1 class="display-l">The leaders already solved this.</h1>
+    <p class="lede">Fortune-500 supply chains have publicly reported their results. Order-intake AI isn't a speculative bet &mdash; it's a category with references.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card">
+      <div class="industry">Pharma manufacturing</div>
+      <div class="company">Pfizer</div>
+      <div class="metric">80<span class="small">%</span></div>
+      <div class="claim">Touchless processing. Entry time dropped to under 5 minutes across 10 markets.</div>
+    </div>
+    <div class="card">
+      <div class="industry">Food &amp; beverage</div>
+      <div class="company">Carlsberg</div>
+      <div class="metric">92<span class="small">%</span></div>
+      <div class="claim">Touchless rate on distributor orders across 150 markets. 140+ hours recovered per month.</div>
+    </div>
+    <div class="card">
+      <div class="industry">Energy management</div>
+      <div class="company">Schneider</div>
+      <div class="metric">4h &rarr; 2m</div>
+      <div class="claim">PPE order processing. 70% zero-touch for non-EDI orders.</div>
+    </div>
+    <div class="card">
+      <div class="industry">Food &amp; beverage</div>
+      <div class="company">Heineken</div>
+      <div class="metric">500<span class="small">%</span></div>
+      <div class="claim">Faster processing. 50% of orders fully touchless, split automatically by kegs vs. glass.</div>
+    </div>
+  </div>
+
+  <div class="footnote">
+    Also reported: <strong>Thermo Fisher</strong> ($200&ndash;300M cash-flow improvement) &middot; <strong>Siemens</strong> (55,000 working hours/year saved) &middot; <strong>ABB</strong> ($200M/year via inventory optimization) &middot; <strong>Tetra Pak</strong> (85% reduction in information-collection time). Sources: conference talks, case studies, and public investor communications.
+  </div>
+
+</div>
+
+<div class="slide-chrome"><span class="rule"></span><span>05 / 10</span></div>
+
+</body>
+</html>

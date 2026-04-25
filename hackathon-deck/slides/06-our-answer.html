@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>06 · Our answer</title>
+<link rel="stylesheet" href="../shared/tokens.css">
+<style>
+  .frame { position: absolute; inset: 80px 120px 120px 120px; display: flex; flex-direction: column; }
+  .header { margin-bottom: 32px; max-width: 1300px; }
+  .header .eyebrow { display: block; margin-bottom: 18px; }
+  .header h1 { margin: 0 0 24px; }
+  .header h1 .b { color: var(--terracotta-dk); font-style: italic; }
+  .header .lede { font-size: 26px; line-height: 1.45; color: var(--ink); max-width: 1100px; }
+  .header .lede strong { color: var(--teal); font-weight: 600; }
+
+  .image-wrap {
+    background: #FDF8EF;
+    border: 1px solid var(--rule);
+    border-radius: 12px;
+    padding: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+  .image-wrap img { max-width: 100%; max-height: 520px; object-fit: contain; }
+
+  .pillars { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; }
+  .pillar { border-top: 2px solid var(--rule); padding-top: 18px; }
+  .pillar .title {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 500;
+    color: var(--teal);
+    margin-bottom: 8px;
+    letter-spacing: -0.01em;
+  }
+  .pillar .desc { font-size: 17px; line-height: 1.45; color: var(--ink-muted); }
+</style>
+</head>
+<body class="slide">
+
+<div class="frame">
+
+  <div class="header">
+    <span class="eyebrow">Our answer · 01</span>
+    <h1 class="display-l">Inbox to ERP in <span class="b">under 60 seconds.</span></h1>
+    <p class="lede">
+      An AI agent that watches a shared inbox, understands orders in <strong>any format</strong> &mdash; PDF, spreadsheet, XML, free text &mdash; matches line items to the catalog, writes a clean sales order, and replies to the customer. Ambiguous orders get routed to a human, never guessed at.
+    </p>
+  </div>
+
+  <div class="image-wrap">
+    <img src="../assets/images/04-60sec-workflow.png" alt="5-step automated workflow: AI Ingests Order, Validates & Enriches, Automated Exception Handling, Order Flows to ERP, Proactive Status Update">
+  </div>
+
+  <div class="pillars">
+    <div class="pillar">
+      <div class="title">Format-agnostic</div>
+      <div class="desc">One reasoning path across PDF, XLSX, CSV, XML, and free text. No hand-tuned OCR templates.</div>
+    </div>
+    <div class="pillar">
+      <div class="title">Human-in-the-loop by design</div>
+      <div class="desc">Exception queue is a first-class surface. The agent never writes an order it isn't confident about.</div>
+    </div>
+    <div class="pillar">
+      <div class="title">Closes its own loops</div>
+      <div class="desc">Targeted clarification emails in the original thread. Reply lands, validation re-runs automatically.</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="slide-chrome"><span class="rule"></span><span>06 / 10</span></div>
+
+</body>
+</html>
