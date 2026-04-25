@@ -64,6 +64,7 @@ import os
 from typing import Any, Final, Optional
 
 from google.adk.agents import LlmAgent, SequentialAgent
+from google.genai import Client as GenAIClient
 
 from backend.audit.logger import AuditLogger
 from backend.gmail.client import GmailClient
@@ -217,8 +218,9 @@ def _build_default_root_agent() -> SequentialAgent:
     # explicit cleanup should skip this helper and call
     # :func:`build_root_agent` directly with their own client.
     client = get_async_client()
+    genai_client = GenAIClient()
 
-    master_data_repo = MasterDataRepo(client)
+    master_data_repo = MasterDataRepo(client, genai_client=genai_client)
     order_validator = OrderValidator(repo=master_data_repo)
 
     order_store = FirestoreOrderStore(client)
