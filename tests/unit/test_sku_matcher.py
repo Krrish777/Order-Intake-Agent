@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 
 from backend.models.parsed_document import OrderLineItem
@@ -99,3 +101,95 @@ async def test_bogus_sku_but_valid_fuzzy_description(seeded_repo: MasterDataRepo
     assert product is not None
     assert product.sku == "FST-SHC-025-20-125-AB"
     assert tier == "fuzzy"
+
+
+# ---------- Track E: tier-3 real match ----------
+
+
+@pytest.mark.asyncio
+async def test_match_sku_tier_3_hit_returns_embedding_tier_with_score():
+    """When tier 1 (exact) and tier 2 (fuzzy) miss, but tier 3 returns
+    an EmbeddingMatch with score >= EMBEDDING_THRESHOLD, match_sku
+    returns (product, 'embedding', score)."""
+    from backend.models.master_records import EmbeddingMatch, ProductRecord
+    from backend.tools.order_validator.tools.sku_matcher import (
+        EMBEDDING_THRESHOLD,
+    )
+
+    matched_product = ProductRecord(
+        sku="WID-RED-100",
+        short_description="Widget Red 100ct",
+        long_description="Red widgets, pack of 100.",
+        category="widgets",
+        subcategory="colored",
+        uom="EA",
+        pack_uom="BX",
+        pack_size=100,
+        alt_uoms=["BX"],
+        unit_price_usd=4.20,
+        standards=[],
+        lead_time_days=1,
+        min_order_qty=1,
+        country_of_origin="US",
+    )
+
+    repo = MagicMock()
+    repo.list_all_products = AsyncMock(return_value=[])
+
+    async def fake_find(query: str, k: int = 5):
+        return [EmbeddingMatch(
+            sku="WID-RED-100",
+            score=0.85,
+            source="firestore_findnearest",
+        )]
+    repo.find_product_by_embedding = fake_find
+
+    # tier 1 doesn't call get_product when line.sku is None;
+    # tier 3 calls it once to hydrate the top match.
+    repo.get_product = AsyncMock(return_value=matched_product)
+
+    line = OrderLineItem(
+        sku=None,
+        description="widget red, case of 100",
+        quantity=5,
+        unit_of_measure="EA",
+    )
+
+    product, tier, score = await match_sku(line, repo, customer=None)
+
+    assert product == matched_product
+    assert tier == "embedding"
+    assert score == pytest.approx(0.85)
+    assert score >= EMBEDDING_THRESHOLD
+
+
+@pytest.mark.asyncio
+async def test_match_sku_tier_3_below_threshold_misses():
+    """Score < EMBEDDING_THRESHOLD falls through to the overall miss
+    branch, not an 'embedding' hit."""
+    from backend.models.master_records import EmbeddingMatch
+
+    repo = MagicMock()
+    repo.get_product = AsyncMock(return_value=None)
+    repo.list_all_products = AsyncMock(return_value=[])
+
+    async def fake_find(query: str, k: int = 5):
+        return [EmbeddingMatch(
+            sku="SKU-MAYBE",
+            score=0.65,
+            source="firestore_findnearest",
+        )]
+    repo.find_product_by_embedding = fake_find
+
+    line = OrderLineItem(
+        sku=None,
+        description="some unclear description",
+        quantity=1,
+        unit_of_measure="EA",
+    )
+
+    product, tier, score = await match_sku(line, repo, customer=None)
+
+    assert product is None
+    assert tier == "none"
+    assert score == 0.0
