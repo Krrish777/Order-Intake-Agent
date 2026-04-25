@@ -110,7 +110,9 @@ class OrderRecord(BaseModel):
     status: OrderStatus = OrderStatus.PERSISTED
     processed_by_agent_version: str
     confirmation_body: Optional[str] = None
-    schema_version: int = 3
+    sent_at: Optional[datetime] = None
+    send_error: Optional[str] = None
+    schema_version: int = 4
     created_at: datetime
 
 
