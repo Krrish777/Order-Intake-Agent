@@ -161,6 +161,85 @@ iterating on prompt outputs.
 runs retry. Setting `sent_at` only on success is what gives us "at most once visible" delivery
 even with at-least-once pipeline retries.
 
+### Push-based ingestion (Track A3)
+
+A3 replaces A1's inbox polling with a Gmail `users.watch()` → Cloud Pub/Sub →
+PULL subscription flow. A1's `scripts/gmail_poll.py` remains available as the
+no-GCP-infra dev loop.
+
+**One-time infrastructure setup:**
+
+```bash
+uv run python scripts/gmail_watch_setup.py \
+  --project demo-order-intake-local \
+  --topic gmail-inbox-events \
+  --subscription order-intake-ingestion
+```
+
+Idempotent. Creates the Pub/Sub topic + PULL subscription + grants
+Gmail's service account publisher role on the topic.
+
+**Add to `.env`:**
+
+```
+GMAIL_PUBSUB_PROJECT_ID=demo-order-intake-local
+GMAIL_PUBSUB_TOPIC=gmail-inbox-events
+GMAIL_PUBSUB_SUBSCRIPTION=order-intake-ingestion
+GMAIL_WATCH_RENEW_INTERVAL_SECONDS=86400
+```
+
+OAuth credentials are shared with A1 + A2 (same `GMAIL_*` vars); no re-auth
+needed if A2's refresh token is present.
+
+**Run the worker:**
+
+```bash
+uv run python scripts/gmail_pubsub_worker.py
+```
+
+Output on startup:
+- `gmail_watch_started` log with the Gmail-provided historyId + expiration
+- Two concurrent async loops: drain (pulls Pub/Sub) + renew (daily watch()
+  re-assertion)
+
+**What to watch for:**
+
+- `gmail_message_processed` per message (same as A1)
+- `gmail_watch_renewed` every 24 hours
+- `gmail_history_id_stale` if the worker was down >1 week — triggers
+  full-scan fallback for one cycle, then resumes push
+- `pubsub_pull_failed` on transient Pub/Sub errors — worker backs off 5s
+  and retries
+
+**Using the Pub/Sub emulator locally:**
+
+```bash
+gcloud beta emulators pubsub start --host-port=localhost:8085
+export PUBSUB_EMULATOR_HOST=localhost:8085
+```
+
+The `SubscriberAsyncClient` auto-uses the emulator when `PUBSUB_EMULATOR_HOST`
+is set.
+
+**A1 vs A3:**
+
+- **A1 (`scripts/gmail_poll.py`)** — no GCP infra required. Dev-friendly.
+  30-second polling cadence.
+- **A3 (`scripts/gmail_pubsub_worker.py`)** — requires Pub/Sub topic +
+  subscription. Near-real-time. Production-shape.
+
+Both reuse the same pipeline + credentials. Operator picks one per
+environment. Running both concurrently against the same inbox is safe
+(Gmail label dedup + source_message_id idempotency) but wastes cycles.
+
+**Limitations (deferred to Phase 3):**
+
+- No Cloud Run / webhook PUSH subscription. The PULL approach still
+  requires a long-lived process to drain the subscription.
+- No Secret Manager. Credentials remain in `.env`.
+- No Cloud Scheduler renewal. Renewal runs inside the worker; a
+  different process is responsible for keeping the worker alive.
+
 ## What to type in the UI
 
 `IngestStage` accepts either of:
