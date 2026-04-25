@@ -75,7 +75,9 @@ class ExceptionRecord(BaseModel):
     parsed_doc: ParsedDocument
     validation_result: ValidationResult
     resolved_to_order_id: Optional[str] = None
-    schema_version: int = 2
+    sent_at: Optional[datetime] = None
+    send_error: Optional[str] = None
+    schema_version: int = 3
     created_at: datetime
     updated_at: datetime
 
