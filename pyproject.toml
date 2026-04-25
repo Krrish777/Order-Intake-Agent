@@ -37,4 +37,5 @@ markers = [
     "integration: tests that hit the live LlamaExtract API (requires LLAMA_CLOUD_API_KEY)",
     "firestore_emulator: tests that require a running Firestore emulator (FIRESTORE_EMULATOR_HOST)",
     "gmail_live: gated live Gmail integration (set GMAIL_LIVE_TEST=1)",
+    "pubsub_emulator: requires the Cloud Pub/Sub emulator running locally (set PUBSUB_EMULATOR_HOST=localhost:8085)",
 ]
