@@ -40,6 +40,7 @@ from backend.my_agent.stages.classify import CLASSIFY_STAGE_NAME, ClassifyStage
 from backend.my_agent.stages.confirm import CONFIRM_STAGE_NAME, ConfirmStage
 from backend.my_agent.stages.finalize import FINALIZE_STAGE_NAME, FinalizeStage
 from backend.my_agent.stages.ingest import INGEST_STAGE_NAME, IngestStage
+from backend.my_agent.stages.judge import JUDGE_STAGE_NAME, JudgeStage
 from backend.my_agent.stages.parse import PARSE_STAGE_NAME, ParseStage
 from backend.my_agent.stages.persist import PERSIST_STAGE_NAME, PersistStage
 from backend.my_agent.stages.reply_shortcircuit import (
@@ -126,6 +127,7 @@ def _make_deps() -> dict:
         "clarify_agent": FakeChildLlmAgent(output_key="clarify_email"),
         "summary_agent": FakeChildLlmAgent(output_key="run_summary"),
         "confirm_agent": FakeChildLlmAgent(output_key="confirmation_email"),
+        "judge_agent": FakeChildLlmAgent(output_key="judge_verdict"),
         "exception_store": _FakeExceptionStore(),
         "order_store": _FakeOrderStore(),
         "audit_logger": AsyncMock(spec=AuditLogger),
@@ -167,6 +169,7 @@ def test_build_root_agent_sub_agents_in_canonical_order() -> None:
         PERSIST_STAGE_NAME,
         CONFIRM_STAGE_NAME,
         FINALIZE_STAGE_NAME,
+        JUDGE_STAGE_NAME,
         SEND_STAGE_NAME,
     ]
 
@@ -188,7 +191,8 @@ def test_build_root_agent_sub_agents_are_expected_types() -> None:
     assert isinstance(root.sub_agents[6], PersistStage)
     assert isinstance(root.sub_agents[7], ConfirmStage)
     assert isinstance(root.sub_agents[8], FinalizeStage)
-    assert isinstance(root.sub_agents[9], SendStage)
+    assert isinstance(root.sub_agents[9], JudgeStage)
+    assert isinstance(root.sub_agents[10], SendStage)
 
 
 def test_build_root_agent_rejects_positional_args() -> None:
@@ -268,7 +272,7 @@ async def test_build_root_agent_requires_audit_logger_kwarg() -> None:
 
 @pytest.mark.asyncio
 async def test_every_stage_gets_the_same_audit_logger_instance() -> None:
-    """All 10 stages must share one AuditLogger instance — guards against
+    """All 11 stages must share one AuditLogger instance — guards against
     someone accidentally passing different loggers per stage."""
     audit_logger = AsyncMock(spec=AuditLogger)
     deps = _make_deps()
@@ -297,17 +301,49 @@ class TestTrackA2Orchestration:
         )
         assert root is not None
 
-    def test_assembled_root_agent_has_10_sub_agents_with_send_last(self):
+    def test_assembled_root_agent_has_11_sub_agents_with_send_last(self):
         deps = _make_deps()
         root = build_root_agent(
             **deps,
             gmail_client=None,
             send_dry_run=False,
         )
-        assert len(root.sub_agents) == 10
-        assert isinstance(root.sub_agents[9], SendStage)
-        assert root.sub_agents[9].name == SEND_STAGE_NAME
+        assert len(root.sub_agents) == 11
+        assert isinstance(root.sub_agents[10], SendStage)
+        assert root.sub_agents[10].name == SEND_STAGE_NAME
 
-    def test_agent_version_is_track_a_v0_3(self):
+    def test_agent_version_is_track_a_v0_4(self):
         from backend.my_agent.agent import AGENT_VERSION
-        assert AGENT_VERSION == "track-a-v0.3"
+        assert AGENT_VERSION == "track-a-v0.4"
+
+
+# ---------------------------------------------------- Track B judge-stage tests
+
+
+class TestTrackBJudgeStage:
+    """Track B — JudgeStage wired as 10th sub_agent (index 9), v0.4 bump."""
+
+    def test_root_agent_has_11_stages_in_canonical_order(self):
+        """After Track B wiring, the pipeline must have 11 stages in order."""
+        root = build_root_agent(**_make_deps())
+        names = [sa.name for sa in root.sub_agents]
+        assert len(names) == 11
+        assert names[9] == JUDGE_STAGE_NAME
+        assert names[10] == SEND_STAGE_NAME
+
+    def test_judge_stage_is_subclass_at_index_9(self):
+        """sub_agents[9] must be a JudgeStage instance (not just named right)."""
+        root = build_root_agent(**_make_deps())
+        assert isinstance(root.sub_agents[9], JudgeStage)
+
+    def test_agent_version_bumped_to_v04_after_track_b(self):
+        """AGENT_VERSION must be 'track-a-v0.4' after Track B lands."""
+        from backend.my_agent.agent import AGENT_VERSION
+        assert AGENT_VERSION == "track-a-v0.4"
+
+    def test_build_root_agent_requires_judge_agent_kwarg(self):
+        """Omitting judge_agent from build_root_agent must raise TypeError."""
+        deps = _make_deps()
+        deps.pop("judge_agent")
+        with pytest.raises(TypeError):
+            build_root_agent(**deps)  # type: ignore[misc]

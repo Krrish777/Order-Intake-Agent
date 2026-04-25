@@ -230,6 +230,10 @@ async def test_end_to_end_patterson_po_lands_order_in_emulator() -> None:
             clarify_agent=clarify_agent,
             summary_agent=summary_agent,
             confirm_agent=confirm_agent,
+            judge_agent=FakeChildLlmAgent(
+                output_key="judge_verdict",
+                responses=[{"status": "pass", "reason": "stubbed for integration test", "findings": []}],
+            ),
             exception_store=exception_store,
             order_store=order_store,
             audit_logger=audit_logger,
@@ -483,6 +487,10 @@ async def test_duplicate_submission_escalates_and_skips_confirmation() -> None:
             ),
             summary_agent=summary_agent,
             confirm_agent=confirm_agent,
+            judge_agent=FakeChildLlmAgent(
+                output_key="judge_verdict",
+                responses=[{"status": "pass", "reason": "stubbed for dup integration test", "findings": []}],
+            ),
             exception_store=exception_store,
             order_store=order_store,
             audit_logger=audit_logger,
@@ -698,7 +706,7 @@ async def test_send_stage_writes_sent_at_on_persisted_order_in_emulator() -> Non
         assert persisted is not None
         assert persisted.sent_at is not None
         assert persisted.send_error is None
-        assert persisted.processed_by_agent_version == "track-a-v0.3"
+        assert persisted.processed_by_agent_version == "track-a-v0.4"
     finally:
         try:
             ref = client.collection(ORDERS_COLLECTION).document(source_message_id)
