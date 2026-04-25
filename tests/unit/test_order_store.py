@@ -172,7 +172,8 @@ async def test_save_preserves_schema_version_default(fake_client):
     # Bumped 1 → 2 when ``confirmation_body`` was added on the
     # ConfirmStage leg (AUTO_APPROVE confirmation email).
     # Bumped 2 → 3 (Track C) when denormalized query fields were added.
-    assert fetched.schema_version == 3
+    # Bumped 3 → 4 (Track A2) when sent_at + send_error were added.
+    assert fetched.schema_version == 4
 
 
 async def test_save_preserves_nested_snapshots_through_roundtrip(fake_client):
@@ -329,22 +330,6 @@ def _minimal_customer_snapshot() -> CustomerSnapshot:
 
 
 class TestOrderRecordSchemaV3:
-    def test_schema_version_default_is_3(self):
-        record = OrderRecord(
-            source_message_id="msg-1",
-            thread_id="thr-1",
-            customer=_minimal_customer_snapshot(),
-            customer_id="CUST-00042",
-            po_number="PO-123",
-            content_hash="a" * 64,
-            lines=[],
-            order_total=0.0,
-            confidence=1.0,
-            processed_by_agent_version="track-a-v0.2",
-            created_at=datetime.now(timezone.utc),
-        )
-        assert record.schema_version == 3
-
     def test_customer_id_is_required(self):
         with pytest.raises(ValidationError) as exc_info:
             OrderRecord(
@@ -394,3 +379,70 @@ class TestOrderRecordSchemaV3:
             created_at=datetime.now(timezone.utc),
         )
         assert record.po_number is None
+
+
+class TestOrderRecordSchemaV4:
+    """Track A2 — schema v4 with send-receipt fields."""
+
+    def test_schema_version_default_is_4(self):
+        record = OrderRecord(
+            source_message_id="msg-1",
+            thread_id="thr-1",
+            customer=_minimal_customer_snapshot(),
+            customer_id="CUST-00042",
+            po_number="PO-123",
+            content_hash="a" * 64,
+            lines=[],
+            order_total=0.0,
+            confidence=1.0,
+            processed_by_agent_version="track-a-v0.3",
+            created_at=datetime.now(timezone.utc),
+        )
+        assert record.schema_version == 4
+
+    def test_sent_at_defaults_to_none(self):
+        record = OrderRecord(
+            source_message_id="msg-1",
+            thread_id="thr-1",
+            customer=_minimal_customer_snapshot(),
+            customer_id="CUST-00042",
+            content_hash="a" * 64,
+            lines=[],
+            order_total=0.0,
+            confidence=1.0,
+            processed_by_agent_version="track-a-v0.3",
+            created_at=datetime.now(timezone.utc),
+        )
+        assert record.sent_at is None
+
+    def test_send_error_defaults_to_none(self):
+        record = OrderRecord(
+            source_message_id="msg-1",
+            thread_id="thr-1",
+            customer=_minimal_customer_snapshot(),
+            customer_id="CUST-00042",
+            content_hash="a" * 64,
+            lines=[],
+            order_total=0.0,
+            confidence=1.0,
+            processed_by_agent_version="track-a-v0.3",
+            created_at=datetime.now(timezone.utc),
+        )
+        assert record.send_error is None
+
+    def test_sent_at_accepts_utc_datetime(self):
+        now = datetime.now(timezone.utc)
+        record = OrderRecord(
+            source_message_id="msg-1",
+            thread_id="thr-1",
+            customer=_minimal_customer_snapshot(),
+            customer_id="CUST-00042",
+            content_hash="a" * 64,
+            lines=[],
+            order_total=0.0,
+            confidence=1.0,
+            processed_by_agent_version="track-a-v0.3",
+            created_at=datetime.now(timezone.utc),
+            sent_at=now,
+        )
+        assert record.sent_at == now
