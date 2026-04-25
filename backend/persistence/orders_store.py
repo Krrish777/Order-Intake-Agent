@@ -8,6 +8,7 @@ record.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
 
 from google.api_core.exceptions import AlreadyExists
@@ -54,3 +55,16 @@ class FirestoreOrderStore:
         await doc_ref.update({"confirmation_body": confirmation_body})
         snap = await doc_ref.get()
         return OrderRecord(**snap.to_dict())
+
+    async def update_with_send_receipt(
+        self,
+        *,
+        source_message_id: str,
+        sent_at: Optional[datetime],
+        send_error: Optional[str],
+    ) -> None:
+        doc_ref = self._client.collection(ORDERS_COLLECTION).document(source_message_id)
+        await doc_ref.update({
+            "sent_at": sent_at,
+            "send_error": send_error,
+        })

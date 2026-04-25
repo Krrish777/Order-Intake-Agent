@@ -406,3 +406,42 @@ class TestExceptionRecordSchemaV3:
         now = datetime.now(timezone.utc)
         record = _sample_exception(sent_at=now)
         assert record.sent_at == now
+
+
+class TestExceptionStoreUpdateWithSendReceipt:
+    """Track A2 — field-mask update of sent_at + send_error post-save."""
+
+    async def test_update_sets_sent_at(self, fake_client):
+        from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+        store = FirestoreExceptionStore(fake_client)
+        await store.save(_sample_exception(source_message_id="msg-A"))
+
+        sent_at = datetime(2026, 4, 25, 10, 0, 0, tzinfo=timezone.utc)
+        await store.update_with_send_receipt(
+            source_message_id="msg-A",
+            sent_at=sent_at,
+            send_error=None,
+        )
+
+        got = await store.get("msg-A")
+        assert got is not None
+        assert got.sent_at == sent_at
+        assert got.send_error is None
+
+    async def test_update_records_send_error(self, fake_client):
+        from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+        store = FirestoreExceptionStore(fake_client)
+        await store.save(_sample_exception(source_message_id="msg-B"))
+
+        await store.update_with_send_receipt(
+            source_message_id="msg-B",
+            sent_at=None,
+            send_error="no_recipient",
+        )
+
+        got = await store.get("msg-B")
+        assert got is not None
+        assert got.sent_at is None
+        assert got.send_error == "no_recipient"

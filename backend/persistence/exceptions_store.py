@@ -9,6 +9,7 @@ correlation, and :meth:`update_with_reply` for transactional state advancement.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional
 
 from google.api_core.exceptions import AlreadyExists
@@ -97,3 +98,18 @@ class FirestoreExceptionStore:
         )
         new_snap = await doc_ref.get()
         return ExceptionRecord(**new_snap.to_dict())
+
+    async def update_with_send_receipt(
+        self,
+        *,
+        source_message_id: str,
+        sent_at: Optional[datetime],
+        send_error: Optional[str],
+    ) -> None:
+        doc_ref = self._client.collection(EXCEPTIONS_COLLECTION).document(
+            source_message_id
+        )
+        await doc_ref.update({
+            "sent_at": sent_at,
+            "send_error": send_error,
+        })
