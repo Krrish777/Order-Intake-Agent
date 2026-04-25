@@ -590,6 +590,269 @@ async def test_duplicate_submission_escalates_and_skips_confirmation() -> None:
 
 
 @pytest.mark.firestore_emulator
+async def test_full_11_stage_pipeline_judge_verdict_lands_on_order_record() -> None:
+    """Track B Task 11: full 11-stage pipeline with fully-stubbed classify + parse.
+
+    Drives the complete ``ingest → reply_shortcircuit → classify → parse →
+    validate → clarify → persist → confirm → finalize → judge → send``
+    sequence against the Firestore emulator.  Every LLM-backed stage
+    (classify, parse, clarify, confirm, summary, judge) is replaced with
+    a deterministic stub so the test does not touch LlamaCloud or Gemini.
+
+    The stub ``parse_fn`` emits Patterson Industrial Supply Co. (CUST-00042)
+    with one line on SKU ``FST-HCS-050-13-200-G5Z`` at the catalog's exact
+    unit price ($0.34) and qty 100 (≥ min_order_qty 25).  This produces a
+    tier-1 exact match → aggregate_confidence 1.0 → AUTO_APPROVE.
+
+    Asserts:
+    * The ``OrderRecord`` persisted under ``orders/<message_id>`` exists
+      in the emulator with ``confidence ≥ 0.95``.
+    * ``OrderRecord.judge_verdict`` is non-None and carries
+      ``status="pass"``.
+    * ``OrderRecord.send_error`` is ``None`` — judge passed; dry-run
+      SendStage must not record a rejection reason.
+
+    Note on module-level skip guard
+    --------------------------------
+    This file's ``pytestmark`` requires both ``FIRESTORE_EMULATOR_HOST``
+    *and* ``LLAMA_CLOUD_API_KEY`` to be set (the latter was added for
+    the live-LlamaCloud tests above).  This test does NOT call LlamaCloud,
+    but it cannot override the module-level skip — so it will also be
+    skipped locally when ``LLAMA_CLOUD_API_KEY`` is absent.  In CI both
+    env vars are present.  The test still collects cleanly (no import
+    errors) and skips gracefully when either var is unset.
+    """
+    from backend.models.classified_document import ClassifiedDocument
+    from backend.models.parsed_document import (
+        ExtractedOrder,
+        OrderLineItem,
+        ParsedDocument,
+    )
+
+    # ── Minimal deterministic EML (no file on disk required) ─────────────
+    # IngestStage accepts raw RFC 5322 content when _looks_like_raw_eml()
+    # returns True (starts with "From:" + contains blank line).
+    # A unique Message-ID per run avoids emulator collision on re-runs.
+    unique_msg_id = f"<judge-verdict-it-{uuid.uuid4().hex}@int.test>"
+    raw_eml = (
+        f"From: g.prescott@patterson-indust.com\r\n"
+        f"To: orders@grafton-reese.com\r\n"
+        f"Subject: PO JV-IT-001 — stub order for judge-verdict integration test\r\n"
+        f"Message-ID: {unique_msg_id}\r\n"
+        f"Date: Thu, 24 Apr 2026 09:00:00 +0000\r\n"
+        f"MIME-Version: 1.0\r\n"
+        f"Content-Type: text/plain; charset=utf-8\r\n"
+        f"\r\n"
+        f"Please supply 100 EA FST-HCS-050-13-200-G5Z at $0.34 each.\r\n"
+        f"PO#: JV-IT-001\r\n"
+        f"Ship to: Patterson DC — Cleveland, 2750 Harvard Avenue, Cleveland OH 44105\r\n"
+    )
+
+    # ── Stub classify_fn ─────────────────────────────────────────────────
+    # Returns a ClassifiedDocument that ClassifyStage writes to
+    # state['classified_docs'][0].  document_intent='purchase_order' routes
+    # the attachment into ParseStage.
+    def _stub_classify(content: bytes, filename: str) -> ClassifiedDocument:
+        return ClassifiedDocument(
+            document_intent="purchase_order",
+            intent_confidence=1.0,
+            intent_reasoning="stub: deterministic purchase_order for judge-verdict test",
+            document_format="text",
+            filename=filename,
+            mime_type="text/plain",
+            byte_size=len(content),
+            classify_job_id="stub-job-jv",
+        )
+
+    # ── Stub parse_fn ────────────────────────────────────────────────────
+    # Returns a ParsedDocument with one sub_document that resolves to
+    # CUST-00042 (Patterson) + tier-1 SKU FST-HCS-050-13-200-G5Z at exact
+    # catalog price → aggregate_confidence 1.0 → AUTO_APPROVE.
+    def _stub_parse(content: bytes, filename: str) -> ParsedDocument:
+        return ParsedDocument(
+            classification="purchase_order",
+            classification_rationale="stub: deterministic PO for judge-verdict test",
+            sub_documents=[
+                ExtractedOrder(
+                    customer_name="Patterson Industrial Supply Co.",
+                    po_number="JV-IT-001",
+                    line_items=[
+                        OrderLineItem(
+                            sku="FST-HCS-050-13-200-G5Z",
+                            description="HCS 1/2-13 x 2 GR5 ZP",
+                            quantity=100,
+                            unit_of_measure="EA",
+                            unit_price=0.34,
+                        )
+                    ],
+                )
+            ],
+            page_count=1,
+            detected_language="en",
+        )
+
+    # ── Deps (real stores + validator over emulator) ──────────────────────
+    client = get_async_client()
+    repo = MasterDataRepo(client)
+    validator = OrderValidator(repo=repo)
+    order_store = FirestoreOrderStore(client)
+    exception_store = FirestoreExceptionStore(client)
+    coordinator = IntakeCoordinator(
+        validator=validator,
+        order_store=order_store,
+        exception_store=exception_store,
+        repo=repo,
+        agent_version=f"{AGENT_VERSION}-b11-int-test",
+    )
+    audit_logger = AuditLogger(client=client, agent_version=AGENT_VERSION)
+
+    # ── Stubbed LlmAgent children ─────────────────────────────────────────
+    clarify_agent = FakeChildLlmAgent(
+        output_key="clarify_email",
+        responses=[{"subject": "Re: stub", "body": "stub clarify body"}],
+        name="fake_clarify_jv",
+    )
+    confirm_agent = FakeChildLlmAgent(
+        output_key="confirmation_email",
+        responses=[
+            {
+                "subject": "Re: PO JV-IT-001 — confirmed",
+                "body": (
+                    "Hi Patterson Industrial, thank you for PO JV-IT-001. "
+                    "We have confirmed 100 EA FST-HCS-050-13-200-G5Z at $0.34 each."
+                ),
+            }
+        ],
+        name="fake_confirm_jv",
+    )
+    summary_agent = FakeChildLlmAgent(
+        output_key="run_summary",
+        responses=[
+            {
+                "orders_created": 1,
+                "exceptions_opened": 0,
+                "docs_skipped": 0,
+                "summary": "stubbed run summary — judge-verdict integration test",
+            }
+        ],
+        name="fake_summary_jv",
+    )
+    judge_agent = FakeChildLlmAgent(
+        output_key="judge_verdict",
+        responses=[{"status": "pass", "reason": "", "findings": []}],
+        name="fake_judge_jv",
+    )
+
+    root_agent = build_root_agent(
+        classify_fn=_stub_classify,
+        parse_fn=_stub_parse,
+        validator=validator,
+        coordinator=coordinator,
+        clarify_agent=clarify_agent,
+        summary_agent=summary_agent,
+        confirm_agent=confirm_agent,
+        judge_agent=judge_agent,
+        exception_store=exception_store,
+        order_store=order_store,
+        audit_logger=audit_logger,
+        gmail_client=None,
+        send_dry_run=True,
+    )
+
+    # ── Runner + session ──────────────────────────────────────────────────
+    session_service = InMemorySessionService()
+    session_id = f"int-jv-{uuid.uuid4().hex}"
+    await session_service.create_session(
+        app_name=_APP_NAME, user_id=_USER_ID, session_id=session_id
+    )
+    runner = Runner(
+        app_name=_APP_NAME,
+        agent=root_agent,
+        session_service=session_service,
+    )
+    new_message = types.Content(
+        role="user",
+        parts=[types.Part.from_text(text=raw_eml)],
+    )
+
+    # ── Drive the 11-stage pipeline ───────────────────────────────────────
+    events = []
+    try:
+        async for event in runner.run_async(
+            user_id=_USER_ID,
+            session_id=session_id,
+            new_message=new_message,
+        ):
+            events.append(event)
+
+        assert events, "Runner yielded zero events — pipeline did not run"
+
+        # ── Pull final session state ──────────────────────────────────────
+        session = await session_service.get_session(
+            app_name=_APP_NAME, user_id=_USER_ID, session_id=session_id
+        )
+        assert session is not None, "Session disappeared mid-run"
+        state = session.state
+
+        envelope = state.get("envelope")
+        assert envelope is not None, "IngestStage did not seed envelope"
+        message_id = envelope["message_id"]
+
+        # ── Validate AUTO_APPROVE path through process_results ────────────
+        process_results = state.get("process_results", [])
+        assert len(process_results) == 1, (
+            f"expected 1 process_result; got {process_results}"
+        )
+        result_entry = process_results[0]
+        assert result_entry["result"]["kind"] == "order", result_entry
+        validation = result_entry["result"]["validation"]
+        assert validation["aggregate_confidence"] >= 0.95, (
+            f"expected AUTO_APPROVE confidence; got {validation}"
+        )
+        assert validation["decision"] == "auto_approve", (
+            f"expected AUTO_APPROVE decision; got {validation}"
+        )
+
+        # ── Core assertion: judge_verdict persisted on OrderRecord ─────────
+        persisted: OrderRecord | None = await order_store.get(message_id)
+        assert persisted is not None, (
+            f"expected orders/{message_id} in emulator; got nothing. "
+            "Check that master data is loaded (scripts/load_master_data.py)."
+        )
+
+        assert persisted.judge_verdict is not None, (
+            "OrderRecord.judge_verdict is None — JudgeStage did not "
+            "persist the verdict onto the record via update_with_judge_verdict()"
+        )
+        assert persisted.judge_verdict.status == "pass", (
+            f"expected judge_verdict.status='pass'; got {persisted.judge_verdict!r}"
+        )
+        assert persisted.judge_verdict.findings == [], (
+            f"expected empty findings; got {persisted.judge_verdict.findings!r}"
+        )
+
+        # ── send_error must be None (judge passed; dry-run → no Gmail call) ─
+        assert persisted.send_error is None, (
+            f"expected send_error=None (judge passed + dry_run=True); "
+            f"got send_error={persisted.send_error!r}"
+        )
+
+        # ── Confidence sanity-check ───────────────────────────────────────
+        assert persisted.confidence >= 0.95, (
+            f"persisted confidence {persisted.confidence} below AUTO_APPROVE threshold"
+        )
+
+    finally:
+        # Cleanup: delete the emulator doc so repeated runs stay clean.
+        try:
+            doc_ref = client.collection(ORDERS_COLLECTION).document(message_id)
+            await doc_ref.delete()
+        except Exception:
+            pass
+        await repo.aclose()
+
+
+@pytest.mark.firestore_emulator
 async def test_send_stage_writes_sent_at_on_persisted_order_in_emulator() -> None:
     """Track A2 stage-level integration: SendStage drives a mock GmailClient
     and persists ``sent_at`` on the OrderRecord in the live emulator.
