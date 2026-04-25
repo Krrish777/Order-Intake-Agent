@@ -81,6 +81,8 @@ def _sample_exception(
     clarify_message_id: str | None = None,
     reply_message_id: str | None = None,
     clarify_body: str | None = None,
+    sent_at: datetime | None = None,
+    send_error: str | None = None,
 ) -> ExceptionRecord:
     base = datetime(2026, 4, 22, 0, 0, 0, tzinfo=timezone.utc)
     return ExceptionRecord(
@@ -95,6 +97,8 @@ def _sample_exception(
         validation_result=_sample_validation_result(),
         created_at=base,
         updated_at=base,
+        sent_at=sent_at,
+        send_error=send_error,
     )
 
 
@@ -381,4 +385,24 @@ async def test_save_round_trips_clarify_body(fake_client):
     fetched = await store.get(saved.source_message_id)
     assert fetched is not None
     assert fetched.clarify_body == body
-    assert fetched.schema_version == 2
+    assert fetched.schema_version == 3
+
+
+class TestExceptionRecordSchemaV3:
+    """Track A2 — schema v3 with send-receipt fields."""
+
+    def test_schema_version_default_is_3(self):
+        record = _sample_exception()
+        assert record.schema_version == 3
+
+    def test_sent_at_and_send_error_default_to_none(self):
+        record = _sample_exception()
+        assert record.sent_at is None
+        assert record.send_error is None
+
+    def test_sent_at_accepts_utc_datetime(self):
+        from datetime import datetime, timezone
+
+        now = datetime.now(timezone.utc)
+        record = _sample_exception(sent_at=now)
+        assert record.sent_at == now
