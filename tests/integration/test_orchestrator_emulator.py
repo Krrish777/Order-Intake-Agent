@@ -579,3 +579,129 @@ async def test_duplicate_submission_escalates_and_skips_confirmation() -> None:
             except Exception:
                 pass
         await repo.aclose()
+
+
+@pytest.mark.firestore_emulator
+async def test_send_stage_writes_sent_at_on_persisted_order_in_emulator() -> None:
+    """Track A2 stage-level integration: SendStage drives a mock GmailClient
+    and persists ``sent_at`` on the OrderRecord in the live emulator.
+
+    Avoids a full live-LlamaCloud pipeline run by seeding the order
+    directly + invoking SendStage with a faked process_results state —
+    the same shape PersistStage produces. Verifies:
+
+    * ``GmailClient.send_message`` is called exactly once with the
+      expected reply-thread headers
+    * ``sent_at`` is populated on the persisted ``OrderRecord``
+    * ``send_error`` remains None
+    """
+    from datetime import datetime, timezone
+    from unittest.mock import AsyncMock, MagicMock
+
+    from backend.gmail.client import GmailClient
+    from backend.models.master_records import AddressRecord
+    from backend.models.order_record import (
+        CustomerSnapshot,
+        OrderRecord,
+    )
+    from backend.my_agent.stages.send import SendStage
+    from backend.persistence.orders_store import FirestoreOrderStore
+    from tests.unit._stage_testing import make_stage_ctx
+
+    client = get_async_client()
+    order_store = FirestoreOrderStore(client)
+    exception_store = FirestoreExceptionStore(client)
+
+    source_message_id = f"<send-stage-int-{uuid.uuid4().hex}@test>"
+
+    seed_record = OrderRecord(
+        source_message_id=source_message_id,
+        thread_id="thread-int",
+        customer=CustomerSnapshot(
+            customer_id="CUST-INT",
+            name="Integration Test Co.",
+            bill_to=AddressRecord(
+                street1="1 Test Ln",
+                city="Test City",
+                state="OH",
+                zip="00000",
+                country="USA",
+            ),
+            payment_terms="Net 30",
+            contact_email="customer@example.com",
+        ),
+        customer_id="CUST-INT",
+        po_number="PO-INT",
+        content_hash="b" * 64,
+        lines=[],
+        order_total=0.0,
+        confidence=1.0,
+        processed_by_agent_version="track-a-v0.3",
+        confirmation_body="Thanks for your order.",
+        created_at=datetime.now(timezone.utc),
+    )
+
+    await order_store.save(seed_record)
+
+    gmail_client = MagicMock(spec=GmailClient)
+    gmail_client.send_message = MagicMock(return_value="gmail-int-1")
+
+    audit_logger = AsyncMock()
+    stage = SendStage(
+        gmail_client=gmail_client,
+        order_store=order_store,
+        exception_store=exception_store,
+        dry_run=False,
+        audit_logger=audit_logger,
+    )
+
+    state = {
+        "correlation_id": "int-corr",
+        "reply_handled": False,
+        "envelope": {
+            "message_id": source_message_id,
+            "subject": "Order request",
+            "from_addr": "customer@example.com",
+            "references": [],
+        },
+        "process_results": [
+            {
+                "filename": "body.txt",
+                "sub_doc_index": 0,
+                "result": {
+                    "kind": "order",
+                    "order": {
+                        "source_message_id": source_message_id,
+                        "confirmation_body": "Thanks for your order.",
+                        "sent_at": None,
+                        "customer": {"contact_email": "customer@example.com"},
+                    },
+                    "exception": None,
+                },
+            }
+        ],
+    }
+    ctx = make_stage_ctx(stage=stage, state=state)
+
+    try:
+        async for _ in stage.run_async(ctx):
+            pass
+
+        # Gmail send happened once
+        assert gmail_client.send_message.call_count == 1
+        send_kwargs = gmail_client.send_message.call_args.kwargs
+        assert send_kwargs["to"] == "customer@example.com"
+        assert send_kwargs["in_reply_to"] == source_message_id
+
+        # Order has sent_at + send_error=None
+        persisted = await order_store.get(source_message_id)
+        assert persisted is not None
+        assert persisted.sent_at is not None
+        assert persisted.send_error is None
+        assert persisted.processed_by_agent_version == "track-a-v0.3"
+    finally:
+        try:
+            ref = client.collection(ORDERS_COLLECTION).document(source_message_id)
+            await ref.delete()
+        except Exception:
+            pass
