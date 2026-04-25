@@ -113,6 +113,21 @@ class SendStage(AuditedStage):
         if False:
             yield None  # pragma: no cover
 
+    async def _emit_blocked(self, ctx, source_message_id, send_error):
+        await self._audit_logger.emit(
+            correlation_id=ctx.session.state.get("correlation_id", ""),
+            session_id=ctx.session.id,
+            source_message_id=source_message_id,
+            stage="lifecycle",
+            phase="lifecycle",
+            action="email_send_blocked",
+            outcome="error",
+            payload={
+                "record_id": source_message_id,
+                "send_error": send_error,
+            },
+        )
+
     async def _maybe_send_confirmation(
         self,
         *,
@@ -132,6 +147,17 @@ class SendStage(AuditedStage):
         if order.get("sent_at") is not None:
             await self._emit_skipped(ctx, source_message_id, "already_sent")
             return
+
+        # --- Track B judge-gate -------------------------------------------
+        verdict = ctx.session.state.get("judge_verdicts", {}).get(source_message_id)
+        if verdict is None or verdict.get("status") != "pass":
+            reason = verdict.get("reason") if verdict else "judge_missing"
+            send_error = f"judge_rejected:{reason}"
+            await self._record_failure(source_message_id, self._order_store, send_error)
+            await self._emit_blocked(ctx, source_message_id, send_error)
+            return
+        # --- end Track B judge-gate ----------------------------------------
+
         recipient = ((order.get("customer") or {}).get("contact_email")) or ""
         if not recipient:
             await self._record_failure(source_message_id, self._order_store, "no_recipient")
@@ -198,6 +224,16 @@ class SendStage(AuditedStage):
         if exception.get("sent_at") is not None:
             await self._emit_skipped(ctx, source_message_id, "already_sent")
             return
+
+        # --- Track B judge-gate -------------------------------------------
+        verdict = ctx.session.state.get("judge_verdicts", {}).get(source_message_id)
+        if verdict is None or verdict.get("status") != "pass":
+            reason = verdict.get("reason") if verdict else "judge_missing"
+            send_error = f"judge_rejected:{reason}"
+            await self._record_failure(source_message_id, self._exception_store, send_error)
+            await self._emit_blocked(ctx, source_message_id, send_error)
+            return
+        # --- end Track B judge-gate ----------------------------------------
 
         # ExceptionRecord carries no contact_email; reply to the
         # envelope's original sender. (Track A's clarify-reply path
