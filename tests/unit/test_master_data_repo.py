@@ -12,6 +12,8 @@ Parity with the real Firestore client is asserted separately in
 
 from __future__ import annotations
 
+from unittest.mock import MagicMock
+
 import pytest
 
 from backend.models.master_records import (
@@ -112,10 +114,27 @@ async def test_get_meta_missing_raises(empty_repo: MasterDataRepo) -> None:
         await empty_repo.get_meta()
 
 
-@pytest.mark.asyncio
-async def test_find_product_by_embedding_stub_returns_empty(seeded_repo: MasterDataRepo) -> None:
-    assert await seeded_repo.find_product_by_embedding("hex cap screw zinc grade 5") == []
-    assert await seeded_repo.find_product_by_embedding("anything", k=10) == []
+# ---------- Track E: genai_client DI + construction contract ----------
+
+
+def test_master_data_repo_accepts_optional_genai_client_kwarg():
+    stub_genai = MagicMock()
+    repo = MasterDataRepo(client=MagicMock(), genai_client=stub_genai)
+    assert repo._genai_client is stub_genai
+
+
+def test_master_data_repo_constructs_without_genai_client():
+    """Backward compatibility: pre-Track-E call sites that do not
+    pass genai_client must continue to work. The client is lazily
+    created on first embedding call, never during __init__."""
+    from unittest.mock import patch
+
+    from backend.tools.order_validator.tools import master_data_repo
+
+    with patch.object(master_data_repo, "GenAIClient") as ctor:
+        repo = master_data_repo.MasterDataRepo(client=MagicMock())
+        ctor.assert_not_called()
+        assert repo._genai_client is None
 
 
 @pytest.mark.asyncio
