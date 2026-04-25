@@ -17,6 +17,7 @@ from google.cloud.firestore_v1 import SERVER_TIMESTAMP
 from google.cloud.firestore_v1.base_query import FieldFilter
 
 from backend.models.exception_record import ExceptionRecord, ExceptionStatus
+from backend.models.judge_verdict import JudgeVerdict
 
 EXCEPTIONS_COLLECTION = "exceptions"
 
@@ -113,3 +114,13 @@ class FirestoreExceptionStore:
             "sent_at": sent_at,
             "send_error": send_error,
         })
+
+    async def update_with_judge_verdict(
+        self,
+        source_message_id: str,
+        verdict: JudgeVerdict,
+    ) -> None:
+        doc_ref = self._client.collection(EXCEPTIONS_COLLECTION).document(source_message_id)
+        await doc_ref.update(
+            {"judge_verdict": verdict.model_dump(mode="json")}
+        )

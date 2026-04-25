@@ -144,3 +144,36 @@ async def test_full_lifecycle_pending_to_awaiting_review(store):
 
     after = await store.find_pending_clarify(thread_id)
     assert after is None  # exception now AWAITING_REVIEW; not in pending bucket
+
+
+@pytest.mark.asyncio
+@pytest.mark.firestore_emulator
+async def test_update_with_judge_verdict_round_trips_against_emulator(
+    emulator_firestore_client,
+):
+    from backend.models.judge_verdict import (
+        JudgeFinding,
+        JudgeFindingKind,
+        JudgeVerdict,
+    )
+    from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+    store  = FirestoreExceptionStore(emulator_firestore_client)
+    record = _sample_exception()
+    await store.save(record)
+
+    verdict = JudgeVerdict(
+        status="rejected",
+        reason="tone drift",
+        findings=[
+            JudgeFinding(
+                kind=JudgeFindingKind.TONE,
+                quote="sorry for the trouble, we'll figure it out",
+                explanation="clarify emails should ask precise questions, not apologize.",
+            )
+        ],
+    )
+    await store.update_with_judge_verdict(record.source_message_id, verdict)
+
+    restored = await store.get(record.source_message_id)
+    assert restored.judge_verdict == verdict

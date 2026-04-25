@@ -10,6 +10,8 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
+import pytest
+
 from backend.models.exception_record import ExceptionRecord, ExceptionStatus
 from backend.models.parsed_document import (
     ExtractedOrder,
@@ -445,3 +447,71 @@ class TestExceptionStoreUpdateWithSendReceipt:
         assert got is not None
         assert got.sent_at is None
         assert got.send_error == "no_recipient"
+
+
+# --- Track B: update_with_judge_verdict ---
+
+@pytest.mark.asyncio
+async def test_update_with_judge_verdict_happy_path(fake_client):
+    from backend.models.judge_verdict import (
+        JudgeFinding,
+        JudgeFindingKind,
+        JudgeVerdict,
+    )
+    from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+    store  = FirestoreExceptionStore(fake_client)
+    record = _sample_exception()
+    source = record.source_message_id
+    await store.save(record)
+
+    verdict = JudgeVerdict(
+        status="rejected",
+        reason="unauthorized commitment in clarify body",
+        findings=[
+            JudgeFinding(
+                kind=JudgeFindingKind.UNAUTHORIZED_COMMITMENT,
+                quote="we will ship immediately",
+                explanation="clarify emails ask; no commitment authorized.",
+            )
+        ],
+    )
+    await store.update_with_judge_verdict(source, verdict)
+
+    restored = await store.get(source)
+    assert restored is not None
+    assert restored.judge_verdict == verdict
+
+
+@pytest.mark.asyncio
+async def test_update_with_judge_verdict_raises_notfound_for_missing_doc(fake_client):
+    from google.api_core.exceptions import NotFound
+
+    from backend.models.judge_verdict import JudgeVerdict
+    from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+    store = FirestoreExceptionStore(fake_client)
+    with pytest.raises(NotFound):
+        await store.update_with_judge_verdict(
+            "nonexistent-source-id",
+            JudgeVerdict(status="pass", reason="", findings=[]),
+        )
+
+
+@pytest.mark.asyncio
+async def test_update_with_judge_verdict_overwrites_prior_verdict(fake_client):
+    from backend.models.judge_verdict import JudgeVerdict
+    from backend.persistence.exceptions_store import FirestoreExceptionStore
+
+    store  = FirestoreExceptionStore(fake_client)
+    record = _sample_exception()
+    source = record.source_message_id
+    await store.save(record)
+
+    v1 = JudgeVerdict(status="pass", reason="", findings=[])
+    await store.update_with_judge_verdict(source, v1)
+    assert (await store.get(source)).judge_verdict == v1
+
+    v2 = JudgeVerdict(status="rejected", reason="tone", findings=[])
+    await store.update_with_judge_verdict(source, v2)
+    assert (await store.get(source)).judge_verdict == v2
