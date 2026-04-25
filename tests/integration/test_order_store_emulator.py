@@ -146,3 +146,33 @@ async def test_update_with_confirmation_persists_to_emulator(store):
     reread = await store.get(msg_id)
     assert reread is not None
     assert reread.confirmation_body == body
+
+
+async def test_update_with_judge_verdict_round_trips_against_emulator(store):
+    """SDK-parity guard: the field-mask update for judge_verdict
+    round-trips cleanly through the real Firestore emulator."""
+    from backend.models.judge_verdict import (
+        JudgeFinding,
+        JudgeFindingKind,
+        JudgeVerdict,
+    )
+
+    msg_id = f"int-msg-judge-{uuid.uuid4().hex}"
+    await store.save(_order(msg_id))
+
+    verdict = JudgeVerdict(
+        status="rejected",
+        reason="hallucinated total",
+        findings=[
+            JudgeFinding(
+                kind=JudgeFindingKind.HALLUCINATED_FACT,
+                quote="$999.99",
+                explanation="order.total is 127.40",
+            )
+        ],
+    )
+    await store.update_with_judge_verdict(msg_id, verdict)
+
+    restored = await store.get(msg_id)
+    assert restored is not None
+    assert restored.judge_verdict == verdict
