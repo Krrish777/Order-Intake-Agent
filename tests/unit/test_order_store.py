@@ -486,3 +486,75 @@ class TestOrderStoreUpdateWithSendReceipt:
         assert got is not None
         assert got.sent_at is None
         assert got.send_error == "RuntimeError: quota exceeded"
+
+
+# --- Track B: update_with_judge_verdict ---
+
+@pytest.mark.asyncio
+async def test_update_with_judge_verdict_happy_path(fake_client):
+    """Saved order gains judge_verdict via field-mask update; get() reflects it."""
+    from backend.models.judge_verdict import (
+        JudgeFinding,
+        JudgeFindingKind,
+        JudgeVerdict,
+    )
+    from backend.persistence.orders_store import FirestoreOrderStore
+
+    store  = FirestoreOrderStore(fake_client)
+    order  = _sample_order()
+    source = order.source_message_id
+
+    await store.save(order)
+
+    verdict = JudgeVerdict(
+        status="rejected",
+        reason="hallucinated total",
+        findings=[
+            JudgeFinding(
+                kind=JudgeFindingKind.HALLUCINATED_FACT,
+                quote="$999.99",
+                explanation="order.total is 127.40",
+            )
+        ],
+    )
+    await store.update_with_judge_verdict(source, verdict)
+
+    restored = await store.get(source)
+    assert restored is not None
+    assert restored.judge_verdict == verdict
+
+
+@pytest.mark.asyncio
+async def test_update_with_judge_verdict_raises_notfound_for_missing_doc(fake_client):
+    from google.api_core.exceptions import NotFound
+
+    from backend.models.judge_verdict import JudgeVerdict
+    from backend.persistence.orders_store import FirestoreOrderStore
+
+    store = FirestoreOrderStore(fake_client)
+    with pytest.raises(NotFound):
+        await store.update_with_judge_verdict(
+            "nonexistent-source-id",
+            JudgeVerdict(status="pass", reason="", findings=[]),
+        )
+
+
+@pytest.mark.asyncio
+async def test_update_with_judge_verdict_overwrites_prior_verdict(fake_client):
+    """No idempotency skip — re-call overwrites.
+    Matches update_with_confirmation semantics."""
+    from backend.models.judge_verdict import JudgeVerdict
+    from backend.persistence.orders_store import FirestoreOrderStore
+
+    store  = FirestoreOrderStore(fake_client)
+    order  = _sample_order()
+    source = order.source_message_id
+    await store.save(order)
+
+    v1 = JudgeVerdict(status="pass", reason="", findings=[])
+    await store.update_with_judge_verdict(source, v1)
+    assert (await store.get(source)).judge_verdict == v1
+
+    v2 = JudgeVerdict(status="rejected", reason="tone issue", findings=[])
+    await store.update_with_judge_verdict(source, v2)
+    assert (await store.get(source)).judge_verdict == v2

@@ -18,6 +18,7 @@ from datetime import datetime
 from typing import Optional, Protocol
 
 from backend.models.exception_record import ExceptionRecord
+from backend.models.judge_verdict import JudgeVerdict
 from backend.models.order_record import OrderRecord
 
 
@@ -55,6 +56,17 @@ class OrderStore(Protocol):
         """Field-mask update of ``sent_at`` + ``send_error`` post-send.
 
         Raises when the doc does not exist — callers invoke post-save."""
+        ...
+
+    async def update_with_judge_verdict(
+        self,
+        source_message_id: str,
+        verdict: JudgeVerdict,
+    ) -> None:
+        """Write ``verdict`` onto the persisted order via field-mask
+        update. Raises ``NotFound`` if the source doc does not exist —
+        callers must call this only AFTER :meth:`save`. No idempotency
+        skip; re-calls overwrite the prior value."""
         ...
 
 
