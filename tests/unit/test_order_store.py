@@ -173,7 +173,8 @@ async def test_save_preserves_schema_version_default(fake_client):
     # ConfirmStage leg (AUTO_APPROVE confirmation email).
     # Bumped 2 → 3 (Track C) when denormalized query fields were added.
     # Bumped 3 → 4 (Track A2) when sent_at + send_error were added.
-    assert fetched.schema_version == 4
+    # Bumped 4 → 5 (Track B) when judge_verdict was added.
+    assert fetched.schema_version == 5
 
 
 async def test_save_preserves_nested_snapshots_through_roundtrip(fake_client):
@@ -398,7 +399,7 @@ class TestOrderRecordSchemaV4:
             processed_by_agent_version="track-a-v0.3",
             created_at=datetime.now(timezone.utc),
         )
-        assert record.schema_version == 4
+        assert record.schema_version == 5  # bumped 4 → 5 by Track B (judge_verdict)
 
     def test_sent_at_defaults_to_none(self):
         record = OrderRecord(

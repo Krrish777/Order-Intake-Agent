@@ -21,6 +21,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from backend.models.judge_verdict import JudgeVerdict
 from backend.models.master_records import AddressRecord
 
 
@@ -94,6 +95,12 @@ class OrderRecord(BaseModel):
     * ``po_number`` — from ``ExtractedOrder.po_number``
     * ``content_hash`` — from
       :func:`backend.tools.order_validator.tools.duplicate_check.compute_content_hash`
+
+    Schema v5 (Track B) adds ``judge_verdict`` — the
+    :class:`~backend.models.judge_verdict.JudgeVerdict` populated by
+    ``JudgeStage`` before ``SendStage`` fires. ``None`` until the stage
+    has evaluated this record's drafted body. ``status='rejected'``
+    records a ``send_error`` on the record and skips the Gmail send.
     """
 
     model_config = ConfigDict(extra="forbid")
@@ -112,7 +119,12 @@ class OrderRecord(BaseModel):
     confirmation_body: Optional[str] = None
     sent_at: Optional[datetime] = None
     send_error: Optional[str] = None
-    schema_version: int = 4
+    # Track B addition:
+    judge_verdict: Optional[JudgeVerdict] = None
+    """Populated by JudgeStage before SendStage fires. None until the
+    stage has evaluated this record's drafted body. ``status='rejected'``
+    records a send_error on the record and skips the Gmail send."""
+    schema_version: int = 5  # was 4; Track B bumps for judge_verdict
     created_at: datetime
 
 
