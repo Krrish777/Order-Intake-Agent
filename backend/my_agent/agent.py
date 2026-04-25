@@ -69,12 +69,14 @@ from backend.audit.logger import AuditLogger
 from backend.gmail.client import GmailClient
 from .agents.clarify_email_agent import build_clarify_email_agent
 from .agents.confirmation_email_agent import build_confirmation_email_agent
+from .agents.judge_agent import build_judge_agent
 from .agents.summary_agent import build_summary_agent
 from .stages.clarify import ClarifyStage
 from .stages.classify import ClassifyFn, ClassifyStage
 from .stages.confirm import ConfirmStage
 from .stages.finalize import FinalizeStage
 from .stages.ingest import IngestStage
+from .stages.judge import JudgeStage, JUDGE_STAGE_NAME
 from .stages.parse import ParseFn, ParseStage
 from .stages.persist import PersistStage
 from .stages.reply_shortcircuit import ReplyShortCircuitStage
@@ -95,7 +97,7 @@ ROOT_AGENT_NAME: Final[str] = "order_intake_pipeline"
 #: Sentinel recorded on every persisted ``OrderRecord`` /
 #: ``ExceptionRecord`` so downstream analytics can distinguish records
 #: written by Track A (this pipeline) from manually-ingested rows.
-AGENT_VERSION: Final[str] = "track-a-v0.3"
+AGENT_VERSION: Final[str] = "track-a-v0.4"
 
 
 def build_root_agent(
@@ -107,6 +109,7 @@ def build_root_agent(
     clarify_agent: Any,
     summary_agent: Any,
     confirm_agent: Any,
+    judge_agent: Any,
     exception_store: ExceptionStore,
     order_store: OrderStore,
     audit_logger: AuditLogger,
@@ -173,6 +176,12 @@ def build_root_agent(
         PersistStage(coordinator=coordinator, audit_logger=audit_logger),
         ConfirmStage(confirm_agent=confirm_agent, order_store=order_store, audit_logger=audit_logger),
         FinalizeStage(summary_agent=summary_agent, audit_logger=audit_logger),
+        JudgeStage(
+            judge_agent=judge_agent,
+            order_store=order_store,
+            exception_store=exception_store,
+            audit_logger=audit_logger,
+        ),
         SendStage(
             gmail_client=gmail_client,
             order_store=order_store,
@@ -226,6 +235,7 @@ def _build_default_root_agent() -> SequentialAgent:
     clarify_agent: LlmAgent = build_clarify_email_agent()
     summary_agent: LlmAgent = build_summary_agent()
     confirm_agent: LlmAgent = build_confirmation_email_agent()
+    judge_agent: LlmAgent = build_judge_agent()
 
     audit_logger = AuditLogger(client=client, agent_version=AGENT_VERSION)
 
@@ -253,6 +263,7 @@ def _build_default_root_agent() -> SequentialAgent:
         clarify_agent=clarify_agent,
         summary_agent=summary_agent,
         confirm_agent=confirm_agent,
+        judge_agent=judge_agent,
         exception_store=exception_store,
         order_store=order_store,
         audit_logger=audit_logger,
