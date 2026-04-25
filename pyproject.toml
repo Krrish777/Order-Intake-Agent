@@ -6,6 +6,10 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "google-adk>=1.31.0",
+    "google-api-python-client>=2.140",
+    "google-auth>=2.35",
+    "google-auth-httplib2>=0.2",
+    "google-auth-oauthlib>=1.2",
     "google-cloud-firestore>=2.27.0",
     "llama-cloud>=2.1",
     "openpyxl>=3.1.5",
