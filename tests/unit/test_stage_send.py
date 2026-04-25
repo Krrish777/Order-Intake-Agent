@@ -70,8 +70,9 @@ def _make_state(
     reply_handled=False,
     correlation_id="c1",
     fallback_sender="customer@example.com",
+    judge_verdicts=None,
 ):
-    return {
+    state = {
         "correlation_id": correlation_id,
         "reply_handled": reply_handled,
         "envelope": envelope or {
@@ -82,6 +83,9 @@ def _make_state(
         },
         "process_results": process_results,
     }
+    if judge_verdicts is not None:
+        state["judge_verdicts"] = judge_verdicts
+    return state
 
 
 def _make_ctx(stage, state):
@@ -142,7 +146,10 @@ class TestSendStageAutoApprove:
     async def test_sends_confirmation_when_body_present_and_not_sent(self):
         stage, order_store, exception_store, audit_logger, gc = await _make_stage()
         gc.send_message = MagicMock(return_value="gmail-id-1")
-        ctx = _make_ctx(stage, _make_state([_order_result_entry()]))
+        ctx = _make_ctx(stage, _make_state(
+            [_order_result_entry()],
+            judge_verdicts={"msg-1": {"status": "pass", "reason": "", "findings": []}},
+        ))
 
         async for _ in stage.run_async(ctx):
             pass
@@ -172,7 +179,10 @@ class TestSendStageClarify:
     async def test_sends_clarify_when_exception_has_body(self):
         stage, order_store, exception_store, audit_logger, gc = await _make_stage()
         gc.send_message = MagicMock(return_value="gmail-id-2")
-        ctx = _make_ctx(stage, _make_state([_exception_result_entry()]))
+        ctx = _make_ctx(stage, _make_state(
+            [_exception_result_entry()],
+            judge_verdicts={"msg-2": {"status": "pass", "reason": "", "findings": []}},
+        ))
 
         async for _ in stage.run_async(ctx):
             pass
@@ -197,7 +207,10 @@ class TestSendStageEscalateAndFailure:
     async def test_dry_run_logs_but_does_not_send_or_update(self):
         stage, order_store, exception_store, audit_logger, gc = await _make_stage(dry_run=True)
         gc.send_message = MagicMock(return_value="should-not-be-called")
-        ctx = _make_ctx(stage, _make_state([_order_result_entry()]))
+        ctx = _make_ctx(stage, _make_state(
+            [_order_result_entry()],
+            judge_verdicts={"msg-1": {"status": "pass", "reason": "", "findings": []}},
+        ))
 
         async for _ in stage.run_async(ctx):
             pass
@@ -217,10 +230,16 @@ class TestSendStageEscalateAndFailure:
             RuntimeError("quota exceeded"),
             "gmail-id-ok",
         ])
-        ctx = _make_ctx(stage, _make_state([
-            _order_result_entry(source_message_id="msg-fail"),
-            _order_result_entry(source_message_id="msg-ok"),
-        ]))
+        ctx = _make_ctx(stage, _make_state(
+            [
+                _order_result_entry(source_message_id="msg-fail"),
+                _order_result_entry(source_message_id="msg-ok"),
+            ],
+            judge_verdicts={
+                "msg-fail": {"status": "pass", "reason": "", "findings": []},
+                "msg-ok": {"status": "pass", "reason": "", "findings": []},
+            },
+        ))
 
         async for _ in stage.run_async(ctx):
             pass
@@ -237,9 +256,10 @@ class TestSendStageEscalateAndFailure:
     async def test_missing_recipient_records_no_recipient_error(self):
         stage, order_store, exception_store, audit_logger, gc = await _make_stage()
         gc.send_message = MagicMock(return_value="should-not-fire")
-        ctx = _make_ctx(stage, _make_state([
-            _order_result_entry(contact_email=None)
-        ]))
+        ctx = _make_ctx(stage, _make_state(
+            [_order_result_entry(contact_email=None)],
+            judge_verdicts={"msg-1": {"status": "pass", "reason": "", "findings": []}},
+        ))
 
         async for _ in stage.run_async(ctx):
             pass
@@ -248,3 +268,99 @@ class TestSendStageEscalateAndFailure:
         order_store.update_with_send_receipt.assert_awaited_once()
         update_kwargs = order_store.update_with_send_receipt.await_args.kwargs
         assert update_kwargs["send_error"] == "no_recipient"
+
+
+# ---------------------------------------------------------------------------
+# Track B: judge-gate integration
+# ---------------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_send_stage_blocks_when_judge_verdict_is_rejected():
+    """Given a ProcessResult with a drafted confirmation body AND a
+    rejected judge verdict in state['judge_verdicts'], SendStage must:
+      - NOT call gmail_client.send_message
+      - CALL update_with_send_receipt with send_error='judge_rejected:<reason>'
+        and sent_at=None (matches A2's shape: one method, two kwargs).
+    """
+    from backend.my_agent.stages.send import SendStage
+
+    audit = AsyncMock()
+    gmail_client = MagicMock(spec=GmailClient)
+    order_store = AsyncMock(spec=OrderStore)
+    exc_store = AsyncMock(spec=ExceptionStore)
+
+    stage = SendStage(
+        gmail_client=gmail_client,
+        order_store=order_store,
+        exception_store=exc_store,
+        audit_logger=audit,
+        dry_run=False,
+    )
+
+    order_pr = _order_result_entry(source_message_id="src-order-1")
+    state = _make_state(
+        [order_pr],
+        judge_verdicts={
+            "src-order-1": {
+                "status": "rejected",
+                "reason": "hallucinated total",
+                "findings": [
+                    {
+                        "kind": "hallucinated_fact",
+                        "quote": "$999.99",
+                        "explanation": "order.total is 84.00",
+                    }
+                ],
+            }
+        },
+    )
+    ctx = _make_ctx(stage, state)
+
+    async for _ in stage.run_async(ctx):
+        pass
+
+    gmail_client.send_message.assert_not_called()
+    order_store.update_with_send_receipt.assert_awaited_once()
+    call = order_store.update_with_send_receipt.await_args
+    assert call.kwargs.get("sent_at") is None
+    assert "judge_rejected:" in call.kwargs.get("send_error", "")
+    assert "hallucinated total" in call.kwargs.get("send_error", "")
+
+
+@pytest.mark.asyncio
+async def test_send_stage_passes_through_when_judge_verdict_is_pass():
+    """Pass verdict: the existing A2 send flow fires normally."""
+    from backend.my_agent.stages.send import SendStage
+
+    audit = AsyncMock()
+    gmail_client = MagicMock(spec=GmailClient)
+    gmail_client.send_message = MagicMock(return_value="gmail-msg-id-123")
+    order_store = AsyncMock(spec=OrderStore)
+    exc_store = AsyncMock(spec=ExceptionStore)
+
+    stage = SendStage(
+        gmail_client=gmail_client,
+        order_store=order_store,
+        exception_store=exc_store,
+        audit_logger=audit,
+        dry_run=False,
+    )
+
+    order_pr = _order_result_entry(source_message_id="src-order-1")
+    state = _make_state(
+        [order_pr],
+        judge_verdicts={
+            "src-order-1": {"status": "pass", "reason": "", "findings": []},
+        },
+    )
+    ctx = _make_ctx(stage, state)
+
+    async for _ in stage.run_async(ctx):
+        pass
+
+    gmail_client.send_message.assert_called_once()
+    # Success path: update_with_send_receipt called with sent_at set + send_error=None.
+    order_store.update_with_send_receipt.assert_awaited_once()
+    success_call = order_store.update_with_send_receipt.await_args
+    assert success_call.kwargs.get("send_error") is None
+    assert success_call.kwargs.get("sent_at") is not None
