@@ -1,0 +1,2374 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Order Intake Agent &middot; Issue No. 001 &middot; Hack or Relay 5.0</title>
+
+  <!-- Google Fonts: Fraunces (display, variable), Source Serif 4 (body), DM Sans (smallcaps/sans), IBM Plex Mono (mono) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT,WONK@0,9..144,300..900,0..100,0..1;1,9..144,300..900,0..100,0..1&family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=IBM+Plex+Mono:ital,wght@0,300;0,400;0,500;1,400&display=swap"
+    rel="stylesheet"
+  />
+
+  <style>
+    /* -------------------------------------------------------
+       Editorial / Modern Magazine / WSJ-meets-Linear
+       Hack or Relay 5.0 — Order Intake Agent
+       ------------------------------------------------------- */
+
+    :root {
+      /* Paper + Ink */
+      --paper:        #faf7f2;
+      --paper-alt:    #f3ede1;
+      --paper-edge:   #ece4d3;
+      --ink:          #131b25;   /* deep near-black */
+      --ink-soft:     #2b323c;
+      --ink-fade:     #5a6069;
+      --ink-mute:     #8a8577;
+      --rule:         #cfc9bd;   /* hairline gray */
+      --rule-soft:    #e3dccc;
+      --accent:       #6f1d1b;   /* oxblood — the brand */
+      --accent-deep:  #571513;
+      --accent-wash:  rgba(111, 29, 27, 0.08);
+      --gold:         #b08b47;   /* muted gold flourish */
+      --good:         #3a6a3f;
+
+      /* Typography scale */
+      --fs-xxl: clamp(64px, 10vw, 148px);
+      --fs-xl:  clamp(44px, 6.4vw, 92px);
+      --fs-l:   clamp(30px, 3.8vw, 54px);
+      --fs-m:   clamp(22px, 2.4vw, 32px);
+      --fs-body: 17px;
+      --fs-small: 13px;
+      --fs-micro: 11px;
+
+      --page-max: 1240px;
+      --gutter: clamp(22px, 3.6vw, 56px);
+    }
+
+    *,
+    *::before,
+    *::after { box-sizing: border-box; }
+
+    html, body { margin: 0; padding: 0; }
+
+    html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+
+    body {
+      background: var(--paper);
+      color: var(--ink);
+      font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+      font-size: var(--fs-body);
+      line-height: 1.55;
+      font-feature-settings: "onum" 1, "kern" 1, "liga" 1, "calt" 1;
+      overflow-x: hidden;
+    }
+
+    /* Subtle paper-grain texture (pure CSS, no images) */
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background-image:
+        radial-gradient(rgba(19,27,37,0.035) 1px, transparent 1px),
+        radial-gradient(rgba(19,27,37,0.025) 1px, transparent 1px);
+      background-size: 3px 3px, 7px 7px;
+      background-position: 0 0, 1px 1px;
+      mix-blend-mode: multiply;
+      opacity: 0.55;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      background: radial-gradient(ellipse at 50% 0%, transparent 55%, rgba(19,27,37,0.06));
+    }
+
+    .page {
+      position: relative;
+      z-index: 1;
+      max-width: var(--page-max);
+      margin: 0 auto;
+      padding: 0 var(--gutter) 96px;
+    }
+
+    /* ---------- shared type styles ---------- */
+    .display {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 540, "SOFT" 30, "WONK" 0;
+      font-weight: 540;
+      color: var(--ink);
+      letter-spacing: -0.015em;
+      line-height: 0.94;
+    }
+
+    .display.wonky {
+      font-variation-settings: "opsz" 144, "wght" 620, "SOFT" 50, "WONK" 1;
+    }
+
+    .display.italic {
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 500, "SOFT" 80, "WONK" 1;
+    }
+
+    .smallcaps {
+      font-family: "DM Sans", "Helvetica Neue", Arial, sans-serif;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: var(--fs-micro);
+      color: var(--ink-soft);
+    }
+
+    .smallcaps.gold { color: var(--gold); }
+    .smallcaps.accent { color: var(--accent); }
+
+    .rule {
+      height: 0;
+      border: 0;
+      border-top: 1px solid var(--rule);
+      margin: 0;
+    }
+
+    .rule.thick {
+      border-top: 2.5px solid var(--ink);
+    }
+
+    .rule.dotted {
+      border-top: 1px dashed var(--rule);
+    }
+
+    .mono {
+      font-family: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+      font-variant-numeric: tabular-nums;
+      font-feature-settings: "zero" 1, "ss03" 1;
+    }
+
+    .serif-italic {
+      font-family: "Source Serif 4", Georgia, serif;
+      font-style: italic;
+    }
+
+    a { color: var(--accent); }
+
+    /* Section scaffolding */
+    section {
+      padding: 72px 0 24px;
+      position: relative;
+    }
+
+    .section-head {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: baseline;
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .section-head .numeral {
+      font-family: "Fraunces", Georgia, serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 60, "WONK" 1;
+      font-size: 54px;
+      line-height: 1;
+      color: var(--accent);
+      letter-spacing: -0.01em;
+    }
+
+    .section-head .title {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--ink);
+    }
+
+    .section-head .meta {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: var(--ink-fade);
+      letter-spacing: 0.05em;
+    }
+
+    /* ======================================================
+       MASTHEAD
+       ====================================================== */
+    .top-strip {
+      border-top: 2.5px solid var(--ink);
+      border-bottom: 1px solid var(--rule);
+      padding: 10px 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      flex-wrap: wrap;
+      font-family: "DM Sans", sans-serif;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.28em;
+      color: var(--ink-soft);
+    }
+
+    .top-strip .dot {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      background: var(--gold);
+      border-radius: 50%;
+      margin: 0 10px;
+      vertical-align: middle;
+    }
+
+    .masthead {
+      text-align: center;
+      padding: 56px 0 28px;
+      border-bottom: 1px solid var(--rule);
+      position: relative;
+    }
+
+    .masthead .kicker {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5em;
+      font-size: 11px;
+      color: var(--ink-fade);
+      margin-bottom: 14px;
+    }
+
+    .wordmark {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 420, "SOFT" 100, "WONK" 1;
+      font-size: var(--fs-xxl);
+      line-height: 0.9;
+      letter-spacing: -0.04em;
+      color: var(--ink);
+      margin: 0;
+    }
+
+    .wordmark .amp {
+      font-style: italic;
+      color: var(--accent);
+      font-variation-settings: "opsz" 144, "wght" 300, "SOFT" 100, "WONK" 1;
+      padding: 0 0.1em;
+    }
+
+    .wordmark .swash {
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 380, "SOFT" 100, "WONK" 1;
+    }
+
+    .tagline {
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: clamp(18px, 2vw, 22px);
+      color: var(--ink-soft);
+      margin: 22px auto 6px;
+      max-width: 640px;
+      line-height: 1.35;
+    }
+
+    .byline {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.48em;
+      font-size: 10.5px;
+      color: var(--accent);
+      margin-top: 14px;
+      display: inline-flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .byline::before,
+    .byline::after {
+      content: "";
+      width: 44px;
+      height: 1px;
+      background: var(--gold);
+    }
+
+    .issue-rail {
+      display: flex;
+      justify-content: space-between;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 10.5px;
+      color: var(--ink-fade);
+      letter-spacing: 0.08em;
+      padding-top: 12px;
+    }
+
+    /* ======================================================
+       HERO / LEDE
+       ====================================================== */
+    .hero {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 32px;
+      padding: 80px 0 88px;
+      position: relative;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .hero .lede {
+      grid-column: 1 / span 7;
+    }
+
+    .hero .callout {
+      grid-column: 8 / span 5;
+      align-self: start;
+      padding-top: 10px;
+      border-left: 1px solid var(--rule);
+      padding-left: 32px;
+    }
+
+    .hero h1 {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 560, "SOFT" 30, "WONK" 0;
+      font-size: var(--fs-xl);
+      line-height: 0.95;
+      letter-spacing: -0.025em;
+      margin: 0 0 32px;
+      color: var(--ink);
+    }
+
+    .hero h1 .num {
+      font-style: italic;
+      color: var(--accent);
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 80, "WONK" 1;
+    }
+
+    .hero h1 .punct {
+      color: var(--gold);
+      font-style: italic;
+    }
+
+    /* Drop cap */
+    .dropcap::first-letter {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 620, "SOFT" 30, "WONK" 1;
+      font-size: 5.6em;
+      float: left;
+      line-height: 0.82;
+      padding: 10px 14px 0 0;
+      color: var(--accent);
+      font-feature-settings: "ss01" 1;
+    }
+
+    .lede p {
+      font-size: 18px;
+      line-height: 1.55;
+      color: var(--ink-soft);
+      margin: 0 0 18px;
+      max-width: 52ch;
+    }
+
+    .lede .kicker-line {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      font-size: 11px;
+      color: var(--ink-fade);
+      margin-bottom: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .lede .kicker-line::before {
+      content: "";
+      width: 36px;
+      height: 2px;
+      background: var(--accent);
+    }
+
+    /* The one button */
+    .run-card {
+      text-align: center;
+      padding: 4px 0 0;
+    }
+
+    .run-card .stamp {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.35em;
+      font-size: 10px;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+      padding: 6px 14px;
+      border-radius: 2px;
+      margin-bottom: 26px;
+      transform: rotate(-1.2deg);
+    }
+
+    .run-card .stamp .pulse {
+      width: 6px; height: 6px;
+      background: var(--accent);
+      border-radius: 50%;
+      animation: pulse 1.6s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 0.35; transform: scale(0.85); }
+      50%      { opacity: 1; transform: scale(1.1); }
+    }
+
+    .run-btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 520, "SOFT" 40, "WONK" 0;
+      font-size: 42px;
+      letter-spacing: -0.015em;
+      padding: 28px 18px 24px;
+      background: transparent;
+      color: var(--ink);
+      border: 2.5px solid var(--ink);
+      border-radius: 2px;
+      cursor: pointer;
+      position: relative;
+      transition: all 260ms cubic-bezier(.22,.61,.36,1);
+      box-shadow: 6px 6px 0 rgba(19,27,37,0.08);
+    }
+
+    .run-btn:hover {
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 6px 6px 0 var(--accent-wash);
+      transform: translate(-1px, -1px);
+    }
+
+    .run-btn:active,
+    .run-btn.pressed {
+      transform: translate(4px, 4px);
+      box-shadow: 0 0 0 rgba(19,27,37,0);
+    }
+
+    .run-btn.glowing {
+      color: var(--accent);
+      border-color: var(--accent);
+      box-shadow: 0 0 0 6px var(--accent-wash), 6px 6px 0 var(--accent-wash);
+    }
+
+    .run-btn[disabled] {
+      cursor: default;
+      opacity: 0.72;
+    }
+
+    .run-sub {
+      margin-top: 14px;
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      font-size: 10.5px;
+      color: var(--ink-fade);
+    }
+
+    .run-footnote {
+      margin-top: 26px;
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 13.5px;
+      color: var(--ink-mute);
+      max-width: 32ch;
+      margin-left: auto;
+      margin-right: auto;
+      line-height: 1.4;
+    }
+
+    /* Ornamental * * * */
+    .ornament {
+      text-align: center;
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      color: var(--gold);
+      letter-spacing: 1.2em;
+      padding: 28px 0;
+      font-size: 18px;
+    }
+
+    /* ======================================================
+       SECTION I — PIPELINE
+       ====================================================== */
+    .pipeline {
+      margin-top: 24px;
+      border-top: 1px solid var(--ink);
+      border-bottom: 1px solid var(--ink);
+    }
+
+    .pipeline .row {
+      display: grid;
+      grid-template-columns: 88px 1.3fr 2fr 110px 44px;
+      align-items: center;
+      gap: 24px;
+      padding: 22px 6px;
+      border-bottom: 1px solid var(--rule-soft);
+      position: relative;
+    }
+
+    .pipeline .row:last-child { border-bottom: none; }
+
+    .pipeline .row .num {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 14px;
+      color: var(--ink-mute);
+      letter-spacing: 0.08em;
+    }
+
+    .pipeline .row .name {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 520, "SOFT" 40;
+      font-size: 28px;
+      letter-spacing: -0.01em;
+      line-height: 1.05;
+    }
+
+    .pipeline .row .desc {
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      color: var(--ink-soft);
+      font-size: 16px;
+      line-height: 1.4;
+      max-width: 52ch;
+    }
+
+    .pipeline .row .output {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      color: var(--accent);
+      margin-top: 4px;
+      letter-spacing: 0.02em;
+      opacity: 0;
+      transform: translateY(4px);
+      transition: opacity 320ms ease-out, transform 320ms ease-out;
+      min-height: 14px;
+    }
+
+    .pipeline .row.done .output { opacity: 1; transform: none; }
+
+    .pipeline .row .latency {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+      color: var(--ink-fade);
+      text-align: right;
+      letter-spacing: 0.02em;
+    }
+
+    .pipeline .row .latency .val { color: var(--ink); }
+
+    .pipeline .indicator {
+      width: 26px; height: 26px;
+      justify-self: center;
+      position: relative;
+    }
+
+    .pipeline .indicator svg {
+      position: absolute;
+      inset: 0;
+      width: 100%; height: 100%;
+      overflow: visible;
+    }
+
+    .pipeline .indicator .circle {
+      fill: transparent;
+      stroke: var(--ink);
+      stroke-width: 1.3;
+    }
+
+    .pipeline .indicator .fill {
+      fill: var(--ink);
+      transform: scale(0);
+      transform-origin: center;
+      transition: transform 420ms cubic-bezier(.22,.61,.36,1);
+    }
+
+    .pipeline .row.active .fill { transform: scale(0.55); }
+    .pipeline .row.done .fill { transform: scale(1); fill: var(--ink); }
+
+    .pipeline .indicator .check {
+      stroke: var(--paper);
+      stroke-width: 1.8;
+      fill: none;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 20;
+      stroke-dashoffset: 20;
+      transition: stroke-dashoffset 420ms cubic-bezier(.22,.61,.36,1) 160ms;
+    }
+
+    .pipeline .row.done .check { stroke-dashoffset: 0; }
+
+    .pipeline .row.active .name,
+    .pipeline .row.done .name { color: var(--ink); }
+
+    .pipeline .row:not(.active):not(.done) .name { color: var(--ink-mute); }
+    .pipeline .row:not(.active):not(.done) .desc { color: var(--ink-mute); }
+    .pipeline .row:not(.active):not(.done) .latency { color: var(--ink-mute); }
+
+    .pipeline-caption {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 6px 0;
+      font-family: "DM Sans", sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--ink-fade);
+    }
+
+    /* ======================================================
+       REPRODUCED LETTERS — Sections II & VI
+       ====================================================== */
+    .letter-wrap {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .letter-wrap .letter {
+      grid-column: 1 / span 8;
+      padding: 34px 38px 38px;
+      background: var(--paper-alt);
+      border: 1px solid var(--rule);
+      box-shadow: 2px 2px 0 var(--rule-soft), 8px 8px 24px -10px rgba(19,27,37,0.14);
+      position: relative;
+    }
+
+    .letter::before {
+      content: "";
+      position: absolute;
+      top: -1px; left: -1px; right: -1px;
+      height: 3px;
+      background: repeating-linear-gradient(
+        90deg,
+        var(--ink) 0 6px,
+        transparent 6px 12px
+      );
+      opacity: 0.28;
+    }
+
+    .letter-label {
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 13px;
+      letter-spacing: 0.04em;
+      color: var(--ink-fade);
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--rule);
+      padding-bottom: 12px;
+      margin-bottom: 20px;
+      font-variant: small-caps;
+      letter-spacing: 0.18em;
+    }
+
+    .letter-fields {
+      display: grid;
+      grid-template-columns: 80px 1fr;
+      gap: 6px 18px;
+      font-family: "DM Sans", sans-serif;
+      font-size: 13.5px;
+      color: var(--ink-soft);
+      margin-bottom: 22px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .letter-fields dt {
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 10.5px;
+      color: var(--ink-fade);
+      padding-top: 3px;
+    }
+
+    .letter-fields dd {
+      margin: 0;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+      color: var(--ink);
+    }
+
+    .letter-body {
+      font-family: "Source Serif 4", serif;
+      font-size: 16.5px;
+      line-height: 1.62;
+      color: var(--ink-soft);
+      opacity: 1;
+      transform: none;
+      transition: opacity 520ms cubic-bezier(.22,.61,.36,1), transform 520ms cubic-bezier(.22,.61,.36,1);
+    }
+
+    .letter-body.pending {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+
+    .letter-body p { margin: 0 0 14px; }
+
+    .letter-body p:first-child::first-letter {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 620, "SOFT" 30;
+      font-size: 3.4em;
+      float: left;
+      line-height: 0.85;
+      padding: 6px 10px 0 0;
+      color: var(--ink);
+    }
+
+    .letter-sig {
+      margin-top: 22px;
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 15px;
+      color: var(--ink-fade);
+    }
+
+    .letter-sig .name {
+      font-style: normal;
+      color: var(--ink);
+      display: block;
+      margin-top: 4px;
+    }
+
+    .marginalia {
+      grid-column: 9 / span 4;
+      padding-top: 28px;
+      padding-left: 22px;
+      border-left: 1px solid var(--rule);
+      position: sticky;
+      top: 24px;
+    }
+
+    .marginalia .note {
+      font-family: "DM Sans", sans-serif;
+      font-size: 12.5px;
+      line-height: 1.55;
+      color: var(--ink-soft);
+      margin-bottom: 28px;
+    }
+
+    .marginalia .note .hand {
+      display: block;
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 80, "WONK" 1;
+      font-size: 22px;
+      color: var(--accent);
+      margin-bottom: 8px;
+      letter-spacing: -0.01em;
+    }
+
+    .marginalia .note-label {
+      font-family: "DM Sans", sans-serif;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      color: var(--ink-fade);
+      margin-bottom: 6px;
+    }
+
+    .attach-card {
+      border: 1px solid var(--rule);
+      padding: 14px 16px;
+      background: var(--paper);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11.5px;
+      color: var(--ink-soft);
+      line-height: 1.45;
+    }
+
+    .attach-card .hdr {
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      color: var(--ink-fade);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px dashed var(--rule);
+    }
+
+    .attach-card .fname { color: var(--accent); font-weight: 500; }
+
+    /* Pull quote */
+    .pullquote {
+      margin: 40px 0 12px;
+      padding: 12px 28px 12px 24px;
+      border-left: 2px solid var(--accent);
+      position: relative;
+      max-width: 72ch;
+    }
+
+    .pullquote .mark {
+      position: absolute;
+      left: -0.28em; top: -0.38em;
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 100, "WONK" 1;
+      font-size: 96px;
+      line-height: 1;
+      color: var(--accent);
+      opacity: 0.55;
+      pointer-events: none;
+    }
+
+    .pullquote blockquote {
+      margin: 0;
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 420, "SOFT" 80, "WONK" 1;
+      font-size: clamp(22px, 2.4vw, 30px);
+      line-height: 1.25;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+    }
+
+    .pullquote cite {
+      display: block;
+      margin-top: 14px;
+      font-family: "DM Sans", sans-serif;
+      font-style: normal;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      color: var(--ink-fade);
+    }
+
+    /* ======================================================
+       SECTION III — EXTRACTION TABLE
+       ====================================================== */
+    .extract-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .extract-grid .lede-col {
+      grid-column: 1 / span 5;
+    }
+
+    .extract-grid .table-col {
+      grid-column: 6 / span 7;
+    }
+
+    .extract-grid .lede-col p {
+      font-size: 16.5px;
+      line-height: 1.6;
+      color: var(--ink-soft);
+      max-width: 42ch;
+      margin: 0 0 16px;
+    }
+
+    .customer-block {
+      margin-top: 24px;
+      padding: 18px 18px 20px;
+      border: 1px solid var(--rule);
+      background: var(--paper-alt);
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      line-height: 1.7;
+    }
+
+    .customer-block .k {
+      display: inline-block;
+      min-width: 108px;
+      color: var(--ink-fade);
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      font-size: 10.5px;
+    }
+
+    .customer-block .v.ok { color: var(--good); }
+    .customer-block .v.id { color: var(--accent); font-weight: 500; }
+
+    table.ledger {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12px;
+      color: var(--ink);
+      border-top: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+    }
+
+    table.ledger thead th {
+      text-align: left;
+      font-family: "DM Sans", sans-serif;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      font-size: 10px;
+      color: var(--ink);
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--ink);
+      background: transparent;
+      white-space: nowrap;
+    }
+
+    table.ledger tbody td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--rule-soft);
+      vertical-align: top;
+      line-height: 1.35;
+    }
+
+    table.ledger tbody tr {
+      opacity: 0;
+      transform: translateY(6px);
+      transition: opacity 320ms ease-out, transform 320ms ease-out;
+    }
+
+    table.ledger tbody tr.in { opacity: 1; transform: none; }
+
+    table.ledger tbody tr:nth-child(even) { background: rgba(19,27,37,0.018); }
+    table.ledger tbody tr:last-child td { border-bottom: none; }
+
+    table.ledger td.sku { color: var(--ink); font-weight: 500; }
+    table.ledger td.desc { color: var(--ink-soft); }
+    table.ledger td.qty,
+    table.ledger td.price,
+    table.ledger td.uom { text-align: right; color: var(--ink-soft); }
+
+    table.ledger td.match-x {
+      color: var(--accent);
+      font-weight: 500;
+      text-align: center;
+    }
+
+    .ledger-caption {
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--ink-fade);
+      margin-top: 12px;
+      text-align: right;
+    }
+
+    .match-legend {
+      display: flex;
+      gap: 22px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      font-family: "DM Sans", sans-serif;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      color: var(--ink-fade);
+    }
+
+    .match-legend .x {
+      color: var(--accent);
+      font-family: "IBM Plex Mono", monospace;
+      text-transform: none;
+      letter-spacing: 0;
+      margin-right: 4px;
+    }
+
+    /* ======================================================
+       SECTION IV — VERDICT
+       ====================================================== */
+    .verdict {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 40px;
+      padding-top: 16px;
+    }
+
+    .verdict .main {
+      grid-column: 1 / span 8;
+    }
+
+    .verdict .side {
+      grid-column: 9 / span 4;
+      padding: 22px 20px;
+      background: var(--paper-alt);
+      border: 1px solid var(--rule);
+      position: relative;
+      align-self: start;
+    }
+
+    .verdict .statement {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 520, "SOFT" 40, "WONK" 0;
+      font-size: clamp(34px, 4.6vw, 64px);
+      line-height: 1.02;
+      letter-spacing: -0.025em;
+      margin: 0 0 22px;
+      color: var(--ink);
+    }
+
+    .verdict .statement em {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 100, "WONK" 1;
+    }
+
+    .verdict p {
+      font-size: 17px;
+      line-height: 1.62;
+      color: var(--ink-soft);
+      max-width: 58ch;
+      margin: 0 0 16px;
+    }
+
+    .verdict .tier-list {
+      margin: 18px 0 22px;
+      padding: 0;
+      list-style: none;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 13px;
+      color: var(--ink-soft);
+      line-height: 1.8;
+    }
+
+    .verdict .tier-list li {
+      display: grid;
+      grid-template-columns: 22px 200px 1fr;
+      align-items: baseline;
+      gap: 10px;
+      border-bottom: 1px dashed var(--rule);
+      padding: 4px 0;
+    }
+
+    .verdict .tier-list .k { color: var(--ink-fade); text-transform: uppercase; letter-spacing: 0.1em; font-size: 10.5px; }
+    .verdict .tier-list .v { color: var(--accent); text-align: right; }
+
+    .escalate-line {
+      display: inline-block;
+      position: relative;
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 600, "SOFT" 30, "WONK" 1;
+      font-size: clamp(56px, 8vw, 112px);
+      line-height: 1;
+      color: var(--accent);
+      letter-spacing: -0.03em;
+      margin: 28px 0 12px;
+      padding-bottom: 20px;
+    }
+
+    .escalate-line svg {
+      position: absolute;
+      left: 0; right: 0; bottom: -4px;
+      width: 100%;
+      height: 36px;
+      overflow: visible;
+    }
+
+    .escalate-line path {
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 3.2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      stroke-dasharray: 800;
+      stroke-dashoffset: 800;
+      transition: stroke-dashoffset 1400ms cubic-bezier(.55,.08,.28,1.08);
+    }
+
+    .escalate-line.drawn path {
+      stroke-dashoffset: 0;
+    }
+
+    .verdict .side .side-title {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.3em;
+      font-size: 10.5px;
+      color: var(--ink-fade);
+      margin-bottom: 14px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--rule);
+    }
+
+    .threshold-table {
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+      color: var(--ink-soft);
+      line-height: 1.85;
+    }
+
+    .threshold-table .row {
+      display: grid;
+      grid-template-columns: 78px 1fr auto;
+      align-items: baseline;
+      gap: 10px;
+      padding: 2px 0;
+    }
+
+    .threshold-table .row.active {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .threshold-table .row .op { color: var(--ink-fade); }
+    .threshold-table .row .verdict-word { font-family: "DM Sans", sans-serif; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.22em; }
+
+    .threshold-table .note {
+      margin-top: 14px;
+      padding-top: 12px;
+      border-top: 1px dashed var(--rule);
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 12.5px;
+      color: var(--ink-fade);
+      line-height: 1.45;
+    }
+
+    .confidence-bar {
+      margin-top: 18px;
+      border: 1px solid var(--ink);
+      height: 14px;
+      position: relative;
+      background: var(--paper);
+    }
+
+    .confidence-bar .fill-bar {
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 0%;
+      background: var(--accent);
+      transition: width 600ms cubic-bezier(.22,.61,.36,1);
+    }
+
+    .confidence-bar .tick {
+      position: absolute;
+      top: 0; bottom: 0;
+      width: 1px;
+      background: var(--ink);
+      opacity: 0.4;
+    }
+
+    .confidence-label {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: var(--ink-fade);
+    }
+
+    .confidence-label .val {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ======================================================
+       SECTION V — THE POINT
+       ====================================================== */
+    .essay {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 32px;
+      padding-top: 16px;
+    }
+
+    .essay .body {
+      grid-column: 2 / span 7;
+    }
+
+    .essay .body p {
+      font-size: 19px;
+      line-height: 1.62;
+      color: var(--ink-soft);
+      margin: 0 0 18px;
+    }
+
+    .essay .body p:first-child::first-letter {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 620, "SOFT" 30, "WONK" 1;
+      font-size: 5.4em;
+      float: left;
+      line-height: 0.82;
+      padding: 8px 14px 0 0;
+      color: var(--accent);
+    }
+
+    .essay aside {
+      grid-column: 9 / span 4;
+      border-left: 1px solid var(--rule);
+      padding: 4px 0 0 22px;
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--ink-fade);
+    }
+
+    .essay aside .big {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 80, "WONK" 1;
+      font-size: 28px;
+      color: var(--ink);
+      line-height: 1.1;
+      display: block;
+      margin-bottom: 14px;
+    }
+
+    /* ======================================================
+       SECTION VII — BY THE NUMBERS
+       ====================================================== */
+    .numbers {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 0;
+      border-top: 2px solid var(--ink);
+      border-bottom: 2px solid var(--ink);
+      margin-bottom: 36px;
+    }
+
+    .numbers .stat {
+      padding: 36px 28px 28px;
+      border-right: 1px solid var(--rule);
+      text-align: center;
+    }
+
+    .numbers .stat:last-child { border-right: none; }
+
+    .numbers .stat .big {
+      font-family: "Fraunces", Georgia, serif;
+      font-variation-settings: "opsz" 144, "wght" 520, "SOFT" 30, "WONK" 0;
+      font-size: clamp(72px, 10vw, 138px);
+      line-height: 0.88;
+      color: var(--ink);
+      letter-spacing: -0.04em;
+      margin-bottom: 16px;
+    }
+
+    .numbers .stat.accent .big { color: var(--accent); font-style: italic; font-variation-settings: "opsz" 144, "wght" 480, "SOFT" 100, "WONK" 1; }
+
+    .numbers .stat .label {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      font-size: 11px;
+      color: var(--ink-fade);
+    }
+
+    .numbers .stat .sub {
+      margin-top: 6px;
+      font-family: "Source Serif 4", serif;
+      font-style: italic;
+      font-size: 13px;
+      color: var(--ink-mute);
+    }
+
+    .latency-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 32px;
+      align-items: start;
+    }
+
+    .latency-grid .tbl {
+      grid-column: 1 / span 7;
+    }
+
+    .latency-grid .quote {
+      grid-column: 8 / span 5;
+    }
+
+    table.latency {
+      width: 100%;
+      border-collapse: collapse;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 12.5px;
+    }
+
+    table.latency th {
+      text-align: left;
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.22em;
+      color: var(--ink-fade);
+      padding: 10px 8px;
+      border-bottom: 1px solid var(--ink);
+    }
+
+    table.latency td {
+      padding: 8px 8px;
+      border-bottom: 1px solid var(--rule-soft);
+      color: var(--ink-soft);
+    }
+
+    table.latency td.stage { color: var(--ink); font-weight: 500; }
+    table.latency td.ms { text-align: right; color: var(--ink); }
+    table.latency td.polls { text-align: right; color: var(--ink-fade); }
+
+    table.latency tfoot td {
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.22em;
+      font-size: 10.5px;
+      color: var(--ink);
+      padding: 14px 8px;
+      border-top: 2px solid var(--ink);
+      border-bottom: none;
+    }
+
+    table.latency tfoot td.ms { color: var(--accent); font-family: "IBM Plex Mono", monospace; letter-spacing: 0.05em; font-size: 13px; }
+
+    .final-quote {
+      padding: 14px 0 0 22px;
+      border-left: 2px solid var(--gold);
+    }
+
+    .final-quote blockquote {
+      margin: 0;
+      font-family: "Fraunces", Georgia, serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 100, "WONK" 1;
+      font-size: clamp(22px, 2.2vw, 28px);
+      line-height: 1.28;
+      color: var(--ink);
+      letter-spacing: -0.005em;
+    }
+
+    .final-quote cite {
+      display: block;
+      margin-top: 14px;
+      font-family: "DM Sans", sans-serif;
+      font-style: normal;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      color: var(--ink-fade);
+    }
+
+    /* ======================================================
+       COLOPHON / FOOTER
+       ====================================================== */
+    .colophon {
+      margin-top: 64px;
+      padding-top: 24px;
+      border-top: 2.5px solid var(--ink);
+      text-align: center;
+      font-family: "DM Sans", sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.32em;
+      font-size: 10.5px;
+      color: var(--ink-fade);
+      line-height: 1.8;
+    }
+
+    .colophon .mark {
+      font-family: "Fraunces", serif;
+      font-style: italic;
+      font-variation-settings: "opsz" 144, "wght" 400, "SOFT" 100, "WONK" 1;
+      font-size: 28px;
+      letter-spacing: -0.01em;
+      color: var(--accent);
+      text-transform: none;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .reset-link {
+      margin-top: 18px;
+      display: inline-block;
+      font-family: "IBM Plex Mono", monospace;
+      font-size: 11px;
+      color: var(--ink-fade);
+      text-decoration: none;
+      border-bottom: 1px dashed var(--ink-fade);
+      padding: 2px 0;
+      letter-spacing: 0.08em;
+      opacity: 0;
+      transition: opacity 400ms ease-out;
+      pointer-events: none;
+    }
+
+    .reset-link.on { opacity: 1; pointer-events: auto; }
+    .reset-link:hover { color: var(--accent); border-color: var(--accent); }
+
+    /* ------------------------------------------------------- */
+    /* Reveal-on-play classes (sections V, VI, VII initially low-opacity) */
+    .pending-reveal {
+      opacity: 0.22;
+      filter: grayscale(0.3);
+      transition: opacity 620ms cubic-bezier(.22,.61,.36,1),
+                  filter  620ms cubic-bezier(.22,.61,.36,1),
+                  transform 620ms cubic-bezier(.22,.61,.36,1);
+      transform: translateY(8px);
+    }
+    .pending-reveal.in {
+      opacity: 1;
+      filter: none;
+      transform: none;
+    }
+
+    /* Section IV verdict content starts muted too */
+    #verdict-body.pending-reveal { opacity: 0.28; }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+      .hero, .extract-grid, .verdict, .essay, .letter-wrap, .latency-grid {
+        grid-template-columns: 1fr;
+      }
+      .hero .lede, .hero .callout,
+      .extract-grid .lede-col, .extract-grid .table-col,
+      .verdict .main, .verdict .side,
+      .essay .body, .essay aside,
+      .letter-wrap .letter, .marginalia,
+      .latency-grid .tbl, .latency-grid .quote {
+        grid-column: 1 / -1;
+      }
+      .hero .callout { border-left: none; border-top: 1px solid var(--rule); padding: 32px 0 0; }
+      .marginalia { border-left: none; border-top: 1px solid var(--rule); padding: 22px 0 0; position: static; }
+      .pipeline .row { grid-template-columns: 52px 1fr 40px; gap: 14px; }
+      .pipeline .row .desc, .pipeline .row .latency { display: none; }
+      .numbers { grid-template-columns: 1fr; }
+      .numbers .stat { border-right: none; border-bottom: 1px solid var(--rule); }
+      .numbers .stat:last-child { border-bottom: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="page">
+
+    <!-- ================== MASTHEAD ================== -->
+    <div class="top-strip" role="banner">
+      <span>ISSUE NO. 001<span class="dot"></span>VOL. APR 2026<span class="dot"></span>HACK OR RELAY 5.0</span>
+      <span>TUES &middot; 22 APR 2026 &middot; BANGALORE</span>
+      <span>EDITION &mdash; LIVE DEMO</span>
+    </div>
+
+    <header class="masthead">
+      <div class="kicker">A Supply-Chain Dispatch</div>
+      <h1 class="wordmark">
+        <span class="swash">Order</span> <span class="swash">Intake</span> <span class="amp">&amp;</span> <span>Agent</span>
+      </h1>
+      <p class="tagline">
+        Reading order emails so humans don&rsquo;t have to &mdash;
+        and refusing, politely, when the data doesn&rsquo;t add up.
+      </p>
+      <div class="byline">A Live Demonstration</div>
+      <div class="issue-rail">
+        <span>VOL. I &middot; NO. 001</span>
+        <span>TRACK A &middot; v0.1</span>
+        <span>35.0s &middot; ONE BUTTON</span>
+      </div>
+    </header>
+
+    <!-- ================== HERO / LEDE ================== -->
+    <section class="hero" aria-label="Introduction">
+      <div class="lede">
+        <div class="kicker-line">The Lede &middot; What Follows</div>
+        <h1>
+          <span>One Button.</span><br />
+          <span class="num">Eight</span> Stages.<br />
+          <em><span class="punct">&mdash;</span> Zero bad writes<span class="punct">.</span></em>
+        </h1>
+        <p class="dropcap">
+          A purchasing agent named John Harris at Patterson Industrial Supply Co.
+          sent a rush re-order of twenty-two fasteners to a supplier inbox this morning.
+          In the next thirty-five seconds, our agent will open that email, classify its
+          attachment, extract every line, attempt to match each SKU against the item
+          master, fail gracefully, draft a clarification, and refuse to create a single
+          order in the ERP. That refusal &mdash; and the letter it dictates instead &mdash;
+          is the entire point of what you&rsquo;re about to watch.
+        </p>
+        <p>
+          Press <em>RUN THE PIPELINE</em>. Scroll. The page is the agent&rsquo;s
+          thinking, laid out like an article it wrote about itself.
+        </p>
+      </div>
+      <aside class="callout">
+        <div class="run-card">
+          <span class="stamp"><span class="pulse"></span>Live &middot; Track A</span>
+          <button id="run-btn" class="run-btn" type="button" aria-label="Run the pipeline">
+            Run the Pipeline
+          </button>
+          <div class="run-sub">tap to begin live extraction</div>
+          <p class="run-footnote">
+            Gmail push &rarr; Pub/Sub &rarr; ADK agent &rarr; Firestore.
+            No edits, no dry-run. The orders collection is the one on record.
+          </p>
+        </div>
+      </aside>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION I — PIPELINE ================== -->
+    <section id="sec-pipeline" aria-label="The pipeline">
+      <header class="section-head">
+        <div class="numeral">I</div>
+        <div class="title">The Pipeline &mdash; an Index</div>
+        <div class="meta">8 stages &middot; ~35.0s total</div>
+      </header>
+
+      <p class="serif-italic" style="color:var(--ink-soft); max-width:60ch; font-size:16px; margin:0 0 18px;">
+        Every run threads the same eight stages. Each is small, explicit, and
+        produces an artefact the next stage consumes. The agent is not a
+        monolith; it is a short assembly line.
+      </p>
+
+      <div class="pipeline" id="pipeline">
+
+        <div class="row" data-stage="0">
+          <div class="num">01</div>
+          <div>
+            <div class="name">Ingest</div>
+            <div class="desc">Gmail push lands on Pub/Sub; the agent claims the message.</div>
+            <div class="output">msg_id=1966a3f8c &middot; thread=1966a3f8c &middot; attach=1</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">0.4</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="1">
+          <div class="num">02</div>
+          <div>
+            <div class="name">Reply Check</div>
+            <div class="desc">Is this a fresh PO or a reply in an existing thread? Fresh.</div>
+            <div class="output">is_reply=false &middot; thread_state=NEW</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">0.2</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="2">
+          <div class="num">03</div>
+          <div>
+            <div class="name">Classify</div>
+            <div class="desc">LlamaClassify labels the PDF. <em>purchase_order</em>, confidence 1.00.</div>
+            <div class="output">label=purchase_order &middot; conf=1.00 &middot; 5 polls</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">14.2</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="3">
+          <div class="num">04</div>
+          <div>
+            <div class="name">Parse</div>
+            <div class="desc">LlamaExtract returns one sub-document; twenty-two line items.</div>
+            <div class="output">subdocs=1 &middot; lines=22 &middot; 7 polls</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">18.2</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="4">
+          <div class="num">05</div>
+          <div>
+            <div class="name">Validate</div>
+            <div class="desc">Customer resolved. SKU match: exact &rarr; fuzzy &rarr; embedding. None stick.</div>
+            <div class="output">cust=CUST-00042 &middot; match_rate=0/22 &middot; conf=0.00</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">0.9</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="5">
+          <div class="num">06</div>
+          <div>
+            <div class="name">Clarify</div>
+            <div class="desc">Gemini drafts a professional clarification asking for catalog codes.</div>
+            <div class="output">draft_id=drft_92a1 &middot; tone=professional &middot; 4 sentences</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">0.8</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="6">
+          <div class="num">07</div>
+          <div>
+            <div class="name">Persist</div>
+            <div class="desc">Zero orders written. One exception opened with status ESCALATED.</div>
+            <div class="output">orders=0 &middot; exceptions=1 &middot; status=ESCALATED</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">0.2</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+        <div class="row" data-stage="7">
+          <div class="num">08</div>
+          <div>
+            <div class="name">Finalize</div>
+            <div class="desc">Event emitted. Dashboard event bus notified. Run closed.</div>
+            <div class="output">event=order_intake.escalated &middot; total=35.0s</div>
+          </div>
+          <div></div>
+          <div class="latency"><span class="val">0.1</span>s</div>
+          <div class="indicator">
+            <svg viewBox="0 0 26 26" aria-hidden="true">
+              <circle class="circle" cx="13" cy="13" r="11"/>
+              <circle class="fill" cx="13" cy="13" r="11"/>
+              <polyline class="check" points="7.5,13.5 11.5,17.5 18.5,9.5"/>
+            </svg>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pipeline-caption">
+        <span>Aggregate latency &middot; wall-clock</span>
+        <span id="wall-clock" class="mono" style="color:var(--ink); letter-spacing: 0.04em;">00.0 s</span>
+      </div>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION II — CORRESPONDENCE ================== -->
+    <section aria-label="The correspondence">
+      <header class="section-head">
+        <div class="numeral">II</div>
+        <div class="title">The Correspondence</div>
+        <div class="meta">inbound &middot; 22 Apr 2026, 09:41 IST</div>
+      </header>
+
+      <div class="letter-wrap">
+        <article class="letter">
+          <div class="letter-label">From the inbox</div>
+
+          <dl class="letter-fields">
+            <dt>From</dt>    <dd>John Harris &lt;john.harris@patterson-industrial.example&gt;</dd>
+            <dt>To</dt>      <dd>orders@acme-fasteners.example</dd>
+            <dt>Subject</dt> <dd>PO #PA-28491 &mdash; fastener re-order, urgent</dd>
+            <dt>Date</dt>    <dd>Wed, 22 Apr 2026 09:41:12 +0530</dd>
+            <dt>Attach</dt>  <dd>patterson_po-28491.pdf &middot; 7 KB &middot; 2 pages</dd>
+          </dl>
+
+          <div class="letter-body" id="email-body">
+            <p>
+              Hi team &mdash; same as the March order, plus a few adds from the
+              Greenville facility. We&rsquo;re down to single-digit bins on the
+              1/2-13 hex caps and the stainless washers, so anything you can put
+              on a truck this week is appreciated. PO #PA-28491 is attached with
+              the full line list; our warehouse will ship-to the Greenville dock,
+              not the main Houston address.
+            </p>
+            <p>
+              The catalog codes on the PO are the ones our new MRP spits out after
+              the Oracle migration last quarter &mdash; I know they don&rsquo;t
+              match the numbers we used last year. If your side has a cross-walk
+              from our codes to yours, great; otherwise happy to send over the
+              mapping sheet. Payment terms are Net 45 as usual.
+            </p>
+            <p>
+              Let me know if anything on the list is short-stocked; we&rsquo;re
+              flexible on substitutions so long as the grade and plating are
+              equivalent.
+            </p>
+            <p class="letter-sig">
+              Thanks,
+              <span class="name">John Harris &middot; Purchasing, Patterson Industrial Supply Co.</span>
+            </p>
+          </div>
+        </article>
+
+        <aside class="marginalia">
+          <div class="note">
+            <span class="hand">A note from the margin.</span>
+            <div class="note-label">Editor&rsquo;s observation</div>
+            The customer flags their own SKU problem in paragraph two. A careful
+            reader would catch that. The agent does too &mdash; but only after
+            it has exhausted every automated match path.
+          </div>
+
+          <div class="attach-card">
+            <div class="hdr">
+              <span>Attachment</span>
+              <span>PDF &middot; 7 KB</span>
+            </div>
+            <div><span class="fname">patterson_po-28491.pdf</span></div>
+            <div style="color:var(--ink-fade); margin-top:6px;">
+              2 pp. &middot; 22 rows &middot; issued 21 Apr 2026
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:28px;">
+            <div class="note-label">Thread state</div>
+            Fresh PO. No prior reply context. The agent is starting from zero.
+          </div>
+        </aside>
+      </div>
+
+      <div class="pullquote">
+        <span class="mark">&ldquo;</span>
+        <blockquote>
+          The catalog codes on the PO are the ones our new MRP spits out after
+          the Oracle migration last quarter &mdash; I know they don&rsquo;t
+          match the numbers we used last year.
+        </blockquote>
+        <cite>&mdash; J. Harris, Patterson Industrial, para. ii</cite>
+      </div>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION III — EXTRACTION ================== -->
+    <section aria-label="Extraction">
+      <header class="section-head">
+        <div class="numeral">III</div>
+        <div class="title">Extraction &mdash; What the Agent Found</div>
+        <div class="meta">22 lines &middot; 1 sub-document</div>
+      </header>
+
+      <div class="extract-grid">
+        <div class="lede-col">
+          <p class="dropcap">
+            LlamaExtract parsed the PDF into structured line items. The
+            customer &mdash; Patterson Industrial Supply Co. &mdash; resolved
+            against our master as <strong style="color:var(--accent)">CUST-00042</strong>
+            on the first try. The line items, however, are a different animal:
+            Patterson&rsquo;s new Oracle-era catalog codes bear no resemblance
+            to anything in our item master, and the descriptions, though
+            legible, are generic industry shorthand.
+          </p>
+          <p>
+            Below is the full manifest as the agent read it. Every row that
+            failed to match the item master is flagged
+            <span class="mono" style="color:var(--accent)">&times;</span>.
+          </p>
+
+          <div class="customer-block">
+            <div><span class="k">Customer</span>Patterson Industrial Supply Co.</div>
+            <div><span class="k">Resolved ID</span><span class="v id">CUST-00042</span></div>
+            <div><span class="k">Lookup</span><span class="v ok">exact-match &middot; domain</span></div>
+            <div><span class="k">Ship-to</span>Greenville, SC (override)</div>
+            <div><span class="k">Terms</span>Net 45</div>
+            <div><span class="k">PO No.</span>PA-28491</div>
+            <div><span class="k">Issued</span>21 Apr 2026</div>
+          </div>
+
+          <div class="match-legend">
+            <span><span class="x">&times;</span>no master match</span>
+            <span>prices per unit, USD</span>
+          </div>
+        </div>
+
+        <div class="table-col">
+          <table class="ledger" id="ledger">
+            <thead>
+              <tr>
+                <th style="width:42px;">L</th>
+                <th>Supplier SKU</th>
+                <th>Description</th>
+                <th style="width:48px;">Qty</th>
+                <th style="width:48px;">UoM</th>
+                <th style="width:72px;">Price</th>
+                <th style="width:34px;">M</th>
+              </tr>
+            </thead>
+            <tbody id="ledger-body">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+          <div class="ledger-caption">
+            &mdash; 22 of 22 lines extracted; 0 of 22 matched against the item master.
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION IV — VERDICT ================== -->
+    <section id="sec-verdict" aria-label="The decision">
+      <header class="section-head">
+        <div class="numeral">IV</div>
+        <div class="title">The Decision</div>
+        <div class="meta">aggregate confidence &middot; 0.00</div>
+      </header>
+
+      <div class="verdict">
+        <div class="main" id="verdict-body">
+          <h2 class="statement">
+            The agent <em>declined</em> to write this order.
+          </h2>
+
+          <p>
+            It did not fail, crash, or time out. It ran every match tier the
+            validation pipeline specifies, and each tier returned an empty
+            set. That is a deliberate outcome, not a bug.
+          </p>
+
+          <ul class="tier-list">
+            <li>
+              <span>1.</span>
+              <span class="k">Exact SKU lookup</span>
+              <span class="v">0 hits &times; 22</span>
+            </li>
+            <li>
+              <span>2.</span>
+              <span class="k">Fuzzy token-set ratio &ge; 0.85</span>
+              <span class="v">0 hits &times; 22</span>
+            </li>
+            <li>
+              <span>3.</span>
+              <span class="k">Semantic embedding (stub)</span>
+              <span class="v">0 hits &times; 22</span>
+            </li>
+          </ul>
+
+          <p>
+            Aggregate confidence, averaged across all twenty-two lines, resolves
+            to a flat <strong class="mono" style="color:var(--accent)">0.00</strong>.
+            The decision tier table &mdash; pinned to the right &mdash; routes
+            anything below 0.80 to the exception queue. There is no ambiguity
+            here; the call writes itself.
+          </p>
+
+          <div class="escalate-line" id="escalate-word">
+            ESCALATE
+            <svg viewBox="0 0 420 36" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M4,22 C 38,12 76,30 118,18 C 166,6 212,28 262,16 C 306,6 352,26 412,14"/>
+            </svg>
+          </div>
+
+          <p style="font-family:'Source Serif 4',serif; font-style:italic; color:var(--ink-fade); font-size:15px; max-width:48ch; margin-top:6px;">
+            &mdash; routed to the exception queue, drafted reply queued for
+            operator review, zero records committed to the
+            <span class="mono" style="font-style:normal;">orders</span>
+            collection.
+          </p>
+
+          <div class="confidence-bar" aria-hidden="true">
+            <span class="tick" style="left:80%"></span>
+            <span class="tick" style="left:95%"></span>
+            <span class="fill-bar" id="conf-bar"></span>
+          </div>
+          <div class="confidence-label">
+            <span>0.00</span>
+            <span class="val" id="conf-val">aggregate &middot; 0.00</span>
+            <span>1.00</span>
+          </div>
+        </div>
+
+        <aside class="side">
+          <div class="side-title">Threshold Table</div>
+          <div class="threshold-table">
+            <div class="row">
+              <span>&ge; 0.95</span>
+              <span class="op">auto-commit to orders</span>
+              <span class="verdict-word">AUTO</span>
+            </div>
+            <div class="row">
+              <span>&ge; 0.80</span>
+              <span class="op">draft reply, await op OK</span>
+              <span class="verdict-word">CLARIFY</span>
+            </div>
+            <div class="row active">
+              <span>&lt; 0.80</span>
+              <span class="op">exception queue, human</span>
+              <span class="verdict-word">ESCALATE</span>
+            </div>
+
+            <div class="note">
+              Thresholds are tuned against synthetic + Patterson-archive ground
+              truth. See <span class="mono">validation_pipeline.yaml</span>
+              for the live values.
+            </div>
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION V — THE POINT ================== -->
+    <section aria-label="The point" class="pending-reveal" id="sec-point">
+      <header class="section-head">
+        <div class="numeral">V</div>
+        <div class="title">The Point &mdash; An Essay</div>
+        <div class="meta">for the non-technical reader</div>
+      </header>
+
+      <div class="essay">
+        <div class="body">
+          <p>
+            A dumber system would have written twenty-two wrong line items into
+            our ERP and left a human to discover the mess a week later &mdash;
+            usually the week the customer calls asking why the wrong parts
+            arrived at the wrong dock. This agent refused. It flagged the email,
+            opened an exception with a full audit trail, and drafted a
+            clarification that reads like it was written by a careful purchasing
+            coordinator on their second coffee. That refusal is the feature.
+          </p>
+          <p>
+            Automation, in this domain, is not about speed. It is about the
+            quality of the writes you let through. The orders collection is the
+            system of record; everything downstream &mdash; shipping, invoicing,
+            inventory forecasts &mdash; trusts it. An agent that floods that
+            collection with plausible-looking garbage is worse than no agent at
+            all. An agent that knows when to stop, and how to ask, is the point.
+          </p>
+          <p>
+            We built the eight-stage pipeline so every refusal is legible: the
+            exception record carries the email, the extracted lines, the failed
+            match attempts per tier, the confidence arithmetic, and the drafted
+            reply. When the operator picks it up, the work is already done
+            &mdash; all they approve is the send.
+          </p>
+        </div>
+        <aside>
+          <span class="big">&ldquo;An agent that knows when to stop, and how to ask, is the point.&rdquo;</span>
+          Filed from the pit,
+          Hack or Relay 5.0, April 2026.
+          <br /><br />
+          The authors remain, respectfully,<br />
+          &mdash; The Order Intake team.
+        </aside>
+      </div>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION VI — CLARIFICATION ================== -->
+    <section aria-label="The clarification" class="pending-reveal" id="sec-clarify">
+      <header class="section-head">
+        <div class="numeral">VI</div>
+        <div class="title">The Clarification</div>
+        <div class="meta">outbound draft &middot; pending operator OK</div>
+      </header>
+
+      <div class="letter-wrap">
+        <article class="letter">
+          <div class="letter-label">Draft reply &middot; to Patterson</div>
+
+          <dl class="letter-fields">
+            <dt>From</dt>    <dd>orders@acme-fasteners.example</dd>
+            <dt>To</dt>      <dd>john.harris@patterson-industrial.example</dd>
+            <dt>Subject</dt> <dd>Re: PO #PA-28491 &mdash; clarifying catalog codes</dd>
+            <dt>In-reply</dt><dd>&lt;CAFc7...patterson-industrial.example&gt;</dd>
+            <dt>Status</dt>  <dd>DRAFT &middot; awaiting operator review</dd>
+          </dl>
+
+          <div class="letter-body">
+            <p>
+              Thanks for the rush re-order on PO #PA-28491 &mdash; we received
+              the attachment and parsed all twenty-two lines without issue.
+              Before we commit the order, we wanted to confirm the catalog
+              codes: your list uses your post-Oracle internal SKUs, and we
+              don&rsquo;t yet have a cross-walk on file against our item
+              master.
+            </p>
+            <p>
+              If you can share the mapping sheet you mentioned &mdash; even a
+              one-column CSV of your code next to the description would do
+              &mdash; we&rsquo;ll load it, re-validate the line items, and
+              confirm ship dates the same day. Alternatively, if it&rsquo;s
+              easier to resend the PO using our catalog numbers, we can supply
+              them for the fifteen or so parts we saw last quarter.
+            </p>
+            <p>
+              We want to make sure the Greenville dock receives exactly what
+              your techs are expecting and not a substitution we inferred. Net
+              45 stands.
+            </p>
+            <p class="letter-sig">
+              Best,
+              <span class="name">Acme Fasteners &middot; Order Desk (automated, pending review)</span>
+            </p>
+          </div>
+        </article>
+
+        <aside class="marginalia">
+          <div class="note">
+            <span class="hand">Drafted by Gemini.</span>
+            <div class="note-label">Operator action required</div>
+            The reply is ready to send. No field is left blank, the PO number
+            is correctly referenced, and the ask is specific enough that
+            Patterson can answer in one email.
+          </div>
+
+          <div class="attach-card">
+            <div class="hdr">
+              <span>Draft ID</span>
+              <span>drft_92a1</span>
+            </div>
+            <div><span class="fname">gemini-1.5-pro</span></div>
+            <div style="color:var(--ink-fade); margin-top:6px;">
+              prompt: clarify_sku_mismatch &middot; v3 &middot; 0.8 s
+            </div>
+          </div>
+
+          <div class="note" style="margin-top:28px;">
+            <div class="note-label">Audit trail</div>
+            Draft + full extraction + tier-by-tier match log are attached to
+            exception <span class="mono" style="color:var(--accent)">EXC-00017</span>.
+          </div>
+        </aside>
+      </div>
+    </section>
+
+    <div class="ornament">&lowast; &nbsp; &lowast; &nbsp; &lowast;</div>
+
+    <!-- ================== SECTION VII — BY THE NUMBERS ================== -->
+    <section aria-label="By the numbers" class="pending-reveal" id="sec-numbers">
+      <header class="section-head">
+        <div class="numeral">VII</div>
+        <div class="title">By the Numbers</div>
+        <div class="meta">run summary &middot; track a &middot; v0.1</div>
+      </header>
+
+      <div class="numbers">
+        <div class="stat">
+          <div class="big">0</div>
+          <div class="label">Orders Created</div>
+          <div class="sub">the ERP is untouched</div>
+        </div>
+        <div class="stat accent">
+          <div class="big">1</div>
+          <div class="label">Exception Opened</div>
+          <div class="sub">EXC-00017 &middot; ESCALATED</div>
+        </div>
+        <div class="stat">
+          <div class="big">0</div>
+          <div class="label">Documents Skipped</div>
+          <div class="sub">every stage ran cleanly</div>
+        </div>
+      </div>
+
+      <div class="latency-grid">
+        <div class="tbl">
+          <table class="latency">
+            <thead>
+              <tr>
+                <th>Stage</th>
+                <th style="text-align:right;">Wall (s)</th>
+                <th style="text-align:right;">Polls</th>
+                <th>Note</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td class="stage">Ingest</td><td class="ms">0.4</td><td class="polls">&mdash;</td><td>gmail pub/sub</td></tr>
+              <tr><td class="stage">Reply Check</td><td class="ms">0.2</td><td class="polls">&mdash;</td><td>fresh thread</td></tr>
+              <tr><td class="stage">Classify</td><td class="ms">14.2</td><td class="polls">5</td><td>LlamaClassify</td></tr>
+              <tr><td class="stage">Parse</td><td class="ms">18.2</td><td class="polls">7</td><td>LlamaExtract</td></tr>
+              <tr><td class="stage">Validate</td><td class="ms">0.9</td><td class="polls">&mdash;</td><td>3 tiers, 0 hits</td></tr>
+              <tr><td class="stage">Clarify</td><td class="ms">0.8</td><td class="polls">&mdash;</td><td>gemini-1.5-pro</td></tr>
+              <tr><td class="stage">Persist</td><td class="ms">0.2</td><td class="polls">&mdash;</td><td>firestore write</td></tr>
+              <tr><td class="stage">Finalize</td><td class="ms">0.1</td><td class="polls">&mdash;</td><td>event emit</td></tr>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td>Total</td>
+                <td class="ms">35.0</td>
+                <td></td>
+                <td>one email, end-to-end</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+
+        <div class="quote">
+          <div class="final-quote">
+            <blockquote>
+              &ldquo;Run closed. Twenty-two lines extracted, zero written,
+              one exception opened, one clarification drafted &mdash; the
+              inbox is quieter than when we started.&rdquo;
+            </blockquote>
+            <cite>&mdash; Gemini &middot; run summary, 22 Apr 2026 09:41:47 IST</cite>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================== COLOPHON ================== -->
+    <footer class="colophon">
+      <span class="mark">&mdash; &frasl; &mdash;</span>
+      Set in Fraunces, Source Serif 4, DM Sans, and IBM Plex Mono.<br />
+      Agent version <span class="mono" style="text-transform:none; letter-spacing:0.04em;">track-a-v0.1</span>
+      &middot; A Hack or Relay 5.0 submission &middot; Bangalore, April 2026.
+      <br />
+      <a href="#" id="reset-link" class="reset-link">&laquo; reset the run</a>
+    </footer>
+
+  </main>
+
+  <script>
+    /* -------------------------------------------------------
+       Interaction Script
+       One button. Eight stages. Staged reveal on click.
+       ------------------------------------------------------- */
+    (function () {
+      "use strict";
+
+      // ---------- realistic fastener line data ----------
+      const LINES = [
+        { sku: "PAT-HCS-05013-200-G5ZP", desc: "Hex Cap Screw 1/2-13 x 2\" Gr5 Zinc Plated",           qty: 500, uom: "EA",  price: "0.318" },
+        { sku: "PAT-HCS-05013-250-G5ZP", desc: "Hex Cap Screw 1/2-13 x 2-1/2\" Gr5 Zinc Plated",       qty: 250, uom: "EA",  price: "0.402" },
+        { sku: "PAT-HCS-03816-150-G8YZ", desc: "Hex Cap Screw 3/8-16 x 1-1/2\" Gr8 Yellow Zinc",       qty: 400, uom: "EA",  price: "0.246" },
+        { sku: "PAT-SHC-02520-075-A2BO", desc: "Socket Head Cap Screw 1/4-20 x 3/4\" A2 Stainless",    qty: 600, uom: "EA",  price: "0.184" },
+        { sku: "PAT-SHC-03118-100-BOXD", desc: "Socket Head Cap Screw 5/16-18 x 1\" Black Oxide",      qty: 300, uom: "EA",  price: "0.213" },
+        { sku: "PAT-BHC-03816-125-A2SS", desc: "Button Head Cap 3/8-16 x 1-1/4\" A2 Stainless",        qty: 150, uom: "EA",  price: "0.297" },
+        { sku: "PAT-CRS-02520-100-PHZP", desc: "Carriage Bolt 1/4-20 x 1\" Pan-head Zinc Plated",       qty: 800, uom: "EA",  price: "0.109" },
+        { sku: "PAT-LAG-02509-300-HDG",  desc: "Lag Screw 1/4 x 3\" Hex Head Hot-Dip Galv.",           qty: 200, uom: "EA",  price: "0.376" },
+        { sku: "PAT-HNN-05013-G5-ZP",    desc: "Hex Nut 1/2-13 Grade 5 Zinc Plated",                   qty: 500, uom: "EA",  price: "0.042" },
+        { sku: "PAT-HNN-03816-G8-YZ",    desc: "Hex Nut 3/8-16 Grade 8 Yellow Zinc",                   qty: 400, uom: "EA",  price: "0.055" },
+        { sku: "PAT-NLC-05013-NYLK",     desc: "Nylon-insert Lock Nut 1/2-13 Zinc Plated",             qty: 300, uom: "EA",  price: "0.067" },
+        { sku: "PAT-JAM-03816-G5ZP",     desc: "Jam Nut 3/8-16 Grade 5 Zinc Plated",                   qty: 250, uom: "EA",  price: "0.038" },
+        { sku: "PAT-FW-050-ZP",          desc: "Flat Washer 1/2\" USS Zinc Plated",                    qty: 1000,uom: "EA",  price: "0.018" },
+        { sku: "PAT-FW-050-A2SS",        desc: "Flat Washer 1/2\" A2 Stainless",                       qty: 500, uom: "EA",  price: "0.071" },
+        { sku: "PAT-LWS-050-SS",         desc: "Split Lock Washer 1/2\" A2 Stainless",                 qty: 500, uom: "EA",  price: "0.082" },
+        { sku: "PAT-LWS-03816-ZP",       desc: "Split Lock Washer 3/8\" Zinc Plated",                  qty: 400, uom: "EA",  price: "0.022" },
+        { sku: "PAT-TRW-02520-ZP",       desc: "Tooth Lock Washer 1/4\" Ext. Zinc",                    qty: 300, uom: "EA",  price: "0.019" },
+        { sku: "PAT-ABT-02503-400-ZN",   desc: "Anchor Bolt 1/4 x 4\" w/ Nut &amp; Washer Zn",         qty: 120, uom: "EA",  price: "0.612" },
+        { sku: "PAT-THR-05013-036-G5",   desc: "Threaded Rod 1/2-13 x 36\" Gr5 Zinc",                  qty:  60, uom: "EA",  price: "2.940" },
+        { sku: "PAT-DOW-025-200-STL",    desc: "Dowel Pin 1/4\" x 2\" Alloy Steel",                    qty: 200, uom: "EA",  price: "0.228" },
+        { sku: "PAT-SS-03116-050-CP",    desc: "Set Screw 5/16-18 x 1/2\" Cup Point Black",            qty: 400, uom: "EA",  price: "0.093" },
+        { sku: "PAT-SCR-08-1-PH-SMS",    desc: "Sheet Metal Screw #8 x 1\" Phillips Pan",              qty: 1200,uom: "EA",  price: "0.014" }
+      ];
+
+      // ---------- populate ledger (empty state: placeholders) ----------
+      const body = document.getElementById("ledger-body");
+      LINES.forEach(function (line, i) {
+        const tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="mono" style="color:var(--ink-fade)">' + String(i + 1).padStart(2, "0") + '</td>' +
+          '<td class="sku"><span class="placeholder">&mdash;</span></td>' +
+          '<td class="desc"><span class="placeholder">&mdash;</span></td>' +
+          '<td class="qty"><span class="placeholder">&mdash;</span></td>' +
+          '<td class="uom"><span class="placeholder">&mdash;</span></td>' +
+          '<td class="price"><span class="placeholder">&mdash;</span></td>' +
+          '<td class="match-x"><span class="placeholder">&mdash;</span></td>';
+        body.appendChild(tr);
+      });
+
+      // ---------- pre-click states ----------
+      const btn = document.getElementById("run-btn");
+      const pipelineRows = document.querySelectorAll("#pipeline .row");
+      const emailBody = document.getElementById("email-body");
+      const verdictBody = document.getElementById("verdict-body");
+      const escalateWord = document.getElementById("escalate-word");
+      const confBar = document.getElementById("conf-bar");
+      const confVal = document.getElementById("conf-val");
+      const secPoint = document.getElementById("sec-point");
+      const secClarify = document.getElementById("sec-clarify");
+      const secNumbers = document.getElementById("sec-numbers");
+      const wallClock = document.getElementById("wall-clock");
+      const resetLink = document.getElementById("reset-link");
+
+      // pre-click — hide email body, mute verdict
+      emailBody.classList.add("pending");
+      verdictBody.classList.add("pending-reveal");
+
+      // ---------- click handler ----------
+      let running = false;
+      let timers = [];
+
+      function clearTimers() {
+        timers.forEach(function (t) { clearTimeout(t); });
+        timers = [];
+      }
+
+      function reset() {
+        clearTimers();
+        running = false;
+        btn.disabled = false;
+        btn.classList.remove("pressed", "glowing");
+        btn.textContent = "Run the Pipeline";
+
+        pipelineRows.forEach(function (r) { r.classList.remove("active", "done"); });
+
+        // reset ledger to placeholders
+        const rows = body.querySelectorAll("tr");
+        rows.forEach(function (r) {
+          r.classList.remove("in");
+          const cells = r.querySelectorAll("td");
+          // keep line number cell (cells[0])
+          for (let i = 1; i < cells.length; i++) {
+            cells[i].innerHTML = '<span class="placeholder">&mdash;</span>';
+          }
+        });
+
+        emailBody.classList.add("pending");
+        verdictBody.classList.add("pending-reveal");
+        escalateWord.classList.remove("drawn");
+        confBar.style.width = "0%";
+        confVal.textContent = "aggregate · —";
+
+        secPoint.classList.remove("in");
+        secClarify.classList.remove("in");
+        secNumbers.classList.remove("in");
+
+        wallClock.textContent = "00.0 s";
+
+        resetLink.classList.remove("on");
+      }
+
+      function wait(ms, fn) {
+        const t = setTimeout(fn, ms);
+        timers.push(t);
+        return t;
+      }
+
+      function runStage(idx) {
+        if (idx >= pipelineRows.length) return;
+        const row = pipelineRows[idx];
+        row.classList.add("active");
+        // finish (fill + checkmark) after a short moment
+        wait(260, function () {
+          row.classList.remove("active");
+          row.classList.add("done");
+        });
+      }
+
+      function populateLedger() {
+        const rows = body.querySelectorAll("tr");
+        LINES.forEach(function (line, i) {
+          wait(i * 60, function () {
+            const tr = rows[i];
+            const cells = tr.querySelectorAll("td");
+            cells[1].innerHTML = '<span class="sku">' + line.sku + '</span>';
+            cells[2].innerHTML = line.desc;
+            cells[3].textContent = String(line.qty);
+            cells[4].textContent = line.uom;
+            cells[5].textContent = line.price;
+            cells[6].innerHTML = '&times;';
+            tr.classList.add("in");
+          });
+        });
+      }
+
+      function startWallClock() {
+        const start = performance.now();
+        function tick() {
+          if (!running) return;
+          const t = (performance.now() - start) / 1000;
+          wallClock.textContent = t.toFixed(1).padStart(4, "0") + " s";
+          if (t < 35.0) requestAnimationFrame(tick);
+          else wallClock.textContent = "35.0 s";
+        }
+        requestAnimationFrame(tick);
+      }
+
+      function run() {
+        if (running) return;
+        running = true;
+        btn.classList.add("pressed");
+        btn.disabled = true;
+
+        wait(220, function () {
+          btn.classList.remove("pressed");
+          btn.classList.add("glowing");
+          btn.textContent = "Running — hold tight";
+        });
+
+        startWallClock();
+
+        // t=0..3.2s: 8 stages at 400ms stagger
+        for (let i = 0; i < pipelineRows.length; i++) {
+          wait(i * 400, function () { runStage(i); });
+        }
+
+        // t=3.5s: email body reveals
+        wait(3500, function () {
+          emailBody.classList.remove("pending");
+        });
+
+        // t=4.5s: ledger populates (22 rows x 60ms = 1320ms)
+        wait(4500, populateLedger);
+
+        // t=6.5s: verdict reveals, escalate underline draws
+        wait(6500, function () {
+          verdictBody.classList.remove("pending-reveal");
+        });
+        wait(6900, function () {
+          escalateWord.classList.add("drawn");
+          confBar.style.width = "0%"; // actually 0.00 confidence = empty bar
+          confVal.textContent = "aggregate · 0.00";
+        });
+
+        // t=7.5s+: remaining sections fade in
+        wait(7500, function () { secPoint.classList.add("in"); });
+        wait(8000, function () { secClarify.classList.add("in"); });
+        wait(8500, function () { secNumbers.classList.add("in"); });
+
+        // after all done — offer reset + finalize button text
+        wait(9200, function () {
+          btn.textContent = "Run Complete — 35.0s";
+          resetLink.classList.add("on");
+        });
+      }
+
+      btn.addEventListener("click", run);
+      resetLink.addEventListener("click", function (e) {
+        e.preventDefault();
+        reset();
+      });
+
+      // kb affordance
+      btn.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          run();
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
