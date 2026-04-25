@@ -145,13 +145,42 @@ def test_every_factory_produces_gemini_safe_output_schema() -> None:
     extend this fixture explicitly (keeps the test list visible rather
     than auto-discovering via module scan, which can mask skipped agents).
     """
+    from backend.my_agent.agents.judge_agent import build_judge_agent
+
     for factory in (
         build_clarify_email_agent,
         build_summary_agent,
         build_confirmation_email_agent,
+        build_judge_agent,  # Track B
     ):
         agent = factory()
         assert agent.output_schema is not None, (
             f"{factory.__name__} should set output_schema"
         )
         _assert_gemini_schema_safe(agent.output_schema)
+
+
+# --- Track B additions: build_judge_agent smoke + regression walker extension ---
+
+
+def test_build_judge_agent_returns_correctly_configured_llmagent():
+    from backend.models.judge_verdict import JudgeVerdict
+    from backend.my_agent.agents.judge_agent import (
+        JUDGE_AGENT_NAME,
+        build_judge_agent,
+    )
+
+    agent = build_judge_agent()
+
+    assert agent.name == JUDGE_AGENT_NAME == "judge_agent"
+    assert agent.model == "gemini-3-flash-preview"
+    assert agent.output_schema is JudgeVerdict
+    assert agent.output_key == "judge_verdict"
+
+
+def test_build_judge_agent_returns_a_fresh_instance_per_call():
+    from backend.my_agent.agents.judge_agent import build_judge_agent
+
+    a = build_judge_agent()
+    b = build_judge_agent()
+    assert a is not b  # parent-conflict guard
