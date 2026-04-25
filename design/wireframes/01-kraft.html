@@ -1,0 +1,2162 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Order Intake Agent — Kraft Wireframe / Hack or Relay 5.0</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Anton&family=Work+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+/* =======================================================================
+   ORDER INTAKE AGENT - KRAFT / BILL-OF-LADING WIREFRAME
+   Hack or Relay 5.0 - 2026-04-22
+   ======================================================================= */
+
+:root{
+  --kraft-1:#f4ebd8;
+  --kraft-2:#efe6d1;
+  --kraft-3:#e7dcc2;
+  --kraft-4:#d8c9a6;
+  --ink:#1d1b18;
+  --ink-soft:#2d2a24;
+  --steel:#1d3557;
+  --steel-soft:#2b4a73;
+  --orange:#e85d04;
+  --orange-deep:#b84403;
+  --yellow:#ffba08;
+  --green:#3d7b2b;
+  --rule:#7a6a48;
+  --rule-soft:#b7a683;
+  --shadow:rgba(58,45,18,.18);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:'Work Sans',sans-serif;
+  color:var(--ink);
+  background-color:var(--kraft-1);
+  background-image:
+    repeating-linear-gradient(
+      135deg,
+      rgba(120,95,40,.035) 0 2px,
+      rgba(120,95,40,0) 2px 5px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      rgba(94,66,20,.02) 0 1px,
+      rgba(94,66,20,0) 1px 3px
+    ),
+    radial-gradient(ellipse at 15% 10%, rgba(200,165,100,.25), transparent 55%),
+    radial-gradient(ellipse at 85% 90%, rgba(130,95,40,.22), transparent 60%);
+  background-attachment:fixed;
+  font-size:15px;
+  line-height:1.55;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+
+body::before{
+  content:"";
+  position:fixed;inset:0;
+  pointer-events:none;
+  z-index:1;
+  opacity:.5;
+  mix-blend-mode:multiply;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .45  0 0 0 0 .35  0 0 0 0 .15  0 0 0 .14 0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>");
+}
+
+.shell{
+  max-width:1180px;
+  margin:0 auto;
+  padding:28px 36px 80px;
+  position:relative;
+  z-index:2;
+}
+
+/* ===== typography ===== */
+.bebas{font-family:'Bebas Neue',sans-serif;letter-spacing:.04em}
+.anton{font-family:'Anton',sans-serif;letter-spacing:.02em;text-transform:uppercase}
+.mono{font-family:'JetBrains Mono',monospace}
+h1,h2,h3{margin:0;font-weight:normal}
+a{color:var(--steel)}
+
+/* ===== top form/metadata bar ===== */
+.metabar{
+  border:2px solid var(--ink);
+  background:
+    repeating-linear-gradient(90deg, transparent 0 38px, rgba(29,27,24,.06) 38px 39px);
+  padding:10px 14px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr) auto;
+  gap:10px 22px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.09em;
+  position:relative;
+}
+.metabar::before{
+  content:"FORM BOL-OIA-0042 / REV 03";
+  position:absolute;
+  top:-9px;left:14px;
+  background:var(--kraft-1);
+  padding:0 8px;
+  font-size:9.5px;
+  letter-spacing:.2em;
+  color:var(--ink-soft);
+}
+.meta-field label{
+  display:block;
+  font-size:9px;
+  color:var(--ink-soft);
+  letter-spacing:.22em;
+  margin-bottom:2px;
+  opacity:.75;
+}
+.meta-field span{color:var(--ink);font-weight:500}
+.meta-pill{
+  align-self:center;
+  padding:3px 10px;
+  border:1.5px solid var(--orange);
+  color:var(--orange-deep);
+  font-size:10px;
+  letter-spacing:.22em;
+  transform:rotate(-1.5deg);
+}
+
+/* ===== masthead ===== */
+.masthead{
+  position:relative;
+  margin-top:26px;
+  padding:40px 20px 32px;
+  border-top:6px double var(--ink);
+  border-bottom:6px double var(--ink);
+}
+.masthead .wordmark{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:clamp(78px,14vw,184px);
+  line-height:.85;
+  letter-spacing:.02em;
+  color:var(--ink);
+  text-align:center;
+  text-shadow:
+    1.5px 1.5px 0 rgba(0,0,0,.08),
+    3px 3px 0 rgba(255,255,255,.35);
+  position:relative;
+}
+.masthead .wordmark .amp{color:var(--orange)}
+.masthead .tagline{
+  font-family:'Work Sans',sans-serif;
+  font-style:italic;
+  text-align:center;
+  font-size:16px;
+  letter-spacing:.18em;
+  text-transform:uppercase;
+  color:var(--steel);
+  margin-top:14px;
+}
+.masthead .rosette{
+  position:absolute;
+  top:18px;right:10px;
+  width:88px;height:88px;
+  border:2px solid var(--orange);
+  border-radius:50%;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:12px;
+  color:var(--orange-deep);
+  letter-spacing:.15em;
+  text-align:center;
+  line-height:1;
+  transform:rotate(9deg);
+  background:rgba(244,235,216,.6);
+}
+.masthead .rosette b{font-size:22px;display:block;margin:3px 0}
+.masthead .rosette .dot-circle{
+  position:absolute;inset:6px;
+  border:1.5px dashed var(--orange);
+  border-radius:50%;
+}
+.barcode-strip{
+  margin-top:18px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+}
+.barcode{height:38px;flex:1}
+.barcode-num{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:.3em;
+  color:var(--ink-soft);
+}
+
+/* ===== stenciled tape strip ===== */
+.tape{
+  margin-top:30px;
+  height:38px;
+  background:
+    repeating-linear-gradient(
+      45deg,
+      rgba(232,93,4,.85) 0 22px,
+      rgba(29,27,24,.85) 22px 44px
+    );
+  border-top:1.5px solid rgba(0,0,0,.2);
+  border-bottom:1.5px solid rgba(0,0,0,.2);
+  transform:rotate(-.6deg);
+  box-shadow:0 2px 0 rgba(0,0,0,.12), 0 8px 14px rgba(0,0,0,.1);
+  position:relative;
+  z-index:0;
+}
+
+/* ===== section scaffolding ===== */
+section{
+  position:relative;
+  margin-top:58px;
+}
+.cutline{
+  border-top:2px dashed var(--rule);
+  position:relative;
+  margin:64px 0 24px;
+  color:var(--ink-soft);
+}
+.cutline::before{
+  content:"- - - - -   CUT ALONG DASHED LINE   - - - - -";
+  position:absolute;
+  top:-11px;left:50%;
+  transform:translateX(-50%);
+  background:var(--kraft-1);
+  padding:0 14px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.3em;
+  color:var(--rule);
+}
+.sec-head{
+  display:flex;
+  align-items:baseline;
+  justify-content:space-between;
+  gap:22px;
+  margin-bottom:20px;
+}
+.sec-head .num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:64px;
+  line-height:.85;
+  color:var(--orange);
+  text-shadow:2px 2px 0 rgba(29,27,24,.12);
+}
+.sec-head .title{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:42px;
+  line-height:1;
+  color:var(--ink);
+  letter-spacing:.05em;
+}
+.sec-head .kicker{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:.24em;
+  text-transform:uppercase;
+  color:var(--steel);
+  border:1.5px solid var(--steel);
+  padding:4px 10px;
+  transform:rotate(-1deg);
+  background:var(--kraft-2);
+}
+
+/* ===== HERO RUN button ===== */
+.hero{
+  display:grid;
+  grid-template-columns:1fr 1.2fr 1fr;
+  gap:30px;
+  align-items:center;
+  padding:40px 20px;
+  border:2px solid var(--ink);
+  background:
+    radial-gradient(circle at 30% 30%, rgba(232,93,4,.08), transparent 60%),
+    var(--kraft-2);
+  position:relative;
+}
+.hero::after{
+  content:"";
+  position:absolute;inset:7px;
+  border:1.5px dashed var(--rule);
+  pointer-events:none;
+}
+.hero .lbl{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:.24em;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+}
+.hero .shipto{
+  border:1.5px solid var(--ink);
+  padding:14px;
+  background:rgba(255,255,255,.35);
+  position:relative;
+}
+.hero .shipto::before{
+  content:"INPUT";
+  position:absolute;top:-9px;left:10px;
+  background:var(--kraft-2);
+  padding:0 7px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.3em;
+}
+.hero .shipto p{margin:4px 0;font-size:13px}
+.hero .shipto b{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:var(--ink)}
+
+.stamp-btn-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:12px;
+}
+.stamp-btn{
+  position:relative;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:56px;
+  letter-spacing:.08em;
+  padding:30px 60px 26px;
+  color:var(--orange-deep);
+  background:transparent;
+  border:6px double var(--orange-deep);
+  cursor:pointer;
+  transform:rotate(-3.2deg);
+  transition:transform .22s cubic-bezier(.34,1.56,.64,1), box-shadow .2s;
+  box-shadow:
+    4px 5px 0 rgba(29,27,24,.12),
+    inset 0 0 0 2px rgba(255,255,255,.45);
+  text-shadow:
+    1px 0 0 rgba(184,68,3,.3),
+    -1px 0 0 rgba(184,68,3,.2),
+    0 1px 0 rgba(184,68,3,.3);
+}
+.stamp-btn::before{
+  content:"";
+  position:absolute;inset:-6px;
+  border:2px dashed rgba(184,68,3,.35);
+  pointer-events:none;
+}
+.stamp-btn:hover{transform:rotate(-3.2deg) scale(1.03)}
+.stamp-btn:active,.stamp-btn.pressed{
+  transform:rotate(-1deg) scale(.94);
+  box-shadow:1px 1px 0 rgba(29,27,24,.2), inset 0 0 0 2px rgba(255,255,255,.3);
+  filter:contrast(1.1);
+}
+.stamp-btn.spent{
+  color:var(--rule);
+  border-color:var(--rule);
+  pointer-events:none;
+  opacity:.55;
+}
+.stamp-btn .pipeline-arrow{
+  display:inline-block;
+  margin-left:8px;
+}
+.hero .meter-hint{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--ink-soft);
+  letter-spacing:.18em;
+}
+
+.hero .expected{
+  border:1.5px solid var(--ink);
+  padding:14px;
+  background:rgba(255,255,255,.35);
+  position:relative;
+}
+.hero .expected::before{
+  content:"EXPECTED";
+  position:absolute;top:-9px;left:10px;
+  background:var(--kraft-2);
+  padding:0 7px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.3em;
+}
+.hero .expected p{margin:4px 0;font-size:13px}
+.hero .expected b{font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:.04em;color:var(--orange)}
+
+.reset-btn{
+  display:none;
+  margin:20px auto 0;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;
+  letter-spacing:.16em;
+  padding:6px 22px;
+  background:transparent;
+  border:2px solid var(--steel);
+  color:var(--steel);
+  cursor:pointer;
+  transform:rotate(-1deg);
+}
+.reset-btn.visible{display:inline-block}
+.reset-btn:hover{background:var(--steel);color:var(--kraft-1)}
+
+/* ===== pipeline ===== */
+.pipeline{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:14px;
+  position:relative;
+}
+.pipeline::before{
+  content:"";
+  position:absolute;
+  top:50%;left:0;right:0;height:8px;
+  background:
+    repeating-linear-gradient(90deg,
+      var(--rule) 0 14px,
+      transparent 14px 22px);
+  opacity:.3;
+  z-index:0;
+}
+.stage{
+  position:relative;
+  background:var(--kraft-2);
+  border:2px solid var(--ink);
+  padding:14px 12px 12px;
+  min-height:160px;
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  z-index:1;
+  transition:opacity .3s, background .3s, border-color .3s;
+  opacity:.35;
+  filter:grayscale(.85);
+}
+.stage::after{
+  content:"";
+  position:absolute;inset:3px;
+  border:1px dashed var(--rule-soft);
+  pointer-events:none;
+}
+.stage.active{opacity:1;filter:none}
+.stage.running{
+  opacity:1;filter:none;
+  background:
+    repeating-linear-gradient(135deg,
+      rgba(232,93,4,.08) 0 6px,
+      transparent 6px 12px),
+    var(--kraft-2);
+  border-color:var(--orange);
+}
+.stage.done{
+  opacity:1;filter:none;
+  border-color:var(--ink);
+  background:var(--kraft-2);
+}
+.stage-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:6px;
+}
+.stage-num{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:36px;
+  line-height:.85;
+  color:var(--orange);
+}
+.stage-name{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18px;
+  letter-spacing:.06em;
+  color:var(--ink);
+  text-align:right;
+}
+.stage-icon{
+  font-family:'JetBrains Mono',monospace;
+  font-size:22px;
+  color:var(--steel);
+  text-align:right;
+}
+.stage-latency{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:.12em;
+  color:var(--ink-soft);
+  border-top:1px dashed var(--rule);
+  padding-top:4px;
+  margin-top:auto;
+}
+.stage-out{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--steel);
+  min-height:34px;
+  line-height:1.4;
+  word-break:break-word;
+}
+.stage-status{
+  position:absolute;
+  top:6px;right:6px;
+  width:22px;height:22px;
+  display:flex;align-items:center;justify-content:center;
+}
+.spinner{
+  width:16px;height:16px;
+  border:2.5px solid var(--orange);
+  border-top-color:transparent;
+  border-radius:50%;
+  animation:spin .7s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.checkmark{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  color:var(--green);
+  transform:rotate(-10deg) scale(0);
+  opacity:0;
+  transition:all .45s cubic-bezier(.34,1.56,.64,1);
+  text-shadow:1px 1px 0 rgba(0,0,0,.12);
+}
+.stage.done .checkmark{transform:rotate(-10deg) scale(1);opacity:1}
+
+/* ===== reveal util ===== */
+.reveal{
+  opacity:0;
+  transform:translateY(22px);
+  transition:opacity .6s ease, transform .6s cubic-bezier(.2,.8,.2,1);
+  pointer-events:none;
+}
+.reveal.shown{opacity:1;transform:none;pointer-events:auto}
+.reveal-left{transform:translateX(-30px)}
+.reveal-left.shown{transform:none}
+.reveal-right{transform:translateX(30px)}
+.reveal-right.shown{transform:none}
+
+/* ===== email preview / shipping label ===== */
+.ship-label{
+  border:3px solid var(--ink);
+  padding:0;
+  background:var(--kraft-2);
+  display:grid;
+  grid-template-columns:1fr 1.1fr .9fr;
+  position:relative;
+  box-shadow:4px 4px 0 rgba(29,27,24,.12);
+}
+.ship-label::before{
+  content:"";
+  position:absolute;inset:6px;
+  border:1.5px dashed var(--rule);
+  pointer-events:none;
+}
+.ship-label .panel{
+  padding:16px;
+  border-right:2px solid var(--ink);
+  position:relative;
+}
+.ship-label .panel:last-child{border-right:none}
+.ship-label .panel .plabel{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.25em;
+  text-transform:uppercase;
+  color:var(--ink-soft);
+  border-bottom:1px solid var(--ink);
+  padding-bottom:4px;
+  margin-bottom:8px;
+}
+.ship-label .from b,.ship-label .to b{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:.03em;
+  display:block;
+  color:var(--ink);
+}
+.ship-label .from p,.ship-label .to p{margin:3px 0;font-size:12.5px;line-height:1.4}
+.ship-label .meta{
+  display:flex;
+  flex-direction:column;
+  gap:4px;
+}
+.ship-label .meta .row{
+  display:flex;
+  justify-content:space-between;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  border-bottom:1px dotted var(--rule);
+  padding:3px 0;
+  gap:8px;
+}
+.ship-label .meta .row span:first-child{color:var(--ink-soft);letter-spacing:.14em}
+.ship-label .meta .row span:last-child{color:var(--ink);font-weight:600;text-align:right}
+
+.subject-bar{
+  margin-top:0;
+  border:2px solid var(--ink);
+  border-top:none;
+  padding:10px 16px;
+  display:flex;
+  align-items:center;
+  gap:16px;
+  flex-wrap:wrap;
+  background:var(--kraft-3);
+  font-family:'Work Sans',sans-serif;
+  font-size:14px;
+}
+.subject-bar .slab{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:14px;
+  letter-spacing:.22em;
+  color:var(--ink-soft);
+  padding:3px 8px;
+  border:1.5px solid var(--ink-soft);
+}
+.subject-bar b{font-family:'Work Sans',sans-serif;font-weight:700}
+.subject-bar .urgency{
+  margin-left:auto;
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:.18em;
+  color:var(--orange-deep);
+  border:1.5px dashed var(--orange-deep);
+  padding:2px 8px;
+  transform:rotate(-2deg);
+}
+
+.email-body{
+  margin-top:0;
+  border:2px solid var(--ink);
+  border-top:none;
+  padding:18px 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.25), transparent 60%),
+    var(--kraft-2);
+  font-family:'Work Sans',sans-serif;
+  font-size:14px;
+  line-height:1.7;
+}
+.email-body .salutation{color:var(--ink-soft)}
+.email-body .sig{
+  margin-top:16px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--steel);
+  border-top:1px dashed var(--rule);
+  padding-top:10px;
+}
+
+.attach-chip{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  border:1.5px solid var(--steel);
+  padding:6px 10px;
+  margin-top:10px;
+  background:var(--kraft-3);
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  color:var(--steel);
+}
+.attach-chip .pdf-icon{
+  width:20px;height:24px;
+  position:relative;
+  background:var(--orange-deep);
+  color:var(--kraft-1);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:9px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  letter-spacing:.1em;
+}
+.attach-chip .pdf-icon::after{
+  content:"";
+  position:absolute;top:0;right:0;
+  border-width:0 5px 5px 0;
+  border-style:solid;
+  border-color:transparent var(--kraft-2) transparent transparent;
+}
+
+/* ===== extracted data table ===== */
+.table-wrap{
+  border:2px solid var(--ink);
+  background:var(--kraft-2);
+  padding:0;
+  position:relative;
+  overflow:hidden;
+}
+.table-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px 16px;
+  border-bottom:2px solid var(--ink);
+  background:
+    repeating-linear-gradient(90deg,
+      rgba(29,27,24,.05) 0 2px,
+      transparent 2px 5px),
+    var(--kraft-3);
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:.1em;
+  font-size:20px;
+}
+.table-header .pkg-no{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  letter-spacing:.2em;
+  color:var(--ink-soft);
+}
+table.packing{
+  width:100%;
+  border-collapse:collapse;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+}
+table.packing thead th{
+  text-align:left;
+  padding:8px 10px;
+  border-bottom:1.5px solid var(--ink);
+  border-right:1px dashed var(--rule);
+  background:var(--kraft-3);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:14px;
+  letter-spacing:.14em;
+  color:var(--ink-soft);
+}
+table.packing thead th:last-child{border-right:none}
+table.packing tbody td{
+  padding:6px 10px;
+  border-bottom:1px dashed rgba(122,106,72,.45);
+  border-right:1px dashed rgba(122,106,72,.3);
+  vertical-align:top;
+}
+table.packing tbody td:last-child{border-right:none}
+table.packing tbody tr:nth-child(even) td{background:rgba(29,27,24,.025)}
+table.packing tbody tr{
+  opacity:0;
+  transform:translateY(6px);
+  transition:opacity .35s, transform .35s;
+}
+table.packing tbody tr.in{opacity:1;transform:none}
+table.packing td.ln{width:36px;color:var(--ink-soft)}
+table.packing td.sku{color:var(--orange-deep);font-weight:700;white-space:nowrap}
+table.packing td.desc{font-family:'Work Sans',sans-serif;font-size:13px}
+table.packing td.qty{text-align:right;width:56px}
+table.packing td.uom{width:54px;color:var(--ink-soft);text-transform:uppercase}
+table.packing td.price{text-align:right;width:86px}
+.table-footer{
+  padding:10px 16px;
+  border-top:2px solid var(--ink);
+  display:flex;
+  justify-content:space-between;
+  gap:14px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  background:var(--kraft-3);
+  flex-wrap:wrap;
+}
+
+.cust-card{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:1fr auto;
+  align-items:center;
+  gap:18px;
+  border:2px solid var(--ink);
+  padding:18px 22px;
+  background:var(--kraft-2);
+  position:relative;
+}
+.cust-card::before{
+  content:"CUSTOMER RESOLUTION";
+  position:absolute;top:-10px;left:14px;
+  background:var(--kraft-1);
+  padding:0 8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.28em;
+}
+.cust-card .chain{
+  font-family:'JetBrains Mono',monospace;
+  font-size:13.5px;
+}
+.cust-card .chain b{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:.04em;
+  color:var(--ink);
+  display:inline-block;
+  margin-right:8px;
+}
+.cust-card .chain .arr{color:var(--orange);font-weight:700;margin:0 8px}
+.cust-card .chain .cid{color:var(--green);font-weight:700}
+
+.verified-stamp{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:.14em;
+  color:var(--green);
+  border:3px double var(--green);
+  padding:6px 16px;
+  transform:rotate(-6deg);
+  position:relative;
+  background:rgba(255,255,255,.25);
+  text-shadow:1px 1px 0 rgba(0,0,0,.08);
+}
+.verified-stamp small{
+  display:block;
+  font-size:9.5px;
+  letter-spacing:.24em;
+  color:var(--green);
+  font-family:'JetBrains Mono',monospace;
+  margin-top:2px;
+}
+
+/* ===== validation ladder ===== */
+.ladder{
+  border:2px solid var(--ink);
+  background:var(--kraft-2);
+  padding:14px;
+  position:relative;
+}
+.ladder-row{
+  display:grid;
+  grid-template-columns:150px 1fr 100px;
+  gap:12px;
+  align-items:center;
+  padding:10px 8px;
+  border-bottom:1.5px dashed var(--rule);
+}
+.ladder-row:last-child{border-bottom:none}
+.ladder-row .tier{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:22px;
+  letter-spacing:.06em;
+  color:var(--steel);
+}
+.ladder-row .tier small{
+  display:block;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.16em;
+  color:var(--ink-soft);
+  margin-top:2px;
+}
+.ladder-row .dots{
+  display:flex;flex-wrap:wrap;gap:3px;
+}
+.ladder-row .dot{
+  font-family:'JetBrains Mono',monospace;
+  font-size:8.5px;
+  letter-spacing:.06em;
+  padding:2px 5px;
+  border:1px solid var(--orange);
+  color:var(--orange-deep);
+  background:rgba(232,93,4,.08);
+  transform:rotate(-2deg);
+}
+.ladder-row .tally{
+  text-align:right;
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  color:var(--orange-deep);
+  letter-spacing:.14em;
+  font-weight:700;
+}
+.ladder-aggregate{
+  margin-top:18px;
+  display:grid;
+  grid-template-columns:auto 1fr auto;
+  gap:20px;
+  align-items:center;
+  padding:16px;
+  border-top:2px solid var(--ink);
+}
+
+/* ===== gauge ===== */
+.gauge{width:130px;height:130px;position:relative;flex-shrink:0}
+.gauge-label{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+}
+.gauge-label .val{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:42px;
+  line-height:.9;
+  color:var(--orange-deep);
+}
+.gauge-label .cap{
+  font-family:'JetBrains Mono',monospace;
+  font-size:9px;
+  letter-spacing:.2em;
+  color:var(--ink-soft);
+}
+
+.agg-detail{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  line-height:1.6;
+}
+.agg-detail b{color:var(--orange-deep)}
+
+.escalated-stamp{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:46px;
+  letter-spacing:.1em;
+  color:var(--orange-deep);
+  border:5px double var(--orange-deep);
+  padding:14px 30px 10px;
+  transform:rotate(-5deg) scale(.2);
+  opacity:0;
+  background:rgba(255,255,255,.2);
+  text-shadow:2px 1px 0 rgba(29,27,24,.12);
+  position:relative;
+  transition:transform .6s cubic-bezier(.34,1.56,.64,1), opacity .4s;
+}
+.escalated-stamp.shown{
+  transform:rotate(-5deg) scale(1);
+  opacity:1;
+}
+.escalated-stamp::before,
+.escalated-stamp::after{
+  content:"";
+  position:absolute;
+  background:rgba(184,68,3,.35);
+}
+.escalated-stamp::before{left:6px;right:6px;top:4px;height:2px}
+.escalated-stamp::after{left:6px;right:6px;bottom:4px;height:2px}
+
+/* ===== why / protocol grid ===== */
+.why-grid{
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:24px;
+}
+.why-col{
+  border:2px solid var(--ink);
+  padding:22px;
+  background:var(--kraft-2);
+  position:relative;
+}
+.why-col::before{
+  position:absolute;top:-10px;left:14px;
+  background:var(--kraft-1);padding:0 8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;letter-spacing:.28em;
+}
+.why-col.plain::before{content:"IN PLAIN ENGLISH"}
+.why-col.proto::before{content:"PROTOCOL / TECHNICAL"}
+.why-col.plain p{
+  font-family:'Work Sans',sans-serif;
+  font-size:15px;
+  line-height:1.7;
+}
+.why-col.plain p b{color:var(--orange-deep)}
+.why-col.plain .pull{
+  font-family:'Anton',sans-serif;
+  font-size:30px;
+  line-height:1.1;
+  color:var(--steel);
+  text-transform:uppercase;
+  letter-spacing:.02em;
+  margin:18px 0 6px;
+  border-left:5px solid var(--orange);
+  padding-left:14px;
+}
+
+.thresh-table{
+  width:100%;
+  border-collapse:collapse;
+  margin-top:8px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+}
+.thresh-table th,.thresh-table td{
+  text-align:left;
+  padding:6px 8px;
+  border:1px solid var(--rule);
+}
+.thresh-table th{
+  background:var(--kraft-3);
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:.12em;
+  font-size:13px;
+  color:var(--ink-soft);
+}
+.thresh-table .pill{
+  display:inline-block;
+  padding:1px 7px;
+  font-weight:700;
+}
+.pill.auto{background:rgba(61,123,43,.18);color:var(--green);border:1px solid var(--green)}
+.pill.clar{background:rgba(255,186,8,.2);color:#8a6100;border:1px solid #b88700}
+.pill.esc{background:rgba(232,93,4,.16);color:var(--orange-deep);border:1px solid var(--orange-deep)}
+.thresh-table tr.hit td{background:rgba(232,93,4,.14);}
+.formula{
+  font-family:'JetBrains Mono',monospace;
+  font-size:12.5px;
+  background:var(--kraft-3);
+  padding:8px 10px;
+  border:1px solid var(--rule);
+  margin-top:14px;
+  line-height:1.6;
+}
+.tiers-list{
+  margin:12px 0 0;
+  padding-left:18px;
+  font-size:13px;
+}
+.tiers-list li{margin-bottom:4px}
+.tiers-list code{
+  font-family:'JetBrains Mono',monospace;
+  background:var(--kraft-3);
+  padding:1px 4px;
+  border:1px solid var(--rule);
+}
+
+/* ===== draft email ===== */
+.draft-email{
+  border:2.5px solid var(--ink);
+  background:var(--kraft-2);
+  position:relative;
+  box-shadow:4px 4px 0 rgba(29,27,24,.12);
+}
+.draft-email::before{
+  content:"";
+  position:absolute;inset:5px;
+  border:1.5px dashed var(--rule);
+  pointer-events:none;
+}
+.draft-email .head{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:0;
+  border-bottom:2px solid var(--ink);
+  background:var(--kraft-3);
+}
+.draft-email .head .col{
+  padding:12px 16px;
+  border-right:2px solid var(--ink);
+}
+.draft-email .head .col:last-child{border-right:none}
+.draft-email .head .plabel{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.26em;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+  margin-bottom:4px;
+  display:block;
+}
+.draft-email .head .val{
+  font-family:'Work Sans',sans-serif;
+  font-size:14px;
+  color:var(--ink);
+}
+.draft-email .head .val b{font-family:'Bebas Neue',sans-serif;font-size:18px;letter-spacing:.04em;display:block}
+.draft-email .subj{
+  padding:10px 16px;
+  border-bottom:2px solid var(--ink);
+  background:var(--kraft-3);
+  font-family:'Work Sans',sans-serif;
+  font-size:14px;
+}
+.draft-email .subj b{font-family:'Bebas Neue',sans-serif;font-size:15px;letter-spacing:.22em;margin-right:8px;color:var(--ink-soft)}
+.draft-email .body{
+  padding:22px 26px;
+  font-family:'Work Sans',sans-serif;
+  font-size:14.5px;
+  line-height:1.75;
+}
+.draft-email .body .sig{
+  margin-top:18px;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+  color:var(--steel);
+  border-top:1px dashed var(--rule);
+  padding-top:10px;
+}
+.draft-flag{
+  position:absolute;
+  top:-18px;right:20px;
+  font-family:'Bebas Neue',sans-serif;
+  font-size:18px;
+  letter-spacing:.14em;
+  background:var(--yellow);
+  color:var(--ink);
+  padding:6px 14px;
+  border:2px solid var(--ink);
+  transform:rotate(3deg);
+  box-shadow:2px 2px 0 rgba(29,27,24,.2);
+  z-index:5;
+}
+
+/* ===== run summary ticket ===== */
+.ticket{
+  border:3px solid var(--ink);
+  background:var(--kraft-2);
+  position:relative;
+  padding:28px 26px 22px;
+}
+.ticket::before,.ticket::after{
+  content:"";
+  position:absolute;
+  left:0;right:0;height:12px;
+  background-image:radial-gradient(circle at 6px 6px, var(--kraft-1) 5px, transparent 6px);
+  background-size:12px 12px;
+  background-repeat:repeat-x;
+}
+.ticket::before{top:-1px}
+.ticket::after{bottom:-1px}
+.ticket .head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-end;
+  border-bottom:2px dashed var(--rule);
+  padding-bottom:10px;
+  margin-bottom:18px;
+  gap:14px;
+  flex-wrap:wrap;
+}
+.ticket .head h3{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:34px;
+  letter-spacing:.08em;
+}
+.ticket .head .ref{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11.5px;
+  letter-spacing:.2em;
+  color:var(--ink-soft);
+  text-align:right;
+}
+.ticket .head .ref b{color:var(--orange-deep)}
+.big-nums{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:0;
+  border-top:2px solid var(--ink);
+  border-bottom:2px solid var(--ink);
+}
+.big-nums .cell{
+  padding:18px 12px;
+  text-align:center;
+  border-right:2px dashed var(--rule);
+  position:relative;
+}
+.big-nums .cell:last-child{border-right:none}
+.big-nums .n{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:92px;
+  line-height:.85;
+  color:var(--ink);
+}
+.big-nums .n.warn{color:var(--orange-deep)}
+.big-nums .l{
+  font-family:'JetBrains Mono',monospace;
+  font-size:11px;
+  letter-spacing:.24em;
+  color:var(--ink-soft);
+  text-transform:uppercase;
+  margin-top:6px;
+}
+
+.ticket .summary{
+  padding:16px 6px;
+  font-family:'Work Sans',sans-serif;
+  font-style:italic;
+  font-size:15px;
+  line-height:1.6;
+  color:var(--steel);
+  border-bottom:2px dashed var(--rule);
+}
+.ticket .summary::before{
+  content:"GEMINI SUMMARY -";
+  font-style:normal;
+  font-family:'Bebas Neue',sans-serif;
+  letter-spacing:.2em;
+  color:var(--orange-deep);
+  margin-right:8px;
+  font-size:13px;
+}
+.latency-manifest{
+  padding:14px 0 0;
+  font-family:'JetBrains Mono',monospace;
+  font-size:12px;
+}
+.latency-manifest .lrow{
+  display:grid;
+  grid-template-columns:30px 1fr auto;
+  gap:14px;
+  padding:5px 6px;
+  border-bottom:1px dotted var(--rule);
+}
+.latency-manifest .lrow:nth-child(even){background:rgba(29,27,24,.03)}
+.latency-manifest .lrow b{color:var(--orange-deep)}
+.latency-manifest .total{
+  margin-top:6px;
+  padding:8px 6px;
+  border-top:2px solid var(--ink);
+  font-family:'Bebas Neue',sans-serif;
+  font-size:20px;
+  letter-spacing:.1em;
+  display:flex;
+  justify-content:space-between;
+}
+.latency-manifest .total span:last-child{color:var(--orange-deep)}
+
+/* ===== footer ===== */
+footer{
+  margin-top:70px;
+  padding-top:28px;
+  border-top:6px double var(--ink);
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:20px;
+  flex-wrap:wrap;
+}
+footer .stamp-foot{
+  font-family:'Bebas Neue',sans-serif;
+  font-size:16px;
+  letter-spacing:.22em;
+  color:var(--ink-soft);
+  border:2px solid var(--ink-soft);
+  padding:6px 14px;
+  transform:rotate(-1.6deg);
+}
+footer .barcode-sm{height:30px;flex:1;min-width:200px;opacity:.75}
+footer .ref-tiny{
+  font-family:'JetBrains Mono',monospace;
+  font-size:10px;
+  letter-spacing:.2em;
+  color:var(--ink-soft);
+  text-align:right;
+}
+
+/* ===== cursor typing effect ===== */
+.typed::after{
+  content:"_";
+  color:var(--orange);
+  animation:blink 1s steps(1) infinite;
+  margin-left:1px;
+}
+.typed.done::after{content:"";}
+@keyframes blink{50%{opacity:0}}
+
+/* ===== mobile ===== */
+@media (max-width:900px){
+  .pipeline{grid-template-columns:repeat(2,1fr)}
+  .hero{grid-template-columns:1fr}
+  .ship-label{grid-template-columns:1fr}
+  .ship-label .panel{border-right:none;border-bottom:2px solid var(--ink)}
+  .why-grid{grid-template-columns:1fr}
+  .big-nums{grid-template-columns:1fr;}
+  .big-nums .cell{border-right:none;border-bottom:2px dashed var(--rule)}
+  .metabar{grid-template-columns:repeat(2,1fr)}
+  .draft-email .head{grid-template-columns:1fr}
+  .draft-email .head .col{border-right:none;border-bottom:2px solid var(--ink)}
+  .ladder-aggregate{grid-template-columns:1fr;text-align:center;justify-items:center}
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+<!-- =========================================================
+     1. METADATA BAR + MASTHEAD
+========================================================= -->
+<div class="metabar">
+  <div class="meta-field"><label>DATE</label><span>2026-04-22</span></div>
+  <div class="meta-field"><label>OPERATOR</label><span>automated</span></div>
+  <div class="meta-field"><label>FIXTURE</label><span>patterson_po-28491.wrapper.eml</span></div>
+  <div class="meta-field"><label>AGENT VER</label><span>track-a-v0.1</span></div>
+  <div class="meta-pill bebas">LIVE DEMO</div>
+</div>
+
+<header class="masthead">
+  <div class="rosette">
+    <span>HACK OR</span>
+    <b>RELAY</b>
+    <span>5.0 · 2026</span>
+    <div class="dot-circle"></div>
+  </div>
+  <div class="wordmark">ORDER<br>INTAKE <span class="amp">&#9670;</span> AGENT</div>
+  <div class="tagline">When emails become orders &mdash; or don't.</div>
+
+  <div class="barcode-strip">
+    <svg class="barcode" viewBox="0 0 800 40" preserveAspectRatio="none" aria-hidden="true">
+      <g fill="#1d1b18">
+        <rect x="0" y="2" width="3" height="36"/>
+        <rect x="6" y="2" width="1" height="36"/>
+        <rect x="10" y="2" width="5" height="36"/>
+        <rect x="18" y="2" width="2" height="36"/>
+        <rect x="24" y="2" width="4" height="36"/>
+        <rect x="32" y="2" width="1" height="36"/>
+        <rect x="36" y="2" width="3" height="36"/>
+        <rect x="42" y="2" width="6" height="36"/>
+        <rect x="52" y="2" width="2" height="36"/>
+        <rect x="58" y="2" width="4" height="36"/>
+        <rect x="66" y="2" width="1" height="36"/>
+        <rect x="70" y="2" width="3" height="36"/>
+        <rect x="76" y="2" width="5" height="36"/>
+        <rect x="84" y="2" width="2" height="36"/>
+        <rect x="90" y="2" width="1" height="36"/>
+        <rect x="94" y="2" width="3" height="36"/>
+        <rect x="100" y="2" width="4" height="36"/>
+        <rect x="108" y="2" width="2" height="36"/>
+        <rect x="114" y="2" width="6" height="36"/>
+        <rect x="124" y="2" width="1" height="36"/>
+        <rect x="128" y="2" width="3" height="36"/>
+        <rect x="134" y="2" width="5" height="36"/>
+        <rect x="142" y="2" width="2" height="36"/>
+        <rect x="148" y="2" width="1" height="36"/>
+        <rect x="152" y="2" width="4" height="36"/>
+        <rect x="160" y="2" width="2" height="36"/>
+        <rect x="166" y="2" width="6" height="36"/>
+        <rect x="176" y="2" width="1" height="36"/>
+        <rect x="180" y="2" width="3" height="36"/>
+        <rect x="186" y="2" width="4" height="36"/>
+        <rect x="194" y="2" width="2" height="36"/>
+        <rect x="200" y="2" width="5" height="36"/>
+        <rect x="208" y="2" width="1" height="36"/>
+        <rect x="212" y="2" width="3" height="36"/>
+        <rect x="218" y="2" width="6" height="36"/>
+        <rect x="228" y="2" width="2" height="36"/>
+        <rect x="234" y="2" width="4" height="36"/>
+        <rect x="242" y="2" width="1" height="36"/>
+        <rect x="246" y="2" width="3" height="36"/>
+        <rect x="252" y="2" width="5" height="36"/>
+        <rect x="260" y="2" width="2" height="36"/>
+        <rect x="266" y="2" width="1" height="36"/>
+        <rect x="270" y="2" width="4" height="36"/>
+        <rect x="278" y="2" width="6" height="36"/>
+        <rect x="288" y="2" width="2" height="36"/>
+        <rect x="294" y="2" width="3" height="36"/>
+        <rect x="300" y="2" width="1" height="36"/>
+        <rect x="304" y="2" width="5" height="36"/>
+        <rect x="312" y="2" width="2" height="36"/>
+        <rect x="318" y="2" width="4" height="36"/>
+        <rect x="326" y="2" width="1" height="36"/>
+        <rect x="330" y="2" width="3" height="36"/>
+        <rect x="336" y="2" width="6" height="36"/>
+        <rect x="346" y="2" width="2" height="36"/>
+        <rect x="352" y="2" width="1" height="36"/>
+        <rect x="356" y="2" width="4" height="36"/>
+        <rect x="364" y="2" width="2" height="36"/>
+        <rect x="370" y="2" width="5" height="36"/>
+        <rect x="378" y="2" width="1" height="36"/>
+        <rect x="382" y="2" width="3" height="36"/>
+        <rect x="388" y="2" width="6" height="36"/>
+        <rect x="398" y="2" width="2" height="36"/>
+        <rect x="404" y="2" width="4" height="36"/>
+        <rect x="412" y="2" width="1" height="36"/>
+        <rect x="416" y="2" width="3" height="36"/>
+        <rect x="422" y="2" width="5" height="36"/>
+        <rect x="430" y="2" width="2" height="36"/>
+        <rect x="436" y="2" width="6" height="36"/>
+        <rect x="446" y="2" width="1" height="36"/>
+        <rect x="450" y="2" width="3" height="36"/>
+        <rect x="456" y="2" width="4" height="36"/>
+        <rect x="464" y="2" width="2" height="36"/>
+        <rect x="470" y="2" width="1" height="36"/>
+        <rect x="474" y="2" width="5" height="36"/>
+        <rect x="482" y="2" width="2" height="36"/>
+        <rect x="488" y="2" width="3" height="36"/>
+        <rect x="494" y="2" width="6" height="36"/>
+        <rect x="504" y="2" width="1" height="36"/>
+        <rect x="508" y="2" width="4" height="36"/>
+        <rect x="516" y="2" width="2" height="36"/>
+        <rect x="522" y="2" width="3" height="36"/>
+        <rect x="528" y="2" width="5" height="36"/>
+        <rect x="536" y="2" width="1" height="36"/>
+        <rect x="540" y="2" width="6" height="36"/>
+        <rect x="550" y="2" width="2" height="36"/>
+        <rect x="556" y="2" width="3" height="36"/>
+        <rect x="562" y="2" width="4" height="36"/>
+        <rect x="570" y="2" width="1" height="36"/>
+        <rect x="574" y="2" width="5" height="36"/>
+        <rect x="582" y="2" width="2" height="36"/>
+        <rect x="588" y="2" width="3" height="36"/>
+        <rect x="594" y="2" width="6" height="36"/>
+        <rect x="604" y="2" width="1" height="36"/>
+        <rect x="608" y="2" width="4" height="36"/>
+        <rect x="616" y="2" width="2" height="36"/>
+        <rect x="622" y="2" width="5" height="36"/>
+        <rect x="630" y="2" width="1" height="36"/>
+        <rect x="634" y="2" width="3" height="36"/>
+        <rect x="640" y="2" width="6" height="36"/>
+        <rect x="650" y="2" width="2" height="36"/>
+        <rect x="656" y="2" width="4" height="36"/>
+        <rect x="664" y="2" width="1" height="36"/>
+        <rect x="668" y="2" width="3" height="36"/>
+        <rect x="674" y="2" width="5" height="36"/>
+        <rect x="682" y="2" width="2" height="36"/>
+        <rect x="688" y="2" width="1" height="36"/>
+        <rect x="692" y="2" width="4" height="36"/>
+        <rect x="700" y="2" width="6" height="36"/>
+        <rect x="710" y="2" width="2" height="36"/>
+        <rect x="716" y="2" width="3" height="36"/>
+        <rect x="722" y="2" width="5" height="36"/>
+        <rect x="730" y="2" width="1" height="36"/>
+        <rect x="734" y="2" width="4" height="36"/>
+        <rect x="742" y="2" width="2" height="36"/>
+        <rect x="748" y="2" width="6" height="36"/>
+        <rect x="758" y="2" width="1" height="36"/>
+        <rect x="762" y="2" width="3" height="36"/>
+        <rect x="768" y="2" width="5" height="36"/>
+        <rect x="776" y="2" width="2" height="36"/>
+        <rect x="782" y="2" width="4" height="36"/>
+        <rect x="790" y="2" width="6" height="36"/>
+      </g>
+    </svg>
+    <div class="barcode-num">7 28491 03042 8 · OIA · 2026·04·22</div>
+  </div>
+</header>
+
+<div class="tape" aria-hidden="true"></div>
+
+<!-- =========================================================
+     2. HERO TRIGGER
+========================================================= -->
+<section id="sec-hero">
+  <div class="hero">
+    <div class="shipto">
+      <p><span class="lbl">customer</span></p>
+      <b>PATTERSON INDUSTRIAL<br>SUPPLY CO.</b>
+      <p>john.harris@patterson-industrial.example</p>
+      <p class="mono" style="font-size:11px;color:var(--ink-soft)">PO #PA-28491 · 1 attachment · urgent</p>
+    </div>
+
+    <div class="stamp-btn-wrap">
+      <button id="runBtn" class="stamp-btn" type="button" aria-label="Run the intake pipeline">
+        RUN INTAKE
+        <span class="pipeline-arrow">&#9654;</span>
+      </button>
+      <div class="meter-hint">PRESS ONCE · PIPELINE RUNS LIVE · ~35S</div>
+      <button id="resetBtn" class="reset-btn" type="button">&#8634; RESET DEMO</button>
+    </div>
+
+    <div class="expected">
+      <p><span class="lbl">this run will</span></p>
+      <b>PROTECT THE ERP</b>
+      <p style="font-size:13px">22 line items will fail matching. Agent escalates instead of writing garbage to Firestore.</p>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     3. STAGE PIPELINE
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-pipeline">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">01</div>
+      <div>
+        <div class="title">PIPELINE &mdash; 8 STAGES</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">EMAIL &rarr; ERP-SAFE DECISION</div>
+      </div>
+    </div>
+    <div class="kicker">ADK · sequential</div>
+  </div>
+
+  <div class="pipeline" id="pipeline">
+    <div class="stage" data-stage="1">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">01</div>
+        <div><div class="stage-name">Ingest</div><div class="stage-icon">&#9993;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="wrapper .eml loaded · 1 attach · 142 KB"></div>
+      <div class="stage-latency">t+ 0.08s</div>
+    </div>
+
+    <div class="stage" data-stage="2">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">02</div>
+        <div><div class="stage-name">Reply Check</div><div class="stage-icon">&#8634;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="not a reply to outbound PO · continue"></div>
+      <div class="stage-latency">t+ 0.03s</div>
+    </div>
+
+    <div class="stage" data-stage="3">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">03</div>
+        <div><div class="stage-name">Classify</div><div class="stage-icon">&#9707;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="LlamaClassify · purchase_order · conf 1.00 · 5 polls"></div>
+      <div class="stage-latency">t+ 14.21s</div>
+    </div>
+
+    <div class="stage" data-stage="4">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">04</div>
+        <div><div class="stage-name">Parse</div><div class="stage-icon">&#8801;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="LlamaExtract · 1 sub-doc · 22 line items · 7 polls"></div>
+      <div class="stage-latency">t+ 18.24s</div>
+    </div>
+
+    <div class="stage" data-stage="5">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">05</div>
+        <div><div class="stage-name">Validate</div><div class="stage-icon">&#10003;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="customer CUST-00042 · 22/22 SKUs unresolved · agg 0.00"></div>
+      <div class="stage-latency">t+ 1.87s</div>
+    </div>
+
+    <div class="stage" data-stage="6">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">06</div>
+        <div><div class="stage-name">Clarify</div><div class="stage-icon">&#9998;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="Gemini drafted 4-sentence clarification · tone: warm/pro"></div>
+      <div class="stage-latency">t+ 0.92s</div>
+    </div>
+
+    <div class="stage" data-stage="7">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">07</div>
+        <div><div class="stage-name">Persist</div><div class="stage-icon">&#9635;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="0 orders · 1 exception opened · status ESCALATED"></div>
+      <div class="stage-latency">t+ 0.14s</div>
+    </div>
+
+    <div class="stage" data-stage="8">
+      <div class="stage-status"><span class="checkmark">&#10003;</span></div>
+      <div class="stage-head">
+        <div class="stage-num">08</div>
+        <div><div class="stage-name">Finalize</div><div class="stage-icon">&#10038;</div></div>
+      </div>
+      <div class="stage-out typed" data-text="summary generated · run receipt stamped · done"></div>
+      <div class="stage-latency">t+ 0.07s</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     4. EMAIL PREVIEW (SHIPPING LABEL)
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-email" class="reveal">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">02</div>
+      <div>
+        <div class="title">INBOUND &mdash; CUSTOMER PO</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">WHAT THE AGENT SAW</div>
+      </div>
+    </div>
+    <div class="kicker">source · gmail push</div>
+  </div>
+
+  <div class="ship-label">
+    <div class="panel from">
+      <div class="plabel">FROM / ORIGIN</div>
+      <b>JOHN HARRIS</b>
+      <p>Sr. Purchasing Coordinator</p>
+      <p>Patterson Industrial Supply Co.</p>
+      <p class="mono" style="font-size:11px;color:var(--steel)">john.harris@<br>patterson-industrial.example</p>
+    </div>
+    <div class="panel to">
+      <div class="plabel">TO / DESTINATION</div>
+      <b>ORDER INTAKE AGENT</b>
+      <p>intake@demo-order-intake-local</p>
+      <p>Firestore mailbox &middot; Pub/Sub routed</p>
+      <div class="attach-chip">
+        <div class="pdf-icon">PDF</div>
+        patterson_po-28491.pdf &middot; 142 KB &middot; 2 pg
+      </div>
+    </div>
+    <div class="panel meta">
+      <div class="plabel">WAYBILL</div>
+      <div class="row"><span>THREAD-ID</span><span>1948ca2</span></div>
+      <div class="row"><span>MSG-ID</span><span>PA-28491.01</span></div>
+      <div class="row"><span>RECEIVED</span><span>07:14 EDT</span></div>
+      <div class="row"><span>PRIORITY</span><span style="color:var(--orange-deep)">HIGH</span></div>
+      <div class="row"><span>ATTACH</span><span>1 &middot; pdf</span></div>
+    </div>
+  </div>
+
+  <div class="subject-bar">
+    <span class="slab">SUBJECT</span>
+    <b>PO #PA-28491 &mdash; fastener re-order, urgent</b>
+    <span class="urgency">&#9650; URGENT &middot; same-day</span>
+  </div>
+
+  <div class="email-body">
+    <p class="salutation">Hey team &mdash;</p>
+    <p>
+      Quick re-order from the Davenport plant for the June shutdown kits. Attached PO (PA-28491) covers
+      22 lines of hex cap, socket head, lock washers, and flat washers &mdash; mostly Grade 5 zinc and a few
+      stainless runs. We need these on the dock by <b>05/06</b> or the maintenance window slips a week,
+      so please confirm availability by EOD today.
+    </p>
+    <p>
+      The PDF is the source of truth &mdash; our ERP's printout &mdash; but if any line looks off just flag it
+      back to me. I'd rather catch a wrong part now than at the press brake.
+    </p>
+    <div class="sig">
+      &mdash; John Harris &middot; Sr. Purchasing Coordinator<br>
+      &nbsp;&nbsp;Patterson Industrial Supply Co. &middot; Davenport, IA &middot; ext. 4411
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     5. EXTRACTED DATA TABLE (PACKING SLIP)
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-extracted" class="reveal">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">03</div>
+      <div>
+        <div class="title">EXTRACTED &mdash; 22 LINE ITEMS</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">LLAMAEXTRACT &middot; 1 SUB-DOCUMENT &middot; 18.24S</div>
+      </div>
+    </div>
+    <div class="kicker">parse · schema v2</div>
+  </div>
+
+  <div class="table-wrap">
+    <div class="table-header">
+      <span>PACKING SLIP &middot; PA-28491</span>
+      <span class="pkg-no">PARSED 2026&middot;04&middot;22 &middot; LINES 1-22</span>
+    </div>
+    <table class="packing" id="packing">
+      <thead>
+        <tr>
+          <th>LN</th><th>SKU (CUSTOMER)</th><th>DESCRIPTION</th><th>QTY</th><th>UOM</th><th>UNIT PRICE</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="ln">01</td><td class="sku">HCS-050-13-200-G5-ZP</td><td class="desc">Hex Cap Screw 1/2-13 x 2 Grade 5 Zinc Plated</td><td class="qty">500</td><td class="uom">ea</td><td class="price">$0.412</td></tr>
+        <tr><td class="ln">02</td><td class="sku">HCS-050-13-300-G5-ZP</td><td class="desc">Hex Cap Screw 1/2-13 x 3 Grade 5 Zinc Plated</td><td class="qty">250</td><td class="uom">ea</td><td class="price">$0.586</td></tr>
+        <tr><td class="ln">03</td><td class="sku">HCS-037-16-150-G5-ZP</td><td class="desc">Hex Cap Screw 3/8-16 x 1-1/2 Grade 5 Zinc Plated</td><td class="qty">1000</td><td class="uom">ea</td><td class="price">$0.174</td></tr>
+        <tr><td class="ln">04</td><td class="sku">HCS-037-16-200-G5-ZP</td><td class="desc">Hex Cap Screw 3/8-16 x 2 Grade 5 Zinc Plated</td><td class="qty">750</td><td class="uom">ea</td><td class="price">$0.221</td></tr>
+        <tr><td class="ln">05</td><td class="sku">SHCS-025-20-075-BO</td><td class="desc">Socket Head Cap Screw 1/4-20 x 3/4 Black Oxide</td><td class="qty">2000</td><td class="uom">ea</td><td class="price">$0.138</td></tr>
+        <tr><td class="ln">06</td><td class="sku">SHCS-025-20-100-BO</td><td class="desc">Socket Head Cap Screw 1/4-20 x 1 Black Oxide</td><td class="qty">1500</td><td class="uom">ea</td><td class="price">$0.162</td></tr>
+        <tr><td class="ln">07</td><td class="sku">SHCS-031-18-125-BO</td><td class="desc">Socket Head Cap Screw 5/16-18 x 1-1/4 Black Oxide</td><td class="qty">800</td><td class="uom">ea</td><td class="price">$0.209</td></tr>
+        <tr><td class="ln">08</td><td class="sku">SHCS-050-13-150-SS316</td><td class="desc">Socket Head Cap Screw 1/2-13 x 1-1/2 Stainless 316</td><td class="qty">300</td><td class="uom">ea</td><td class="price">$1.847</td></tr>
+        <tr><td class="ln">09</td><td class="sku">LWS-025-ZP</td><td class="desc">Split Lock Washer 1/4 Zinc Plated</td><td class="qty">4000</td><td class="uom">ea</td><td class="price">$0.018</td></tr>
+        <tr><td class="ln">10</td><td class="sku">LWS-037-ZP</td><td class="desc">Split Lock Washer 3/8 Zinc Plated</td><td class="qty">2500</td><td class="uom">ea</td><td class="price">$0.024</td></tr>
+        <tr><td class="ln">11</td><td class="sku">LWS-050-ZP</td><td class="desc">Split Lock Washer 1/2 Zinc Plated</td><td class="qty">1500</td><td class="uom">ea</td><td class="price">$0.037</td></tr>
+        <tr><td class="ln">12</td><td class="sku">LWS-050-SS</td><td class="desc">Split Lock Washer 1/2 Stainless Steel</td><td class="qty">250</td><td class="uom">ea</td><td class="price">$0.182</td></tr>
+        <tr><td class="ln">13</td><td class="sku">FW-025-ZP-SAE</td><td class="desc">Flat Washer 1/4 SAE Zinc Plated</td><td class="qty">3000</td><td class="uom">ea</td><td class="price">$0.012</td></tr>
+        <tr><td class="ln">14</td><td class="sku">FW-037-ZP-SAE</td><td class="desc">Flat Washer 3/8 SAE Zinc Plated</td><td class="qty">2000</td><td class="uom">ea</td><td class="price">$0.019</td></tr>
+        <tr><td class="ln">15</td><td class="sku">FW-050-ZP-SAE</td><td class="desc">Flat Washer 1/2 SAE Zinc Plated</td><td class="qty">1200</td><td class="uom">ea</td><td class="price">$0.028</td></tr>
+        <tr><td class="ln">16</td><td class="sku">FW-050-ZP-USS</td><td class="desc">Flat Washer 1/2 USS Zinc Plated (wide OD)</td><td class="qty">500</td><td class="uom">ea</td><td class="price">$0.034</td></tr>
+        <tr><td class="ln">17</td><td class="sku">HNN-037-16-G5-ZP</td><td class="desc">Hex Nut 3/8-16 Grade 5 Zinc Plated</td><td class="qty">2000</td><td class="uom">ea</td><td class="price">$0.041</td></tr>
+        <tr><td class="ln">18</td><td class="sku">HNN-050-13-G5-ZP</td><td class="desc">Hex Nut 1/2-13 Grade 5 Zinc Plated</td><td class="qty">1500</td><td class="uom">ea</td><td class="price">$0.068</td></tr>
+        <tr><td class="ln">19</td><td class="sku">HNNY-050-13-G8-ZP</td><td class="desc">Nylon Insert Lock Nut 1/2-13 Grade 8 Zinc Plated</td><td class="qty">600</td><td class="uom">ea</td><td class="price">$0.141</td></tr>
+        <tr><td class="ln">20</td><td class="sku">CB-050-13-400-G5-ZP</td><td class="desc">Carriage Bolt 1/2-13 x 4 Grade 5 Zinc Plated</td><td class="qty">200</td><td class="uom">ea</td><td class="price">$0.492</td></tr>
+        <tr><td class="ln">21</td><td class="sku">SS-025-20-050-CUP-BO</td><td class="desc">Cup Point Set Screw 1/4-20 x 1/2 Black Oxide</td><td class="qty">800</td><td class="uom">ea</td><td class="price">$0.074</td></tr>
+        <tr><td class="ln">22</td><td class="sku">TR-0375-200-G5-ZP</td><td class="desc">Threaded Rod 3/8-16 x 24 Grade 5 Zinc Plated (cut)</td><td class="qty">150</td><td class="uom">ea</td><td class="price">$1.264</td></tr>
+      </tbody>
+    </table>
+    <div class="table-footer">
+      <span>LINES: <b>22</b> &middot; UNITS: <b>27,100</b> &middot; GROSS: <b>$6,982.44</b></span>
+      <span>PARSE CONF: <b style="color:var(--green)">1.00</b> &middot; SCHEMA: <b>v2</b></span>
+    </div>
+  </div>
+
+  <div class="cust-card">
+    <div class="chain">
+      <span class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);display:block;margin-bottom:6px">RESOLVED FROM DOMAIN + HEADER &middot; TIER-1 EXACT</span>
+      <b>Patterson Industrial Supply Co.</b>
+      <span class="arr">&rarr;</span>
+      <span class="cid mono">CUST-00042</span>
+    </div>
+    <div class="verified-stamp">VERIFIED<small>&#10003; tier-1 exact</small></div>
+  </div>
+</section>
+
+<!-- =========================================================
+     6. VALIDATION LADDER
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-validate" class="reveal">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">04</div>
+      <div>
+        <div class="title">MATCH LADDER &mdash; 3 TIERS</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">EXACT &rarr; FUZZY &rarr; EMBEDDING</div>
+      </div>
+    </div>
+    <div class="kicker">22 lines · all miss</div>
+  </div>
+
+  <div class="ladder">
+    <div class="ladder-row">
+      <div class="tier">TIER 1 &middot; EXACT<small>sku in item_master</small></div>
+      <div class="dots" id="tier1-dots"></div>
+      <div class="tally">0 / 22 HIT</div>
+    </div>
+    <div class="ladder-row">
+      <div class="tier">TIER 2 &middot; FUZZY<small>rapidfuzz &ge; 0.92</small></div>
+      <div class="dots" id="tier2-dots"></div>
+      <div class="tally">0 / 22 HIT</div>
+    </div>
+    <div class="ladder-row">
+      <div class="tier">TIER 3 &middot; EMBEDDING<small>cosine &ge; 0.85 (stub)</small></div>
+      <div class="dots" id="tier3-dots"></div>
+      <div class="tally">0 / 22 HIT</div>
+    </div>
+
+    <div class="ladder-aggregate">
+      <div class="gauge" aria-label="aggregate confidence 0.00">
+        <svg viewBox="0 0 120 120" width="130" height="130">
+          <circle cx="60" cy="60" r="52" fill="none" stroke="var(--rule-soft)" stroke-width="10"/>
+          <circle id="gaugeArc" cx="60" cy="60" r="52" fill="none"
+                  stroke="var(--orange-deep)" stroke-width="10"
+                  stroke-linecap="butt"
+                  stroke-dasharray="0 327"
+                  transform="rotate(-90 60 60)"/>
+          <circle cx="60" cy="60" r="40" fill="none" stroke="var(--ink)" stroke-width="1" stroke-dasharray="2 3"/>
+        </svg>
+        <div class="gauge-label"><div class="val">0.00</div><div class="cap">AGG CONF</div></div>
+      </div>
+
+      <div class="agg-detail">
+        <div><b>AGGREGATE = mean(line_confidence) weighted by qty</b></div>
+        <div style="margin-top:6px">tier_1_hits = 0 &middot; tier_2_hits = 0 &middot; tier_3_hits = 0</div>
+        <div>unresolved = <b>22 / 22</b> &middot; qty_unresolved = <b>27,100 / 27,100</b></div>
+        <div style="margin-top:6px">gate: <b>0.00 &lt; 0.80</b> &rarr; ESCALATE</div>
+      </div>
+
+      <div class="escalated-stamp" id="escStamp">ESCALATED</div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     7. WHY WE ESCALATED
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-why" class="reveal">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">05</div>
+      <div>
+        <div class="title">WHY WE ESCALATED</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">THE ERP STAYED CLEAN</div>
+      </div>
+    </div>
+    <div class="kicker">decision rationale</div>
+  </div>
+
+  <div class="why-grid">
+    <div class="why-col plain">
+      <p>
+        The agent couldn't confidently match Patterson's part numbers to our catalog. Every one of the
+        22 lines used a customer-side code that doesn't exist in our item master &mdash; their SKUs are
+        formatted for their ERP, not ours.
+      </p>
+      <div class="pull">Guessing = wrong stock, wrong invoice, angry plant manager.</div>
+      <p>
+        So the agent did the opposite of guess. It <b>froze the write</b>, opened a single exception
+        for a human to glance at, and <b>drafted a clarification email</b> asking the customer to share
+        their catalog mapping or send the order in our SKU format.
+      </p>
+      <p>
+        <b>Zero rows</b> entered the sales-orders collection. <b>One row</b> entered the exceptions
+        collection. A human gets a ping, opens the dashboard, sees everything needed to respond, and
+        ships a decision in under a minute. That's the win.
+      </p>
+    </div>
+
+    <div class="why-col proto">
+      <table class="thresh-table">
+        <thead><tr><th>CONFIDENCE</th><th>ACTION</th><th>WRITES TO ERP?</th></tr></thead>
+        <tbody>
+          <tr><td>&ge; 0.95</td><td><span class="pill auto">AUTO_APPROVE</span></td><td>yes &middot; sales_orders/</td></tr>
+          <tr><td>&ge; 0.80 &amp; &lt; 0.95</td><td><span class="pill clar">CLARIFY</span></td><td>draft reply &middot; no write</td></tr>
+          <tr class="hit"><td>&lt; 0.80</td><td><span class="pill esc">ESCALATE</span></td><td><b>no &middot; exceptions/</b></td></tr>
+        </tbody>
+      </table>
+
+      <div class="formula">
+        agg_conf = &Sigma;(qty_i &middot; line_conf_i) / &Sigma;(qty_i)<br>
+        &nbsp;&nbsp;= (27100 &middot; 0.00) / 27100 = <b>0.00</b><br>
+        decision = threshold_table(agg_conf) = <b>ESCALATE</b>
+      </div>
+
+      <ol class="tiers-list">
+        <li><b>Tier 1 &middot; exact</b> &mdash; lookup <code>sku in item_master</code>. Miss on 22/22; customer SKUs are foreign.</li>
+        <li><b>Tier 2 &middot; fuzzy</b> &mdash; <code>rapidfuzz.WRatio &ge; 92</code> on SKU + description. Best was 67 (noise).</li>
+        <li><b>Tier 3 &middot; embedding</b> &mdash; <code>text-embedding-004</code> stub returned no catalog candidates; tier is wired but not indexed in Track A.</li>
+      </ol>
+
+      <div class="formula" style="margin-top:14px">
+        exception = {<br>
+        &nbsp;&nbsp;status: <b>"ESCALATED"</b>,<br>
+        &nbsp;&nbsp;customer_id: "CUST-00042",<br>
+        &nbsp;&nbsp;source_msg: "PA-28491.01",<br>
+        &nbsp;&nbsp;reason: "unresolved_sku_all_lines",<br>
+        &nbsp;&nbsp;draft_reply_id: "draft_pa-28491_01"<br>
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     8. DRAFTED CLARIFICATION EMAIL
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-draft" class="reveal reveal-right">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">06</div>
+      <div>
+        <div class="title">DRAFTED REPLY &mdash; PENDING REVIEW</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">GEMINI &middot; 0.92S &middot; 4 SENTENCES</div>
+      </div>
+    </div>
+    <div class="kicker">outbound · not sent</div>
+  </div>
+
+  <div class="draft-email">
+    <div class="draft-flag">&#9998; DRAFT &middot; PENDING HUMAN APPROVAL</div>
+    <div class="head">
+      <div class="col">
+        <span class="plabel">FROM</span>
+        <div class="val"><b>ORDER INTAKE AGENT</b>intake@demo-order-intake-local</div>
+      </div>
+      <div class="col">
+        <span class="plabel">TO</span>
+        <div class="val"><b>JOHN HARRIS</b>john.harris@patterson-industrial.example</div>
+      </div>
+    </div>
+    <div class="subj"><b>RE:</b>PO #PA-28491 &mdash; fastener re-order, urgent</div>
+    <div class="body">
+      <p>Hi John,</p>
+      <p>
+        Thanks for sending PO PA-28491 over &mdash; we've got all 22 lines in front of us and the PDF came
+        through clean. Before we book the order, I want to flag that your part numbers (for example
+        <span class="mono" style="color:var(--orange-deep)">HCS-050-13-200-G5-ZP</span> and
+        <span class="mono" style="color:var(--orange-deep)">LWS-050-SS</span>) don't map directly to
+        our catalog codes, so we'd rather confirm than guess on a shutdown-kit order.
+      </p>
+      <p>
+        Could you either (a) share the Patterson &harr; our-catalog mapping doc your team keeps, or
+        (b) re-send the 22 lines in our SKU format? If it's easier, I can send a sample line both ways
+        so your buyer can spot-check one part and we'll infer the rest.
+      </p>
+      <p>
+        We'll hold the order as-is &mdash; nothing has been committed to inventory &mdash; and I'll flip it to
+        fulfillment the moment we've got matched SKUs. Given the 05/06 dock date, a reply today keeps
+        us on-schedule.
+      </p>
+      <p>Appreciate the partnership, as always.</p>
+      <div class="sig">
+        &mdash; Order Intake Agent (automated &middot; track-a-v0.1)<br>
+        &nbsp;&nbsp;on behalf of the Demo Distribution Ops team<br>
+        &nbsp;&nbsp;ref: exception/CUST-00042/PA-28491.01
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     9. RUN SUMMARY TICKET
+========================================================= -->
+<div class="cutline"></div>
+<section id="sec-summary" class="reveal">
+  <div class="sec-head">
+    <div style="display:flex;gap:16px;align-items:baseline">
+      <div class="num">07</div>
+      <div>
+        <div class="title">RUN RECEIPT</div>
+        <div class="mono" style="font-size:11px;letter-spacing:.2em;color:var(--ink-soft);margin-top:4px">WRITTEN TO FIRESTORE</div>
+      </div>
+    </div>
+    <div class="kicker">run · #000042</div>
+  </div>
+
+  <div class="ticket">
+    <div class="head">
+      <h3>INTAKE RECEIPT &middot; PA-28491</h3>
+      <div class="ref">
+        RUN-ID &middot; <b>run_2026_04_22_071434</b><br>
+        AGENT &middot; track-a-v0.1 &middot; 8-stage
+      </div>
+    </div>
+
+    <div class="big-nums">
+      <div class="cell"><div class="n">0</div><div class="l">orders created</div></div>
+      <div class="cell"><div class="n warn">1</div><div class="l">exception opened</div></div>
+      <div class="cell"><div class="n">0</div><div class="l">docs skipped</div></div>
+    </div>
+
+    <div class="summary">
+      The PDF parsed cleanly and the customer resolved, but all 22 line-item SKUs missed the catalog,
+      so the agent held the write and queued a clarification to Patterson rather than risk a bad order.
+    </div>
+
+    <div class="latency-manifest">
+      <div class="lrow"><span>01</span><span>INGEST &middot; wrapper .eml</span><span><b>0.08</b> s</span></div>
+      <div class="lrow"><span>02</span><span>REPLY CHECK</span><span><b>0.03</b> s</span></div>
+      <div class="lrow"><span>03</span><span>CLASSIFY &middot; LlamaClassify &middot; 5 polls</span><span><b>14.21</b> s</span></div>
+      <div class="lrow"><span>04</span><span>PARSE &middot; LlamaExtract &middot; 7 polls</span><span><b>18.24</b> s</span></div>
+      <div class="lrow"><span>05</span><span>VALIDATE &middot; customer + 3-tier ladder</span><span><b>1.87</b> s</span></div>
+      <div class="lrow"><span>06</span><span>CLARIFY &middot; Gemini draft</span><span><b>0.92</b> s</span></div>
+      <div class="lrow"><span>07</span><span>PERSIST &middot; Firestore writes (2)</span><span><b>0.14</b> s</span></div>
+      <div class="lrow"><span>08</span><span>FINALIZE &middot; summary + receipt</span><span><b>0.07</b> s</span></div>
+      <div class="total"><span>TOTAL LATENCY</span><span>35.56 s</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- =========================================================
+     10. FOOTER
+========================================================= -->
+<footer>
+  <div class="stamp-foot">TRACK-A-V0.1 &middot; ORDER-INTAKE-AGENT</div>
+  <svg class="barcode-sm" viewBox="0 0 600 30" preserveAspectRatio="none" aria-hidden="true">
+    <g fill="#1d1b18">
+      <rect x="0" y="0" width="2" height="30"/><rect x="5" y="0" width="1" height="30"/>
+      <rect x="9" y="0" width="4" height="30"/><rect x="16" y="0" width="2" height="30"/>
+      <rect x="22" y="0" width="3" height="30"/><rect x="28" y="0" width="1" height="30"/>
+      <rect x="32" y="0" width="5" height="30"/><rect x="40" y="0" width="2" height="30"/>
+      <rect x="46" y="0" width="3" height="30"/><rect x="52" y="0" width="1" height="30"/>
+      <rect x="56" y="0" width="4" height="30"/><rect x="64" y="0" width="2" height="30"/>
+      <rect x="70" y="0" width="5" height="30"/><rect x="78" y="0" width="1" height="30"/>
+      <rect x="82" y="0" width="3" height="30"/><rect x="88" y="0" width="2" height="30"/>
+      <rect x="94" y="0" width="4" height="30"/><rect x="102" y="0" width="1" height="30"/>
+      <rect x="106" y="0" width="3" height="30"/><rect x="112" y="0" width="5" height="30"/>
+      <rect x="120" y="0" width="2" height="30"/><rect x="126" y="0" width="1" height="30"/>
+      <rect x="130" y="0" width="4" height="30"/><rect x="138" y="0" width="2" height="30"/>
+      <rect x="144" y="0" width="3" height="30"/><rect x="150" y="0" width="1" height="30"/>
+      <rect x="154" y="0" width="5" height="30"/><rect x="162" y="0" width="2" height="30"/>
+      <rect x="168" y="0" width="3" height="30"/><rect x="174" y="0" width="1" height="30"/>
+      <rect x="178" y="0" width="4" height="30"/><rect x="186" y="0" width="2" height="30"/>
+      <rect x="192" y="0" width="5" height="30"/><rect x="200" y="0" width="1" height="30"/>
+      <rect x="204" y="0" width="3" height="30"/><rect x="210" y="0" width="2" height="30"/>
+      <rect x="216" y="0" width="4" height="30"/><rect x="224" y="0" width="1" height="30"/>
+      <rect x="228" y="0" width="3" height="30"/><rect x="234" y="0" width="5" height="30"/>
+      <rect x="242" y="0" width="2" height="30"/><rect x="248" y="0" width="1" height="30"/>
+      <rect x="252" y="0" width="4" height="30"/><rect x="260" y="0" width="2" height="30"/>
+      <rect x="266" y="0" width="3" height="30"/><rect x="272" y="0" width="1" height="30"/>
+      <rect x="276" y="0" width="5" height="30"/><rect x="284" y="0" width="2" height="30"/>
+      <rect x="290" y="0" width="3" height="30"/><rect x="296" y="0" width="1" height="30"/>
+      <rect x="300" y="0" width="4" height="30"/><rect x="308" y="0" width="2" height="30"/>
+      <rect x="314" y="0" width="5" height="30"/><rect x="322" y="0" width="1" height="30"/>
+      <rect x="326" y="0" width="3" height="30"/><rect x="332" y="0" width="2" height="30"/>
+      <rect x="338" y="0" width="4" height="30"/><rect x="346" y="0" width="1" height="30"/>
+      <rect x="350" y="0" width="3" height="30"/><rect x="356" y="0" width="5" height="30"/>
+      <rect x="364" y="0" width="2" height="30"/><rect x="370" y="0" width="1" height="30"/>
+      <rect x="374" y="0" width="4" height="30"/><rect x="382" y="0" width="2" height="30"/>
+      <rect x="388" y="0" width="3" height="30"/><rect x="394" y="0" width="1" height="30"/>
+      <rect x="398" y="0" width="5" height="30"/><rect x="406" y="0" width="2" height="30"/>
+      <rect x="412" y="0" width="3" height="30"/><rect x="418" y="0" width="1" height="30"/>
+      <rect x="422" y="0" width="4" height="30"/><rect x="430" y="0" width="2" height="30"/>
+      <rect x="436" y="0" width="5" height="30"/><rect x="444" y="0" width="1" height="30"/>
+      <rect x="448" y="0" width="3" height="30"/><rect x="454" y="0" width="2" height="30"/>
+      <rect x="460" y="0" width="4" height="30"/><rect x="468" y="0" width="1" height="30"/>
+      <rect x="472" y="0" width="3" height="30"/><rect x="478" y="0" width="5" height="30"/>
+      <rect x="486" y="0" width="2" height="30"/><rect x="492" y="0" width="1" height="30"/>
+      <rect x="496" y="0" width="4" height="30"/><rect x="504" y="0" width="2" height="30"/>
+      <rect x="510" y="0" width="3" height="30"/><rect x="516" y="0" width="1" height="30"/>
+      <rect x="520" y="0" width="5" height="30"/><rect x="528" y="0" width="2" height="30"/>
+      <rect x="534" y="0" width="3" height="30"/><rect x="540" y="0" width="1" height="30"/>
+      <rect x="544" y="0" width="4" height="30"/><rect x="552" y="0" width="2" height="30"/>
+      <rect x="558" y="0" width="5" height="30"/><rect x="566" y="0" width="1" height="30"/>
+      <rect x="570" y="0" width="3" height="30"/><rect x="576" y="0" width="2" height="30"/>
+      <rect x="582" y="0" width="4" height="30"/><rect x="590" y="0" width="2" height="30"/>
+      <rect x="596" y="0" width="3" height="30"/>
+    </g>
+  </svg>
+  <div class="ref-tiny">
+    HACK OR RELAY 5.0 &middot; 2026<br>
+    track-a-v0.1
+  </div>
+</footer>
+
+</div><!-- /.shell -->
+
+<script>
+/* =====================================================================
+   INTERACTION SCRIPT
+   ===================================================================== */
+
+const STAGES = Array.from(document.querySelectorAll('.stage'));
+const RUN = document.getElementById('runBtn');
+const RESET = document.getElementById('resetBtn');
+const SECTIONS = {
+  email: document.getElementById('sec-email'),
+  extracted: document.getElementById('sec-extracted'),
+  validate: document.getElementById('sec-validate'),
+  why: document.getElementById('sec-why'),
+  draft: document.getElementById('sec-draft'),
+  summary: document.getElementById('sec-summary'),
+};
+const ESC_STAMP = document.getElementById('escStamp');
+const GAUGE_ARC = document.getElementById('gaugeArc');
+const PACKING = document.getElementById('packing');
+const TIMERS = [];
+let running = false;
+
+/* ---- Render NO MATCH dots for ladder (22 per tier) ---- */
+(function renderDots(){
+  for(const id of ['tier1-dots','tier2-dots','tier3-dots']){
+    const host = document.getElementById(id);
+    if(!host) continue;
+    for(let i=1;i<=22;i++){
+      const d = document.createElement('span');
+      d.className = 'dot';
+      d.textContent = 'L' + String(i).padStart(2,'0') + ' ✗ NO MATCH';
+      d.style.transform = 'rotate(' + (Math.random()*4-2).toFixed(1) + 'deg)';
+      host.appendChild(d);
+    }
+  }
+})();
+
+/* ---- Typewriter effect for stage output ---- */
+function typeOn(el){
+  const text = el.dataset.text || '';
+  el.textContent = '';
+  el.classList.add('typed');
+  el.classList.remove('done');
+  let i = 0;
+  const speed = 14;
+  const tick = () => {
+    if(i <= text.length){
+      el.textContent = text.slice(0,i);
+      i++;
+      TIMERS.push(setTimeout(tick, speed));
+    } else {
+      el.classList.add('done');
+    }
+  };
+  tick();
+}
+
+/* ---- Run one stage ---- */
+function runStage(stageEl){
+  return new Promise(resolve => {
+    stageEl.classList.add('active','running');
+    const statusBox = stageEl.querySelector('.stage-status');
+    statusBox.innerHTML = '<div class="spinner"></div>';
+    TIMERS.push(setTimeout(()=>{
+      stageEl.classList.remove('running');
+      stageEl.classList.add('done');
+      statusBox.innerHTML = '<span class="checkmark">✓</span>';
+      const out = stageEl.querySelector('.stage-out');
+      if(out) typeOn(out);
+      resolve();
+    }, 340));
+  });
+}
+
+/* ---- Reveal a section ---- */
+function reveal(section){
+  if(!section) return;
+  section.classList.add('shown');
+}
+
+/* ---- Stagger packing-slip rows ---- */
+function staggerRows(){
+  const rows = PACKING.querySelectorAll('tbody tr');
+  rows.forEach((r,i)=>{
+    TIMERS.push(setTimeout(()=>r.classList.add('in'), 40*i));
+  });
+}
+
+/* ---- Gauge animation (aggregate is 0.00; we just pulse the arc to emphasize the scan) ---- */
+function animateGauge(){
+  const g = GAUGE_ARC;
+  g.style.transition = 'none';
+  g.setAttribute('stroke-dasharray','327 327');
+  TIMERS.push(setTimeout(()=>{
+    g.style.transition = 'stroke-dasharray 1.4s cubic-bezier(.7,.1,.3,1)';
+    g.setAttribute('stroke-dasharray','0 327');
+  }, 60));
+}
+
+/* ---- The full run sequence ---- */
+async function runPipeline(){
+  if(running) return;
+  running = true;
+  RUN.classList.add('pressed');
+  TIMERS.push(setTimeout(()=>RUN.classList.remove('pressed'), 260));
+  TIMERS.push(setTimeout(()=>{
+    RUN.classList.add('spent');
+    RUN.textContent = 'RUN COMPLETE ✓';
+  }, 9800));
+
+  // Stages 01..08 at ~400ms intervals
+  for(let i=0;i<STAGES.length;i++){
+    await new Promise(r => TIMERS.push(setTimeout(r, i===0 ? 120 : 400)));
+    runStage(STAGES[i]);
+  }
+
+  TIMERS.push(setTimeout(()=> reveal(SECTIONS.email), 3500));
+  TIMERS.push(setTimeout(()=>{
+    reveal(SECTIONS.extracted);
+    staggerRows();
+  }, 4500));
+  TIMERS.push(setTimeout(()=>{
+    reveal(SECTIONS.validate);
+    animateGauge();
+  }, 6000));
+  TIMERS.push(setTimeout(()=> ESC_STAMP.classList.add('shown'), 6700));
+  TIMERS.push(setTimeout(()=> reveal(SECTIONS.why), 7000));
+  TIMERS.push(setTimeout(()=> reveal(SECTIONS.draft), 8000));
+  TIMERS.push(setTimeout(()=>{
+    reveal(SECTIONS.summary);
+    RESET.classList.add('visible');
+  }, 9000));
+}
+
+/* ---- Reset ---- */
+function resetAll(){
+  TIMERS.forEach(clearTimeout);
+  TIMERS.length = 0;
+  running = false;
+
+  STAGES.forEach(s => {
+    s.classList.remove('active','running','done');
+    const status = s.querySelector('.stage-status');
+    status.innerHTML = '<span class="checkmark">✓</span>';
+    const out = s.querySelector('.stage-out');
+    if(out){ out.textContent = ''; out.classList.remove('done'); }
+  });
+
+  Object.values(SECTIONS).forEach(sec => sec.classList.remove('shown'));
+  ESC_STAMP.classList.remove('shown');
+  RUN.classList.remove('spent');
+  RUN.innerHTML = 'RUN INTAKE <span class="pipeline-arrow">▶</span>';
+  RESET.classList.remove('visible');
+
+  PACKING.querySelectorAll('tbody tr').forEach(r => r.classList.remove('in'));
+
+  GAUGE_ARC.style.transition = 'none';
+  GAUGE_ARC.setAttribute('stroke-dasharray','0 327');
+
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+RUN.addEventListener('click', runPipeline);
+RESET.addEventListener('click', resetAll);
+
+GAUGE_ARC.setAttribute('stroke-dasharray','0 327');
+</script>
+</body>
+</html>
