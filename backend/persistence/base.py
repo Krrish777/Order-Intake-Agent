@@ -117,5 +117,14 @@ class ExceptionStore(Protocol):
         Raises when the doc does not exist — callers invoke post-save."""
         ...
 
+    async def update_with_judge_verdict(
+        self,
+        source_message_id: str,
+        verdict: JudgeVerdict,
+    ) -> None:
+        """Same contract as OrderStore.update_with_judge_verdict —
+        field-mask update; ``NotFound`` on missing doc; no idempotency skip."""
+        ...
+
 
 __all__ = ["OrderStore", "ExceptionStore"]
