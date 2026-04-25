@@ -10,12 +10,23 @@ Spec: docs/superpowers/specs/2026-04-24-track-a1-gmail-ingress-design.md
 from __future__ import annotations
 
 import base64
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formatdate, make_msgid
 from typing import Optional
 
 from google.oauth2.credentials import Credentials
 from googleapiclient.discovery import Resource, build
 
 _GMAIL_TOKEN_URL = "https://oauth2.googleapis.com/token"
+
+
+def _bracket(m: str) -> str:
+    """Ensure RFC 5322 Message-ID refs are angle-bracketed."""
+    m = m.strip()
+    if m.startswith("<") and m.endswith(">"):
+        return m
+    return f"<{m}>"
 
 
 class GmailClient:
@@ -109,6 +120,48 @@ class GmailClient:
             id=message_id,
             body={"addLabelIds": [label_id]},
         ).execute()
+
+    # ---- send surface ----
+
+    def send_message(
+        self,
+        *,
+        to: str,
+        subject: str,
+        body_text: str,
+        in_reply_to: Optional[str] = None,
+        references: Optional[list[str]] = None,
+    ) -> str:
+        """Send a plain-text email via users.messages.send.
+
+        Constructs RFC 5322 MIME with thread-reply headers. Auto-prepends
+        'Re: ' to subject when not already present. Returns the sent
+        Gmail message id.
+        """
+        msg = MIMEMultipart()
+        msg["To"] = to
+        msg["From"] = "me"
+        if not subject.lower().startswith("re:"):
+            subject = f"Re: {subject}"
+        msg["Subject"] = subject
+        msg["Date"] = formatdate(localtime=True)
+        msg["Message-ID"] = make_msgid()
+
+        if in_reply_to:
+            msg["In-Reply-To"] = _bracket(in_reply_to)
+        if references:
+            msg["References"] = " ".join(_bracket(r) for r in references)
+
+        msg.attach(MIMEText(body_text, "plain"))
+
+        raw = base64.urlsafe_b64encode(msg.as_bytes()).decode("ascii")
+        resp = (
+            self._service.users()
+            .messages()
+            .send(userId="me", body={"raw": raw})
+            .execute()
+        )
+        return resp["id"]
 
 
 __all__ = ["GmailClient"]
