@@ -120,9 +120,46 @@ pipeline, then applies the label. Ctrl-C exits cleanly.
 **Limitations (in scope only for Track A1):**
 
 - Polling only. Push-based ingestion via `users.watch()` + Pub/Sub + Cloud Run is Track A3.
-- Read-side only. Outbound `messages.send` for clarify / confirmation bodies is Track A2.
 - Single-inbox only. Multi-inbox deployment lives in Track A3.
 - No Secret Manager. Credentials live in `.env`.
+
+### Sending (Track A2)
+
+After Track A1, the pipeline writes confirmation bodies (`OrderRecord.confirmation_body`)
+and clarification bodies (`ExceptionRecord.clarify_body`) but doesn't send them anywhere.
+Track A2 adds `SendStage` as the 10th pipeline stage — it sends Gmail replies for both
+kinds of bodies, threaded under the original message via RFC 5322 `In-Reply-To` /
+`References` headers.
+
+**One-time re-auth** (A2 extends scopes from `gmail.modify` to `gmail.modify + gmail.send`):
+
+```bash
+uv run python scripts/gmail_auth_init.py path/to/credentials.json
+```
+
+The consent screen now asks for "Send email" permission. Paste the new
+`GMAIL_REFRESH_TOKEN` into `.env` (overwrites the A1 token).
+
+**Dry-run by default:** `.env.example` ships `GMAIL_SEND_DRY_RUN=1`. The pipeline logs
+`send_dry_run` audit events instead of actually sending. Safe to run end-to-end while
+iterating on prompt outputs.
+
+**To actually send:** set `GMAIL_SEND_DRY_RUN=0` in `.env` and restart `scripts/gmail_poll.py`.
+
+**What to watch for:**
+
+- Audit event `email_sent` per actual send (carries Gmail's returned message id).
+- Audit event `email_send_failed` on any per-message error — `send_error` is recorded on
+  the persisted record; the next pipeline invocation of the same envelope re-attempts.
+- Audit event `email_send_skipped` with `reason=already_sent` when the record's `sent_at`
+  is non-None (idempotency for retries).
+- The reply appears in Gmail's "Sent" folder, threaded under the original.
+- `OrderRecord.sent_at` / `ExceptionRecord.sent_at` populated in Firestore.
+
+**Failure behavior:** a send that fails (Gmail API error, missing recipient, etc.) leaves
+`sent_at=None` and records `send_error` on the record. The pipeline continues; subsequent
+runs retry. Setting `sent_at` only on success is what gives us "at most once visible" delivery
+even with at-least-once pipeline retries.
 
 ## What to type in the UI
 
