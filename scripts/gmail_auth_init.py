@@ -26,7 +26,7 @@ from pathlib import Path
 
 from google_auth_oauthlib.flow import InstalledAppFlow
 
-from backend.gmail.scopes import A1_SCOPES
+from backend.gmail.scopes import A2_SCOPES
 
 
 def main(credentials_path: Path) -> int:
@@ -34,8 +34,10 @@ def main(credentials_path: Path) -> int:
         print(f"error: credentials file not found: {credentials_path}", file=sys.stderr)
         return 2
 
+    # Use A2_SCOPES (gmail.modify + gmail.send) so the same refresh
+    # token works for both ingress polling and egress sends.
     flow = InstalledAppFlow.from_client_secrets_file(
-        str(credentials_path), scopes=A1_SCOPES
+        str(credentials_path), scopes=A2_SCOPES
     )
     creds = flow.run_local_server(port=0)
 
