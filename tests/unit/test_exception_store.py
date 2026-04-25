@@ -385,15 +385,15 @@ async def test_save_round_trips_clarify_body(fake_client):
     fetched = await store.get(saved.source_message_id)
     assert fetched is not None
     assert fetched.clarify_body == body
-    assert fetched.schema_version == 3
+    assert fetched.schema_version == 4
 
 
 class TestExceptionRecordSchemaV3:
-    """Track A2 — schema v3 with send-receipt fields."""
+    """Track A2/B — schema v4 with send-receipt and judge_verdict fields."""
 
     def test_schema_version_default_is_3(self):
         record = _sample_exception()
-        assert record.schema_version == 3
+        assert record.schema_version == 4
 
     def test_sent_at_and_send_error_default_to_none(self):
         record = _sample_exception()

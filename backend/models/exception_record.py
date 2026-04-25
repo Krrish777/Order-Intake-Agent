@@ -24,6 +24,7 @@ from typing import Optional
 
 from pydantic import BaseModel, ConfigDict
 
+from backend.models.judge_verdict import JudgeVerdict
 from backend.models.parsed_document import ParsedDocument
 from backend.models.validation_result import ValidationResult
 
@@ -77,7 +78,11 @@ class ExceptionRecord(BaseModel):
     resolved_to_order_id: Optional[str] = None
     sent_at: Optional[datetime] = None
     send_error: Optional[str] = None
-    schema_version: int = 3
+    judge_verdict: Optional[JudgeVerdict] = None
+    """Populated by JudgeStage before SendStage fires. None until the
+    stage has evaluated this record's drafted clarify body. ESCALATE
+    exceptions without clarify_body skip the judge and stay None."""
+    schema_version: int = 4  # was 3; Track B bumps for judge_verdict
     created_at: datetime
     updated_at: datetime
 
