@@ -362,6 +362,46 @@ re-seed. Run `scripts/load_master_data.py` again.
 Export it (or configure Vertex ADC) in the launching shell; the
 LlmAgents pick it up at call time.
 
+## Vector index setup (Track E — tier-3 embedding search)
+
+The SKU matcher's tier-3 semantic search uses Firestore's
+`find_nearest` over the `description_embedding` field on each
+`products` doc. Before tier 3 can return results against **live**
+Firestore, create a composite vector index once per project:
+
+```bash
+gcloud firestore indexes composite create \
+  --collection-group=products \
+  --query-scope=COLLECTION \
+  --field-config='vector-config={"dimension":768,"flat":{}},field-path=description_embedding'
+```
+
+Index creation takes ~1-3 minutes. Check status:
+
+```bash
+gcloud firestore indexes composite list --filter="collection_group=products"
+```
+
+The Firestore **emulator** handles `find_nearest` without any
+explicit index declaration — nothing to run locally.
+
+### Seeding embeddings
+
+Embeddings are computed at seed time, not on read. Run:
+
+```bash
+# Live Firestore (needs GOOGLE_API_KEY for text-embedding-004):
+uv run python scripts/load_master_data.py
+
+# Offline / emulator-only (no GOOGLE_API_KEY required):
+uv run python scripts/load_master_data.py --no-embeddings
+```
+
+`--no-embeddings` is useful when seeding the emulator for pipeline
+tests that don't exercise tier 3. In that mode, tier-3 searches
+return `[]` (no products have an embedding field), matching the
+pre-Track-E stub behavior — tier 1 + tier 2 continue to work.
+
 ## Cross-references
 
 - `tests/eval/README.md` — the `adk eval` harness for the same pipeline.
