@@ -14,6 +14,7 @@ Pub/Sub at-least-once redelivery collapses safely.
 
 from __future__ import annotations
 
+from datetime import datetime
 from typing import Optional, Protocol
 
 from backend.models.exception_record import ExceptionRecord
@@ -42,6 +43,18 @@ class OrderStore(Protocol):
         this for orders that were just persisted by ``save()`` in the
         same pipeline invocation. Overwrites any prior confirmation_body
         on re-call (no idempotency skip — a re-run regenerates)."""
+        ...
+
+    async def update_with_send_receipt(
+        self,
+        *,
+        source_message_id: str,
+        sent_at: Optional[datetime],
+        send_error: Optional[str],
+    ) -> None:
+        """Field-mask update of ``sent_at`` + ``send_error`` post-send.
+
+        Raises when the doc does not exist — callers invoke post-save."""
         ...
 
 
@@ -78,6 +91,18 @@ class ExceptionStore(Protocol):
         status guard is enforced atomically via a Firestore transaction
         so a concurrent reply cannot double-advance the state.
         """
+        ...
+
+    async def update_with_send_receipt(
+        self,
+        *,
+        source_message_id: str,
+        sent_at: Optional[datetime],
+        send_error: Optional[str],
+    ) -> None:
+        """Field-mask update of ``sent_at`` + ``send_error`` post-send.
+
+        Raises when the doc does not exist — callers invoke post-save."""
         ...
 
 

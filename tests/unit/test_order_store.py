@@ -446,3 +446,42 @@ class TestOrderRecordSchemaV4:
             sent_at=now,
         )
         assert record.sent_at == now
+
+
+class TestOrderStoreUpdateWithSendReceipt:
+    """Track A2 — field-mask update of sent_at + send_error post-save."""
+
+    async def test_update_sets_sent_at_and_clears_send_error(self, fake_client):
+        from backend.persistence.orders_store import FirestoreOrderStore
+
+        store = FirestoreOrderStore(fake_client)
+        await store.save(_sample_order(source_message_id="msg-X"))
+
+        sent_at = datetime.now(timezone.utc)
+        await store.update_with_send_receipt(
+            source_message_id="msg-X",
+            sent_at=sent_at,
+            send_error=None,
+        )
+
+        got = await store.get("msg-X")
+        assert got is not None
+        assert got.sent_at == sent_at
+        assert got.send_error is None
+
+    async def test_update_records_send_error_when_sent_at_none(self, fake_client):
+        from backend.persistence.orders_store import FirestoreOrderStore
+
+        store = FirestoreOrderStore(fake_client)
+        await store.save(_sample_order(source_message_id="msg-Y"))
+
+        await store.update_with_send_receipt(
+            source_message_id="msg-Y",
+            sent_at=None,
+            send_error="RuntimeError: quota exceeded",
+        )
+
+        got = await store.get("msg-Y")
+        assert got is not None
+        assert got.sent_at is None
+        assert got.send_error == "RuntimeError: quota exceeded"
