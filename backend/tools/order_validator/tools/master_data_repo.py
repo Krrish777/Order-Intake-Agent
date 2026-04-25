@@ -33,6 +33,8 @@ from typing import Optional
 
 from google.cloud.firestore import AsyncClient
 from google.cloud.firestore_v1.async_document import AsyncDocumentReference
+from google.genai import Client as GenAIClient
+from google.genai.types import EmbedContentConfig
 from rapidfuzz import fuzz, process
 
 from backend.models.master_records import (
@@ -53,6 +55,9 @@ META_DOC_ID = "master_data"
 DEFAULT_CUSTOMER_MATCH_THRESHOLD = 90
 DEFAULT_EMBEDDING_TOP_K = 5
 
+EMBED_MODEL = "text-embedding-004"
+EMBED_DIM = 768
+
 
 class MasterDataRepo:
     """Async, dependency-injected read surface for the master-data
@@ -61,10 +66,49 @@ class MasterDataRepo:
     stage shuts down.
     """
 
-    def __init__(self, client: AsyncClient) -> None:
+    def __init__(
+        self,
+        client: AsyncClient,
+        *,
+        genai_client: Optional[GenAIClient] = None,
+    ) -> None:
         self._client = client
         self._products_cache: Optional[list[ProductRecord]] = None
         self._customers_cache: Optional[list[CustomerRecord]] = None
+        self._genai_client = genai_client
+
+    def _ensure_genai_client(self) -> GenAIClient:
+        """Lazy-construct a google-genai client the first time it's needed.
+
+        The client reads GOOGLE_API_KEY / ADC at construction time, so we
+        defer it: a MasterDataRepo used only for tier-1/2 lookups never
+        triggers the credential read at all.
+        """
+        if self._genai_client is None:
+            self._genai_client = GenAIClient()
+        return self._genai_client
+
+    async def _embed_query(self, text: str) -> Optional[list[float]]:
+        """Embed a customer-side query string via text-embedding-004.
+
+        Returns the 768-dim float vector on success, ``None`` on any
+        exception (fail-open; the caller treats ``None`` as a tier-3 miss
+        and the validator's aggregate scoring handles the routing).
+        """
+        try:
+            client = self._ensure_genai_client()
+            response = await client.aio.models.embed_content(
+                model=EMBED_MODEL,
+                contents=[text],
+                config=EmbedContentConfig(
+                    task_type="RETRIEVAL_QUERY",
+                    output_dimensionality=EMBED_DIM,
+                ),
+            )
+            return list(response.embeddings[0].values)
+        except Exception as exc:  # noqa: BLE001 — fail-open by design
+            _log.warning("embedding_query_failed", error=str(exc), text=text[:80])
+            return None
 
     @property
     def firestore_client(self) -> AsyncClient:
