@@ -60,11 +60,13 @@ exact sequence:
 
 from __future__ import annotations
 
-from typing import Any, Final
+import os
+from typing import Any, Final, Optional
 
 from google.adk.agents import LlmAgent, SequentialAgent
 
 from backend.audit.logger import AuditLogger
+from backend.gmail.client import GmailClient
 from .agents.clarify_email_agent import build_clarify_email_agent
 from .agents.confirmation_email_agent import build_confirmation_email_agent
 from .agents.summary_agent import build_summary_agent
@@ -76,6 +78,7 @@ from .stages.ingest import IngestStage
 from .stages.parse import ParseFn, ParseStage
 from .stages.persist import PersistStage
 from .stages.reply_shortcircuit import ReplyShortCircuitStage
+from .stages.send import SendStage
 from .stages.validate import ValidateStage
 from backend.persistence.base import ExceptionStore, OrderStore
 from backend.persistence.coordinator import IntakeCoordinator
@@ -92,7 +95,7 @@ ROOT_AGENT_NAME: Final[str] = "order_intake_pipeline"
 #: Sentinel recorded on every persisted ``OrderRecord`` /
 #: ``ExceptionRecord`` so downstream analytics can distinguish records
 #: written by Track A (this pipeline) from manually-ingested rows.
-AGENT_VERSION: Final[str] = "track-a-v0.2"
+AGENT_VERSION: Final[str] = "track-a-v0.3"
 
 
 def build_root_agent(
@@ -107,6 +110,8 @@ def build_root_agent(
     exception_store: ExceptionStore,
     order_store: OrderStore,
     audit_logger: AuditLogger,
+    gmail_client: Optional[GmailClient] = None,
+    send_dry_run: bool = False,
 ) -> SequentialAgent:
     """Build the root :class:`SequentialAgent` wiring all 9 Track A stages.
 
@@ -168,6 +173,13 @@ def build_root_agent(
         PersistStage(coordinator=coordinator, audit_logger=audit_logger),
         ConfirmStage(confirm_agent=confirm_agent, order_store=order_store, audit_logger=audit_logger),
         FinalizeStage(summary_agent=summary_agent, audit_logger=audit_logger),
+        SendStage(
+            gmail_client=gmail_client,
+            order_store=order_store,
+            exception_store=exception_store,
+            dry_run=send_dry_run,
+            audit_logger=audit_logger,
+        ),
     ]
     return SequentialAgent(name=ROOT_AGENT_NAME, sub_agents=sub_agents)
 
@@ -217,6 +229,22 @@ def _build_default_root_agent() -> SequentialAgent:
 
     audit_logger = AuditLogger(client=client, agent_version=AGENT_VERSION)
 
+    # Optional Gmail egress wiring (Track A2). Enabled only when all
+    # three OAuth env vars are present; absence keeps SendStage a no-op
+    # so the pipeline still runs against fixtures + adk web without
+    # Gmail credentials.
+    gmail_client: Optional[GmailClient] = None
+    if all(os.environ.get(v) for v in ("GMAIL_CLIENT_ID", "GMAIL_CLIENT_SECRET", "GMAIL_REFRESH_TOKEN")):
+        from backend.gmail.scopes import A2_SCOPES
+
+        gmail_client = GmailClient(
+            refresh_token=os.environ["GMAIL_REFRESH_TOKEN"],
+            client_id=os.environ["GMAIL_CLIENT_ID"],
+            client_secret=os.environ["GMAIL_CLIENT_SECRET"],
+            scopes=A2_SCOPES,
+        )
+    send_dry_run = os.environ.get("GMAIL_SEND_DRY_RUN", "1") == "1"
+
     return build_root_agent(
         classify_fn=classify_document,
         parse_fn=parse_document,
@@ -228,6 +256,8 @@ def _build_default_root_agent() -> SequentialAgent:
         exception_store=exception_store,
         order_store=order_store,
         audit_logger=audit_logger,
+        gmail_client=gmail_client,
+        send_dry_run=send_dry_run,
     )
 
 

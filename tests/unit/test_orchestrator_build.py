@@ -46,6 +46,7 @@ from backend.my_agent.stages.reply_shortcircuit import (
     REPLY_SHORTCIRCUIT_STAGE_NAME,
     ReplyShortCircuitStage,
 )
+from backend.my_agent.stages.send import SEND_STAGE_NAME, SendStage
 from backend.my_agent.stages.validate import VALIDATE_STAGE_NAME, ValidateStage
 from tests.unit._stage_testing import FakeChildLlmAgent
 
@@ -166,6 +167,7 @@ def test_build_root_agent_sub_agents_in_canonical_order() -> None:
         PERSIST_STAGE_NAME,
         CONFIRM_STAGE_NAME,
         FINALIZE_STAGE_NAME,
+        SEND_STAGE_NAME,
     ]
 
 
@@ -186,6 +188,7 @@ def test_build_root_agent_sub_agents_are_expected_types() -> None:
     assert isinstance(root.sub_agents[6], PersistStage)
     assert isinstance(root.sub_agents[7], ConfirmStage)
     assert isinstance(root.sub_agents[8], FinalizeStage)
+    assert isinstance(root.sub_agents[9], SendStage)
 
 
 def test_build_root_agent_rejects_positional_args() -> None:
@@ -265,7 +268,7 @@ async def test_build_root_agent_requires_audit_logger_kwarg() -> None:
 
 @pytest.mark.asyncio
 async def test_every_stage_gets_the_same_audit_logger_instance() -> None:
-    """All 9 stages must share one AuditLogger instance — guards against
+    """All 10 stages must share one AuditLogger instance — guards against
     someone accidentally passing different loggers per stage."""
     audit_logger = AsyncMock(spec=AuditLogger)
     deps = _make_deps()
@@ -274,3 +277,37 @@ async def test_every_stage_gets_the_same_audit_logger_instance() -> None:
 
     for sub_agent in root.sub_agents:
         assert sub_agent._audit_logger is audit_logger
+
+
+# ---------------------------------------------------- Track A2 send-stage tests
+
+
+class TestTrackA2Orchestration:
+    """Track A2 — SendStage wired as 10th sub_agent + version bump."""
+
+    def test_build_root_agent_accepts_gmail_client_and_send_dry_run(self):
+        from unittest.mock import MagicMock
+        from backend.gmail.client import GmailClient
+
+        deps = _make_deps()
+        root = build_root_agent(
+            **deps,
+            gmail_client=MagicMock(spec=GmailClient),
+            send_dry_run=True,
+        )
+        assert root is not None
+
+    def test_assembled_root_agent_has_10_sub_agents_with_send_last(self):
+        deps = _make_deps()
+        root = build_root_agent(
+            **deps,
+            gmail_client=None,
+            send_dry_run=False,
+        )
+        assert len(root.sub_agents) == 10
+        assert isinstance(root.sub_agents[9], SendStage)
+        assert root.sub_agents[9].name == SEND_STAGE_NAME
+
+    def test_agent_version_is_track_a_v0_3(self):
+        from backend.my_agent.agent import AGENT_VERSION
+        assert AGENT_VERSION == "track-a-v0.3"
