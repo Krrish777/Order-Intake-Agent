@@ -29,7 +29,7 @@ from google.adk.sessions import InMemorySessionService
 
 from backend.gmail.client import GmailClient
 from backend.gmail.poller import GmailPoller
-from backend.gmail.scopes import A1_SCOPES
+from backend.gmail.scopes import A2_SCOPES
 from backend.my_agent.agent import _build_default_root_agent
 
 
@@ -53,9 +53,14 @@ async def _main() -> int:
         refresh_token=os.environ["GMAIL_REFRESH_TOKEN"],
         client_id=os.environ["GMAIL_CLIENT_ID"],
         client_secret=os.environ["GMAIL_CLIENT_SECRET"],
-        scopes=A1_SCOPES,
+        scopes=A2_SCOPES,
     )
 
+    # _build_default_root_agent() picks up the same Gmail env vars and
+    # constructs its own GmailClient for SendStage; we keep this script's
+    # dedicated client for the ingress (poll/list/label) side. Same
+    # refresh token, distinct GmailClient instances - the auth library
+    # is the only shared state and caching is per-instance.
     root_agent = _build_default_root_agent()
     session_service = InMemorySessionService()
     runner = Runner(
