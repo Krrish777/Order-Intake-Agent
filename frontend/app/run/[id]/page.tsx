@@ -18,21 +18,31 @@ export default function LiveRunPage({ params }: { params: { id: string } }) {
   // This stub redirects judges directly to the Read Sheet so the CTA
   // on the landing still produces a usable artefact today.
   return (
-    <main className="page">
+    <main className="page" id="top">
       <div className="corner-tr" />
       <div className="corner-bl" />
-      <div className="top-bar">
-        <div className="left">
-          <span>Order Intake Agent</span>
-          <span className="stamp">
-            <span className="pulse" />LIVE · TRACK A · v0.4
+      <header className="top-bar">
+        <Link className="brand" href="/">
+          <span className="brand-mark" aria-hidden="true" />
+          <span className="brand-name">
+            Order Intake<span className="brand-accent">Agent</span>
           </span>
+        </Link>
+        <nav className="nav-center" aria-label="primary">
+          <Link href="/">Landing</Link>
+          <Link href="/runs/A-001-patterson">A-001</Link>
+          <Link href="/runs/A-002-mm-machine">A-002</Link>
+          <Link href="/runs/A-003-birch-valley">A-003</Link>
+        </nav>
+        <div className="nav-right">
+          <span className="nav-log">Live · WIP</span>
+          <Link className="nav-cta" href={`/runs/${params.id}`}>
+            Read sheet →
+          </Link>
         </div>
-        <div className="center">SHEET R-{params.id} · LIVE-RUN · WIP</div>
-        <div className="right" />
-      </div>
+      </header>
 
-      <section className="hero" style={{ paddingTop: '8vh' }}>
+      <section className="hero">
         <div className="kicker">— Live-run page is Phase B</div>
         <h1>
           The pipeline animates here<span className="slash">.</span>
