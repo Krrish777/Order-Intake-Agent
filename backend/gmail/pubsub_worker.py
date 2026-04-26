@@ -24,7 +24,6 @@ from google.genai import types
 
 from backend.gmail.adapter import gmail_message_to_envelope
 from backend.gmail.client import GmailClient
-from backend.gmail.history import HistoryIdTooOldError, fetch_new_message_ids
 from backend.gmail.watch import GmailWatch
 from backend.persistence.sync_state_store import GmailSyncStateStore
 from backend.utils.logging import get_logger
@@ -151,36 +150,25 @@ class GmailPubSubWorker:
                 _log.error("gmail_watch_renew_failed", error=str(exc))
 
     async def process_message(self, data: bytes) -> None:
-        """Process a single Gmail history-notification payload.
+        """Treat each Pub/Sub push as a kick to scan label-scoped unprocessed mail.
 
-        Public so the Cloud Run push handler can call it directly with
-        the base64-decoded `message.data` from the Pub/Sub envelope.
+        GmailClient.list_unprocessed runs `<GMAIL_QUERY> -label:<processed_label>`,
+        so only messages the user has labeled `order-intake` (per GMAIL_QUERY) and
+        that have not been processed yet come back. Public so the Cloud Run push
+        handler can call it directly with the base64-decoded `message.data`.
         """
         payload = json.loads(data.decode("utf-8"))
         history_id_from_push = str(payload.get("historyId", ""))
 
-        stored = await self._cursor_store.get_cursor(self._user_email or "")
-        start_id = stored or history_id_from_push
-
-        try:
-            new_ids, latest_id = await fetch_new_message_ids(
-                self._gmail, start_history_id=start_id
-            )
-        except HistoryIdTooOldError:
-            _log.info(
-                "gmail_history_id_stale",
-                start_id=start_id,
-                fallback="full_scan",
-            )
-            new_ids = await asyncio.to_thread(
-                self._gmail.list_unprocessed, label_name=self._label_name
-            )
-            latest_id = history_id_from_push
-
+        new_ids = await asyncio.to_thread(
+            self._gmail.list_unprocessed, label_name=self._label_name
+        )
         for message_id in new_ids:
             await self._process_gmail_message(message_id)
 
-        await self._cursor_store.set_cursor(self._user_email or "", latest_id)
+        await self._cursor_store.set_cursor(
+            self._user_email or "", history_id_from_push
+        )
 
     async def _process_gmail_message(self, message_id: str) -> None:
         try:

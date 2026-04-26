@@ -16,7 +16,7 @@ import pytest
 pytestmark = pytest.mark.asyncio
 
 
-async def _make_worker(*, cursor="hist-100", label_id="Label_X"):
+async def _make_worker(*, label_id="Label_X"):
     from backend.gmail.client import GmailClient
     from backend.gmail.pubsub_worker import GmailPubSubWorker
     from backend.gmail.watch import GmailWatch
@@ -27,7 +27,7 @@ async def _make_worker(*, cursor="hist-100", label_id="Label_X"):
     gmail_client.label_id_for = MagicMock(return_value=label_id)
     gmail_client.get_raw = MagicMock(return_value=b"From: a\r\n\r\nhi")
     gmail_client.apply_label = MagicMock()
-    gmail_client.list_unprocessed = MagicMock(return_value=["fallback-m1"])
+    gmail_client.list_unprocessed = MagicMock(return_value=[])
 
     runner = AsyncMock()
 
@@ -41,7 +41,6 @@ async def _make_worker(*, cursor="hist-100", label_id="Label_X"):
     session_service.create_session = AsyncMock()
 
     sync_state_store = AsyncMock(spec=GmailSyncStateStore)
-    sync_state_store.get_cursor = AsyncMock(return_value=cursor)
     sync_state_store.set_cursor = AsyncMock()
 
     watch = AsyncMock(spec=GmailWatch)
@@ -86,19 +85,16 @@ class TestInit:
 
 
 class TestProcessPubsubMessage:
-    async def test_fresh_payload_fetches_history_processes_and_advances_cursor(
+    async def test_push_scans_label_scoped_unprocessed_and_advances_cursor(
         self, monkeypatch
     ):
         worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
         await worker.init()
 
+        gmail_client.list_unprocessed = MagicMock(return_value=["m1", "m2"])
+
         from backend.gmail import pubsub_worker as worker_module
 
-        monkeypatch.setattr(
-            worker_module,
-            "fetch_new_message_ids",
-            AsyncMock(return_value=(["m1", "m2"], "hist-500")),
-        )
         # Stub the adapter to avoid real parse_eml
         monkeypatch.setattr(
             worker_module,
@@ -108,54 +104,29 @@ class TestProcessPubsubMessage:
 
         await worker.process_message(_push_payload("hist-500"))
 
-        # Both messages processed
+        # The push triggered a label-scoped scan, not an unfiltered history walk
+        gmail_client.list_unprocessed.assert_called_once_with(
+            label_name="orderintake-processed"
+        )
+        # Both labeled messages processed
         assert gmail_client.get_raw.call_count == 2
         assert gmail_client.apply_label.call_count == 2
-        # Cursor advanced to latest historyId
+        # Cursor advanced to push payload's historyId (telemetry only)
         cursor_store.set_cursor.assert_awaited_once_with("me@example.com", "hist-500")
 
-    async def test_stale_cursor_triggers_full_scan_fallback(self, monkeypatch):
-        from backend.gmail.history import HistoryIdTooOldError
-
+    async def test_empty_scan_processes_nothing_and_still_advances_cursor(self):
         worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
         await worker.init()
 
-        from backend.gmail import pubsub_worker as worker_module
-
-        monkeypatch.setattr(
-            worker_module,
-            "fetch_new_message_ids",
-            AsyncMock(side_effect=HistoryIdTooOldError("too old")),
-        )
-        monkeypatch.setattr(
-            worker_module,
-            "gmail_message_to_envelope",
-            AsyncMock(return_value=MagicMock(message_id="<msg@x>")),
-        )
-
-        await worker.process_message(_push_payload("hist-999"))
-
-        # Full-scan fallback was used (list_unprocessed returns ["fallback-m1"])
-        gmail_client.list_unprocessed.assert_called_once_with(label_name="orderintake-processed")
-        gmail_client.get_raw.assert_called_with("fallback-m1")
-        # Cursor advanced to push payload's historyId
-        cursor_store.set_cursor.assert_awaited_once_with("me@example.com", "hist-999")
-
-    async def test_empty_history_still_advances_cursor(self, monkeypatch):
-        worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
-        await worker.init()
-
-        from backend.gmail import pubsub_worker as worker_module
-
-        monkeypatch.setattr(
-            worker_module,
-            "fetch_new_message_ids",
-            AsyncMock(return_value=([], "hist-200")),
-        )
+        gmail_client.list_unprocessed = MagicMock(return_value=[])
 
         await worker.process_message(_push_payload("hist-200"))
 
+        gmail_client.list_unprocessed.assert_called_once_with(
+            label_name="orderintake-processed"
+        )
         gmail_client.get_raw.assert_not_called()
+        gmail_client.apply_label.assert_not_called()
         cursor_store.set_cursor.assert_awaited_once_with("me@example.com", "hist-200")
 
 
