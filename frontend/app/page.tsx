@@ -4,36 +4,36 @@ const GITHUB_URL = 'https://github.com/Krrish777/Order-Intake-Agent';
 
 export default function Landing() {
   return (
-    <main className="page">
+    <main className="page" id="top">
       <div className="corner-tr" />
       <div className="corner-bl" />
 
       {/* TOP BAR */}
-      <div className="top-bar">
-        <div className="left">
-          <span>Order Intake Agent</span>
-          <span className="stamp"><span className="pulse" />LIVE · TRACK A · v0.4</span>
-        </div>
-        <div className="center">SHEET R-000 · LANDING · NTS</div>
-        <div className="right">
-          <a
-            className="gh-btn"
-            href={GITHUB_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="View source on GitHub"
-          >
-            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-              <path
-                fill="currentColor"
-                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"
-              />
-            </svg>
-            <span>Source</span>
-            <span className="ext">↗</span>
+      <header className="top-bar">
+        <Link className="brand" href="#top">
+          <span className="brand-mark" aria-hidden="true" />
+          <span className="brand-name">
+            Order Intake<span className="brand-accent">Agent</span>
+          </span>
+        </Link>
+        <nav className="nav-center" aria-label="primary">
+          <a href="#howto">How it works</a>
+          <a href="#runs">Runs</a>
+          <a href="#pipeline">Pipeline</a>
+          <a href="#verified">Verified</a>
+          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
+            Source <span className="ext">↗</span>
           </a>
+        </nav>
+        <div className="nav-right">
+          <a className="nav-log" href="#runs">
+            Last run
+          </a>
+          <Link className="nav-cta" href="/runs/A-001-patterson">
+            View latest run
+          </Link>
         </div>
-      </div>
+      </header>
 
       {/* HERO */}
       <section className="hero">
@@ -63,6 +63,44 @@ export default function Landing() {
           <b style={{ color: 'var(--red)' }}>ESCALATED</b> <span className="dot">·</span> 43.1
           s end-to-end
         </span>
+      </section>
+
+      {/* HERO FIGURE */}
+      <figure className="hero-figure">
+        <div className="frame">
+          <img
+            src="/intake-chaos.jpg"
+            alt="EDI gets the red carpet — a robot is welcomed past velvet ropes. A second lane labelled Portal sits abandoned with cobwebs and dead branches. A third lane labelled Email is a chaotic crowd waving envelopes and papers — the real orders live here, and so does the chaos."
+          />
+        </div>
+        <figcaption>
+          <p className="cap">
+            EDI gets the red carpet. The portal collects dust.{' '}
+            <b>Email is where the real orders live</b> — and where the chaos is. The Order
+            Intake Agent is the operator who walks into that crowd and reads every envelope.
+          </p>
+          <span className="credit">FIG · 01 · PROBLEM SPACE</span>
+        </figcaption>
+      </figure>
+
+      {/* LOGO STRIP */}
+      <section className="logo-strip" aria-label="built on">
+        <span className="label">Built on</span>
+        <div className="logo">
+          Google ADK<span className="sub">agent framework</span>
+        </div>
+        <div className="logo">
+          Gemini 3 Flash<span className="sub">extraction · judge</span>
+        </div>
+        <div className="logo">
+          Firestore<span className="sub">erp substitute</span>
+        </div>
+        <div className="logo">
+          LlamaCloud<span className="sub">document parse</span>
+        </div>
+        <div className="logo">
+          Pub/Sub<span className="sub">event routing</span>
+        </div>
       </section>
 
       {/* STATS STRIP */}
@@ -111,7 +149,9 @@ export default function Landing() {
 
         <div className="howto">
           <div className="step">
-            <span className="step-tag">STEP <span className="r">·</span> 01</span>
+            <span className="step-tag">
+              STEP <span className="r">·</span> 01
+            </span>
             <div className="glyph">R</div>
             <h3>Read</h3>
             <p>
@@ -121,7 +161,9 @@ export default function Landing() {
             <div className="formats">PDF · XLS · EDI · CSV · FREE-TEXT</div>
           </div>
           <div className="step">
-            <span className="step-tag">STEP <span className="r">·</span> 02</span>
+            <span className="step-tag">
+              STEP <span className="r">·</span> 02
+            </span>
             <div className="glyph">V</div>
             <h3>Validate</h3>
             <p>
@@ -131,12 +173,14 @@ export default function Landing() {
             <div className="formats">EXACT → FUZZY → EMBEDDING</div>
           </div>
           <div className="step refuse">
-            <span className="step-tag">STEP <span className="r">·</span> 03</span>
+            <span className="step-tag">
+              STEP <span className="r">·</span> 03
+            </span>
             <div className="glyph">D</div>
             <h3>Decide</h3>
             <p>
-              Above 0.95 confidence: commit to the ERP. Above 0.80: clarify with the customer.
-              Below: escalate to a human.
+              Above 0.95 confidence: commit to the ERP. Above 0.80: clarify with the
+              customer. Below: escalate to a human.
             </p>
             <div className="formats">AUTO · CLARIFY · ESCALATE</div>
           </div>
@@ -154,60 +198,93 @@ export default function Landing() {
         </div>
         <p className="lede">
           The agent has already processed three emails this week. Each run captured its full
-          audit trail — every stage, every artefact, every Firestore write. Click any sheet to
-          read the drawing.
+          audit trail — every stage, every artefact, every Firestore write. Click any sheet
+          to read the drawing.
         </p>
 
         <div className="cards">
           <Link className="card escalate" href="/runs/A-001-patterson">
-            <span className="card-tag">SHEET <span className="r">·</span> A-001</span>
+            <span className="card-tag">
+              SHEET <span className="r">·</span> A-001
+            </span>
             <div className="card-body">
               <div className="customer">Patterson Industrial Supply Co.</div>
               <div className="subject">PO-28491 — Atlanta monthly consolidated</div>
               <div className="stats-row">
-                <div className="stat">22 / 22<span>matched at tier 1</span></div>
-                <div className="stat">19<span>price violations</span></div>
+                <div className="stat">
+                  22 / 22<span>matched at tier 1</span>
+                </div>
+                <div className="stat">
+                  19<span>price violations</span>
+                </div>
               </div>
             </div>
             <div className="verdict">
-              <span className="badge"><span className="dot" />ESCALATE</span>
+              <span className="badge">
+                <span className="dot" />
+                ESCALATE
+              </span>
               <span className="wall">43.1 s · 11 stages</span>
             </div>
-            <div className="read">read sheet <span className="arrow">→</span></div>
+            <div className="read">
+              read sheet <span className="arrow">→</span>
+            </div>
           </Link>
 
           <Link className="card auto" href="/runs/A-002-mm-machine">
-            <span className="card-tag">SHEET <span className="r">·</span> A-002</span>
+            <span className="card-tag">
+              SHEET <span className="r">·</span> A-002
+            </span>
             <div className="card-body">
               <div className="customer">M&amp;M Machine &amp; Fabrication</div>
               <div className="subject">Shop reorder — hex nuts and R2 hose</div>
               <div className="stats-row">
-                <div className="stat">2 / 2<span>matched at tier 1</span></div>
-                <div className="stat">$127.40<span>committed to ERP</span></div>
+                <div className="stat">
+                  2 / 2<span>matched at tier 1</span>
+                </div>
+                <div className="stat">
+                  $127.40<span>committed to ERP</span>
+                </div>
               </div>
             </div>
             <div className="verdict">
-              <span className="badge"><span className="dot" />AUTO-APPROVE</span>
+              <span className="badge">
+                <span className="dot" />
+                AUTO-APPROVE
+              </span>
               <span className="wall">62.5 s · judge pass</span>
             </div>
-            <div className="read">read sheet <span className="arrow">→</span></div>
+            <div className="read">
+              read sheet <span className="arrow">→</span>
+            </div>
           </Link>
 
           <Link className="card reply" href="/runs/A-003-birch-valley">
-            <span className="card-tag">SHEET <span className="r">·</span> A-003</span>
+            <span className="card-tag">
+              SHEET <span className="r">·</span> A-003
+            </span>
             <div className="card-body">
               <div className="customer">Birch Valley Farm Equipment</div>
               <div className="subject">Re: Need by tomorrow — Hirshey planter</div>
               <div className="stats-row">
-                <div className="stat">PENDING → REVIEW<span>exception advanced</span></div>
-                <div className="stat">18 ms<span>reply-check hit</span></div>
+                <div className="stat">
+                  PENDING → REVIEW<span>exception advanced</span>
+                </div>
+                <div className="stat">
+                  18 ms<span>reply-check hit</span>
+                </div>
               </div>
             </div>
             <div className="verdict">
-              <span className="badge"><span className="dot" />REPLY MERGED</span>
+              <span className="badge">
+                <span className="dot" />
+                REPLY MERGED
+              </span>
               <span className="wall">5.8 s · 11 stages</span>
             </div>
-            <div className="read">read sheet <span className="arrow">→</span></div>
+            <div className="read">
+              read sheet <span className="arrow">→</span>
+            </div>
           </Link>
         </div>
 
@@ -219,7 +296,7 @@ export default function Landing() {
       </section>
 
       {/* PIPELINE */}
-      <section className="section">
+      <section className="section tight" id="pipeline">
         <div className="section-head">
           <span className="num">§ 03</span>
           <h2>
@@ -260,9 +337,18 @@ export default function Landing() {
             ))}
           </div>
           <div className="legend">
-            <span><span className="swatch" />standard stage</span>
-            <span><span className="swatch gate" />quality gate</span>
-            <span><span className="swatch send" />egress · gmail</span>
+            <span>
+              <span className="swatch" />
+              standard stage
+            </span>
+            <span>
+              <span className="swatch gate" />
+              quality gate
+            </span>
+            <span>
+              <span className="swatch send" />
+              egress · gmail
+            </span>
           </div>
         </div>
 
@@ -271,32 +357,60 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* TRUST */}
-      <section className="trust">
-        <div className="stack">
+      {/* VERIFY + QUOTE */}
+      <section className="verify" id="verified">
+        <div className="pane">
+          <div className="head">§ 04 — Verified</div>
           <div className="row">
-            <span className="label">Built on</span>
-            <span className="item">Google ADK</span>
-            <span className="item">Gemini 3 Flash</span>
-            <span className="item">Firestore</span>
-            <span className="item">LlamaCloud</span>
-            <span className="item">Pub/Sub</span>
-          </div>
-          <div className="row">
-            <span className="label">Verified by</span>
-            <span className="item">497 unit tests</span>
-            <span className="item">30 integration tests</span>
-            <span className="item">3-case eval set</span>
+            <span className="label">Test surface</span>
+            <span className="items">
+              <span className="item">497 unit tests</span>
+              <span className="item">30 integration</span>
+              <span className="item">3 evals</span>
+            </span>
           </div>
           <div className="row">
             <span className="label">Quality gate</span>
-            <span className="item">every outbound email passes a Gemini judge</span>
+            <span className="items">
+              <span className="item">Gemini judge on every outbound email</span>
+            </span>
+          </div>
+          <div className="row">
+            <span className="label">Audit trail</span>
+            <span className="items">
+              <span className="item">every stage</span>
+              <span className="item">every artefact</span>
+              <span className="item">every Firestore write</span>
+            </span>
           </div>
         </div>
-        <blockquote className="quote">
-          &ldquo;An agent that <em>knows when to stop</em>, and how to ask, is the
-          point.&rdquo;
-        </blockquote>
+        <div className="pane quote">
+          <blockquote>
+            &ldquo;An agent that <em>knows when to stop</em>, and how to ask, is the
+            point.&rdquo;
+          </blockquote>
+          <cite>— Order Intake Agent · design principle 01</cite>
+        </div>
+      </section>
+
+      {/* CTA BANNER */}
+      <section className="cta-banner">
+        <div className="inner">
+          <div>
+            <div className="stamp">— closing brief</div>
+            <h2>
+              Stop writing bad orders.
+              <br />
+              <em>Start refusing</em> them.
+            </h2>
+          </div>
+          <div className="actions">
+            <Link className="btn" href="/runs/A-001-patterson">
+              View the latest run <span className="arrow">→</span>
+            </Link>
+            <span className="meta">3 captured runs · live audit trail</span>
+          </div>
+        </div>
       </section>
 
       {/* COLOPHON */}
@@ -307,11 +421,11 @@ export default function Landing() {
         </div>
         <div>
           <div className="head">Build</div>
-          <div className="v">Order Intake Agent · v0.4</div>
+          <div className="v">Order Intake Agent · v0.5</div>
         </div>
         <div>
           <div className="head">Date</div>
-          <div className="v">25 Apr 2026</div>
+          <div className="v">26 Apr 2026</div>
         </div>
         <div>
           <div className="head">Set in</div>
