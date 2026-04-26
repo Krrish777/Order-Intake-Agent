@@ -1,0 +1,32 @@
+.venv/
+**/__pycache__/
+**/*.pyc
+.git/
+.github/
+.idea/
+.vscode/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Frontend lives in its own deploy lane (Firebase Hosting)
+frontend/
+node_modules/
+
+# Tests don't ship to the runtime image
+tests/
+
+# Local artefacts
+tmp/
+data/captured/
+docs/
+research/
+.remember/
+.claude/
+.env
+.env.*
+*.log
+
+# Spec / design notes
+Glacis-Deep-Dive/
+wireframes/
