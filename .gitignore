@@ -17,6 +17,9 @@ logs/
 # Smoke-run output directories (timestamped, regenerable)
 runs/
 
+# Git worktrees (project-local, throwaway branches)
+.worktrees/
+
 # Local-only working area: research notes, exported ADK sessions, planning docs
 tmp/
 
