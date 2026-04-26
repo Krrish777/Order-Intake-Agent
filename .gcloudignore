@@ -1,0 +1,47 @@
+# Files to exclude from `gcloud run deploy --source` and Cloud Build context.
+# This is separate from .dockerignore — gcloud uses this for the upload step,
+# .dockerignore controls what the Dockerfile sees inside the build.
+
+.git/
+.gitignore
+
+# Python local
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Node + frontend (Cloud Run image is Python-only; frontend ships via Firebase Hosting)
+frontend/
+node_modules/
+**/node_modules/
+
+# Local artefacts
+tmp/
+runs/
+logs/
+.firebase/
+*-debug.log
+.env
+.env.*
+
+# Tests + dev-only
+tests/
+
+# Editor + OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Spec / design notes
+Glacis-Deep-Dive/
+research/
+docs/
+wireframes/
+.claude/
+.remember/

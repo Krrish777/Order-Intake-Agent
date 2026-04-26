@@ -5,6 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "fastapi>=0.115",
     "google-adk>=1.31.0",
     "google-api-python-client>=2.140",
     "google-auth>=2.35",
@@ -21,6 +22,7 @@ dependencies = [
     "reportlab>=4.4.10",
     "rich>=15.0.0",
     "structlog>=25.5.0",
+    "uvicorn[standard]>=0.32",
 ]
 
 [dependency-groups]

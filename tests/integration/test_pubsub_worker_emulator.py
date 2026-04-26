@@ -133,7 +133,7 @@ async def test_worker_processes_one_pubsub_message_against_emulators():
             label_name="orderintake-processed",
         )
 
-        await worker._init()
+        await worker.init()
 
         # One pull cycle
         resp = await subscriber.pull(
@@ -141,7 +141,7 @@ async def test_worker_processes_one_pubsub_message_against_emulators():
         )
         assert len(resp.received_messages) >= 1
         for received in resp.received_messages:
-            await worker._process_pubsub_message(received.message)
+            await worker.process_message(received.message.data)
             await subscriber.acknowledge(
                 request={
                     "subscription": subscription_path,

@@ -78,7 +78,7 @@ class _FakePubsubMessage:
 class TestInit:
     async def test_init_resolves_email_label_and_starts_watch(self):
         worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
-        await worker._init()
+        await worker.init()
 
         watch.get_profile_email.assert_awaited_once()
         gmail_client.label_id_for.assert_called_once_with("orderintake-processed")
@@ -90,7 +90,7 @@ class TestProcessPubsubMessage:
         self, monkeypatch
     ):
         worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
-        await worker._init()
+        await worker.init()
 
         from backend.gmail import pubsub_worker as worker_module
 
@@ -106,7 +106,7 @@ class TestProcessPubsubMessage:
             AsyncMock(return_value=MagicMock(message_id="<msg@x>")),
         )
 
-        await worker._process_pubsub_message(_FakePubsubMessage(_push_payload("hist-500")))
+        await worker.process_message(_push_payload("hist-500"))
 
         # Both messages processed
         assert gmail_client.get_raw.call_count == 2
@@ -118,7 +118,7 @@ class TestProcessPubsubMessage:
         from backend.gmail.history import HistoryIdTooOldError
 
         worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
-        await worker._init()
+        await worker.init()
 
         from backend.gmail import pubsub_worker as worker_module
 
@@ -133,7 +133,7 @@ class TestProcessPubsubMessage:
             AsyncMock(return_value=MagicMock(message_id="<msg@x>")),
         )
 
-        await worker._process_pubsub_message(_FakePubsubMessage(_push_payload("hist-999")))
+        await worker.process_message(_push_payload("hist-999"))
 
         # Full-scan fallback was used (list_unprocessed returns ["fallback-m1"])
         gmail_client.list_unprocessed.assert_called_once_with(label_name="orderintake-processed")
@@ -143,7 +143,7 @@ class TestProcessPubsubMessage:
 
     async def test_empty_history_still_advances_cursor(self, monkeypatch):
         worker, subscriber, gmail_client, runner, cursor_store, watch = await _make_worker()
-        await worker._init()
+        await worker.init()
 
         from backend.gmail import pubsub_worker as worker_module
 
@@ -153,7 +153,7 @@ class TestProcessPubsubMessage:
             AsyncMock(return_value=([], "hist-200")),
         )
 
-        await worker._process_pubsub_message(_FakePubsubMessage(_push_payload("hist-200")))
+        await worker.process_message(_push_payload("hist-200"))
 
         gmail_client.get_raw.assert_not_called()
         cursor_store.set_cursor.assert_awaited_once_with("me@example.com", "hist-200")

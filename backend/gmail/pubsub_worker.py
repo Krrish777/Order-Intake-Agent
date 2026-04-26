@@ -70,18 +70,21 @@ class GmailPubSubWorker:
         self._label_id: Optional[str] = None
 
     async def run_forever(self) -> None:
-        await self._init()
+        await self.init(start_watch=True)
         try:
             await asyncio.gather(self._drain_loop(), self._renew_loop())
         except asyncio.CancelledError:
             _log.info("gmail_pubsub_worker_stopping")
             raise
 
-    async def _init(self) -> None:
+    async def init(self, *, start_watch: bool = True) -> None:
+        """Resolve user/label state. Skip watch.start when the renewer Job owns it."""
         self._user_email = await self._watch.get_profile_email()
         self._label_id = await asyncio.to_thread(
             self._gmail.label_id_for, self._label_name
         )
+        if not start_watch:
+            return
         result = await self._watch.start(
             topic_name=self._topic_name,
             label_ids=self._watch_label_ids,
@@ -105,7 +108,7 @@ class GmailPubSubWorker:
                 ack_ids: list[str] = []
                 for received in resp.received_messages:
                     try:
-                        await self._process_pubsub_message(received.message)
+                        await self.process_message(received.message.data)
                         ack_ids.append(received.ack_id)
                     except Exception as exc:
                         _log.error(
@@ -147,8 +150,13 @@ class GmailPubSubWorker:
             except Exception as exc:
                 _log.error("gmail_watch_renew_failed", error=str(exc))
 
-    async def _process_pubsub_message(self, pubsub_message) -> None:
-        payload = json.loads(pubsub_message.data.decode("utf-8"))
+    async def process_message(self, data: bytes) -> None:
+        """Process a single Gmail history-notification payload.
+
+        Public so the Cloud Run push handler can call it directly with
+        the base64-decoded `message.data` from the Pub/Sub envelope.
+        """
+        payload = json.loads(data.decode("utf-8"))
         history_id_from_push = str(payload.get("historyId", ""))
 
         stored = await self._cursor_store.get_cursor(self._user_email or "")

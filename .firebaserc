@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "demo-order-intake-local"
+    "default": "demo-order-intake-local",
+    "production": "order-intake-agent-49191-599ce"
   }
 }
