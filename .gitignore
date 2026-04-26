@@ -32,3 +32,8 @@ credentials.json
 *credentials*.json
 client_secret*.json
 .gstack/
+
+
+
+.claude/
+.remember/
