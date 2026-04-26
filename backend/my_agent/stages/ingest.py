@@ -33,11 +33,15 @@ INGEST_STAGE_NAME: Final[str] = "ingest_stage"
 
 # Case-insensitive leading tokens that unambiguously mark a message as RFC 5322
 # headers rather than a filesystem path. Paired with a blank-line check to
-# avoid false positives on header-looking path fragments.
+# avoid false positives on header-looking path fragments. Trace headers
+# (Delivered-To, Received) come first on real inbound mail — sender-set
+# headers like From / Message-ID land below them.
 _MIME_HEADER_PREFIXES: Final[tuple[str, ...]] = (
+    "delivered-to:",
+    "received:",
+    "return-path:",
     "from:",
     "message-id:",
-    "return-path:",
 )
 
 

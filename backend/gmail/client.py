@@ -43,6 +43,7 @@ class GmailClient:
         client_id: str,
         client_secret: str,
         scopes: list[str],
+        query_override: Optional[str] = None,
     ) -> None:
         credentials = Credentials(
             token=None,
@@ -56,6 +57,7 @@ class GmailClient:
             "gmail", "v1", credentials=credentials, cache_discovery=False
         )
         self._label_id_cache: dict[str, str] = {}
+        self._query_override = query_override
 
     # ---- read surface ----
 
@@ -65,7 +67,11 @@ class GmailClient:
         label_name: str,
         max_results: int = 50,
     ) -> list[str]:
-        query = f"in:inbox -label:{label_name}"
+        # Dedup filter is always appended so the override can't cause
+        # re-processing of already-handled mail. Override replaces only
+        # the inbox-scoping clause (default: "in:inbox").
+        base = self._query_override or "in:inbox"
+        query = f"{base} -label:{label_name}"
         resp = (
             self._service.users()
             .messages()

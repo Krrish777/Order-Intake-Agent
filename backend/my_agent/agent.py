@@ -254,6 +254,7 @@ def _build_default_root_agent() -> SequentialAgent:
             client_id=os.environ["GMAIL_CLIENT_ID"],
             client_secret=os.environ["GMAIL_CLIENT_SECRET"],
             scopes=A2_SCOPES,
+            query_override=os.environ.get("GMAIL_QUERY") or None,
         )
     send_dry_run = os.environ.get("GMAIL_SEND_DRY_RUN", "1") == "1"
 

@@ -228,21 +228,25 @@ def _extract_draft(entry: dict, envelope: EmailEnvelope) -> tuple[str, Any, str]
 
     Body is ``None`` if the record has no drafted body (e.g. ESCALATE
     exceptions without clarify_body, or confirmations where
-    confirmation_body didn't land).
+    confirmation_body didn't land). ``source_message_id`` lives nested
+    on the OrderRecord / ExceptionRecord — ProcessResult itself has no
+    top-level copy.
     """
-    result    = entry["result"]
-    kind      = result["kind"]
-    source_id = result["source_message_id"]
-    subject   = f"Re: {envelope.subject}" if envelope.subject else "(no subject)"
+    result  = entry["result"]
+    kind    = result["kind"]
+    subject = f"Re: {envelope.subject}" if envelope.subject else "(no subject)"
 
     if kind == "order":
-        order = result.get("order") or {}
-        body  = order.get("confirmation_body")
+        order     = result.get("order") or {}
+        body      = order.get("confirmation_body")
+        source_id = order.get("source_message_id", "")
     elif kind == "exception":
-        exc  = result.get("exception") or {}
-        body = exc.get("clarify_body")
+        exc       = result.get("exception") or {}
+        body      = exc.get("clarify_body")
+        source_id = exc.get("source_message_id", "")
     else:
-        body = None
+        body      = None
+        source_id = ""
 
     return subject, body, source_id
 

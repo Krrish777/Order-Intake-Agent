@@ -24,6 +24,10 @@ import json
 import sys
 from pathlib import Path
 
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
+
 from google_auth_oauthlib.flow import InstalledAppFlow
 
 from backend.gmail.scopes import A2_SCOPES

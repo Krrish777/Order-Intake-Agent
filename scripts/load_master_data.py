@@ -12,15 +12,20 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from dotenv import load_dotenv
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+load_dotenv(_REPO_ROOT / ".env", override=False)
+
 from google.cloud import firestore
 from google.cloud.firestore_v1.vector import Vector
 from google.genai import Client as GenAIClient
 from google.genai.types import EmbedContentConfig
 
-DATA_DIR = Path(__file__).resolve().parent.parent / "data" / "masters"
+DATA_DIR = _REPO_ROOT / "data" / "masters"
 DEFAULT_PROJECT = "demo-order-intake-local"
 
-EMBED_MODEL = "text-embedding-004"
+EMBED_MODEL = "gemini-embedding-001"
 EMBED_DIM = 768
 
 
