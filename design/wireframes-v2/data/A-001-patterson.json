@@ -1,0 +1,726 @@
+{
+  "correlation_id": "57d74acf2ed34908b81590888ce3f65e",
+  "source_message_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>",
+  "session_id": "smoke-d9900e95",
+  "agent_version": "track-a-v0.4",
+  "captured_at": "2026-04-26T06:16:03.261989+00:00",
+  "total_wall_clock_seconds": 43.1,
+  "stage_count": 11,
+  "stages": [
+    {
+      "stage": "ingest_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T06:13:15.409000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "reply_shortcircuit_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:15.414000+00:00",
+      "exited_ts": "2026-04-26T06:13:15.420000+00:00",
+      "duration_ms": 6.0,
+      "payload": {}
+    },
+    {
+      "stage": "classify_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:15.425000+00:00",
+      "exited_ts": "2026-04-26T06:13:34.829000+00:00",
+      "duration_ms": 19404.0,
+      "payload": {}
+    },
+    {
+      "stage": "parse_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:34.843000+00:00",
+      "exited_ts": "2026-04-26T06:13:53.387000+00:00",
+      "duration_ms": 18544.0,
+      "payload": {}
+    },
+    {
+      "stage": "clarify_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T06:13:53.674000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "validate_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:53.387000+00:00",
+      "exited_ts": "2026-04-26T06:13:53.674000+00:00",
+      "duration_ms": 287.0,
+      "payload": {}
+    },
+    {
+      "stage": "persist_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:53.689000+00:00",
+      "exited_ts": "2026-04-26T06:13:53.732000+00:00",
+      "duration_ms": 43.0,
+      "payload": {}
+    },
+    {
+      "stage": "confirm_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:53.737000+00:00",
+      "exited_ts": "2026-04-26T06:13:53.737000+00:00",
+      "duration_ms": 0.0,
+      "payload": {}
+    },
+    {
+      "stage": "finalize_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:53.737000+00:00",
+      "exited_ts": "2026-04-26T06:13:58.540000+00:00",
+      "duration_ms": 4803.0,
+      "payload": {}
+    },
+    {
+      "stage": "judge_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:58.545000+00:00",
+      "exited_ts": "2026-04-26T06:13:58.550000+00:00",
+      "duration_ms": 5.0,
+      "payload": {}
+    },
+    {
+      "stage": "send_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T06:13:58.555000+00:00",
+      "exited_ts": "2026-04-26T06:13:58.564000+00:00",
+      "duration_ms": 9.0,
+      "payload": {}
+    }
+  ],
+  "lifecycle_events": [
+    {
+      "stage": "lifecycle",
+      "action": "envelope_received",
+      "outcome": null,
+      "ts": "2026-04-26T06:13:15.402000+00:00",
+      "payload": {
+        "attachment_count": 1
+      }
+    },
+    {
+      "stage": "lifecycle",
+      "action": "routing_decided",
+      "outcome": "escalate",
+      "ts": "2026-04-26T06:13:53.658000+00:00",
+      "payload": {
+        "filename": "patterson_po-28491.pdf",
+        "confidence": 0.0,
+        "customer_id": "CUST-00042",
+        "sub_doc_index": 0
+      }
+    },
+    {
+      "stage": "lifecycle",
+      "action": "exception_opened",
+      "outcome": "exception",
+      "ts": "2026-04-26T06:13:53.721000+00:00",
+      "payload": {
+        "filename": "patterson_po-28491.pdf",
+        "exception_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>",
+        "sub_doc_index": 0
+      }
+    },
+    {
+      "stage": "lifecycle",
+      "action": "run_finalized",
+      "outcome": "ok",
+      "ts": "2026-04-26T06:13:58.534000+00:00",
+      "payload": {
+        "docs_skipped": 0,
+        "exceptions_opened": 1,
+        "reply_handled": false,
+        "orders_created": 0
+      }
+    },
+    {
+      "stage": "lifecycle",
+      "action": "email_send_skipped",
+      "outcome": "skip",
+      "ts": "2026-04-26T06:13:58.560000+00:00",
+      "payload": {
+        "reason": "no_body",
+        "record_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>"
+      }
+    }
+  ],
+  "orders": [],
+  "exceptions": [
+    {
+      "send_error": null,
+      "created_at": "2026-04-26T06:13:53.706000+00:00",
+      "parsed_doc": {
+        "sub_documents": [
+          {
+            "special_instructions": null,
+            "line_items": [
+              {
+                "sku": "887712",
+                "unit_of_measure": "EA",
+                "description": "Hex Cap Screw, 1/2-13 x 2\", Gr 5 Zinc",
+                "quantity": 1200.0,
+                "unit_price": 0.3,
+                "requested_date": null
+              },
+              {
+                "sku": "887714",
+                "unit_of_measure": "EA",
+                "description": "Hex Cap Screw, 1/2-13 x 1-1/2\", 18-8 SS",
+                "quantity": 300.0,
+                "unit_price": 1.12,
+                "requested_date": null
+              },
+              {
+                "sku": "887720",
+                "unit_of_measure": "EA",
+                "description": "Hex Cap Screw, 3/8-16 x 1\", Gr 8 Yellow Zinc",
+                "quantity": 800.0,
+                "unit_price": 0.36,
+                "requested_date": null
+              },
+              {
+                "sku": "887723",
+                "unit_of_measure": "EA",
+                "description": "Hex Nut, 1/2-13, Gr 5 Zinc",
+                "quantity": 1500.0,
+                "unit_price": 0.1,
+                "requested_date": null
+              },
+              {
+                "sku": "887745",
+                "unit_of_measure": "EA",
+                "description": "Flat Washer, 1/2\" SAE, 18-8 SS",
+                "quantity": 2500.0,
+                "unit_price": 0.08,
+                "requested_date": null
+              },
+              {
+                "sku": "912055",
+                "unit_of_measure": "EA",
+                "description": "JIC Male Straight, -6 (9/16-18 UNF), Steel ZN",
+                "quantity": 100.0,
+                "unit_price": 2.98,
+                "requested_date": null
+              },
+              {
+                "sku": "912061",
+                "unit_of_measure": "EA",
+                "description": "JIC Male Elbow 90\u00b0, -6 (9/16-18 UNF), Forged Steel",
+                "quantity": 48.0,
+                "unit_price": 7.66,
+                "requested_date": null
+              },
+              {
+                "sku": "912118",
+                "unit_of_measure": "FT",
+                "description": "Hydraulic Hose, 100R2, -6 (3/8\" ID), 2-Wire",
+                "quantity": 500.0,
+                "unit_price": 3.37,
+                "requested_date": null
+              },
+              {
+                "sku": "912124",
+                "unit_of_measure": "FT",
+                "description": "Hydraulic Hose, 100R2, -8 (1/2\" ID), 2-Wire",
+                "quantity": 375.0,
+                "unit_price": 4.44,
+                "requested_date": null
+              },
+              {
+                "sku": "912402",
+                "unit_of_measure": "EA",
+                "description": "QD Coupler, ISO 7241-A, 3/8\" Body, 3/8 NPT-F",
+                "quantity": 12.0,
+                "unit_price": 28.15,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-HCS-062-11-250-S316",
+                "unit_of_measure": "EA",
+                "description": "Hex Cap Screw, 5/8-11 x 2-1/2\", 316 SS",
+                "quantity": 75.0,
+                "unit_price": 3.38,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-HCS-M10-150-40-88Z",
+                "unit_of_measure": "EA",
+                "description": "Hex Cap Screw, M10-1.5 x 40 mm, Cl 8.8 Zinc",
+                "quantity": 500.0,
+                "unit_price": 0.26,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-SHC-025-20-125-AB",
+                "unit_of_measure": "EA",
+                "description": "Socket Head Cap Screw, 1/4-20 x 1-1/4\", Alloy BO",
+                "quantity": 400.0,
+                "unit_price": 0.17,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-SHC-038-16-150-S18",
+                "unit_of_measure": "EA",
+                "description": "Socket Head Cap Screw, 3/8-16 x 1-1/2\", 18-8 SS",
+                "quantity": 150.0,
+                "unit_price": 1.54,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-FHC-010-24-075-AB",
+                "unit_of_measure": "EA",
+                "description": "Flat Head Cap Screw, #10-24 x 3/4\", Alloy BO",
+                "quantity": 300.0,
+                "unit_price": 0.11,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-HXN-062-11-S18",
+                "unit_of_measure": "EA",
+                "description": "Hex Nut, 5/8-11, 18-8 SS",
+                "quantity": 250.0,
+                "unit_price": 0.51,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-NYL-038-16-S18",
+                "unit_of_measure": "EA",
+                "description": "Nyloc Lock Nut, 3/8-16, 18-8 SS",
+                "quantity": 500.0,
+                "unit_price": 0.3,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-FWS-038-USS-ZP",
+                "unit_of_measure": "EA",
+                "description": "Flat Washer, 3/8\" USS, Zinc",
+                "quantity": 2000.0,
+                "unit_price": 0.04,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-SLW-050-MS-ZP",
+                "unit_of_measure": "EA",
+                "description": "Split Lock Washer, 1/2\" Med, Zinc",
+                "quantity": 800.0,
+                "unit_price": 0.05,
+                "requested_date": null
+              },
+              {
+                "sku": "FST-SMS-010-16-100-ZT3",
+                "unit_of_measure": "EA",
+                "description": "Self-Drilling Tek, #10-16 x 1\" HWH Zinc T3",
+                "quantity": 600.0,
+                "unit_price": 0.07,
+                "requested_date": null
+              },
+              {
+                "sku": "HYD-MJN-06-04-STL",
+                "unit_of_measure": "EA",
+                "description": "JIC Male x NPT Male, -6 x 1/4\" NPT, Steel",
+                "quantity": 75.0,
+                "unit_price": 3.66,
+                "requested_date": null
+              },
+              {
+                "sku": "HYD-ORB-06-STL",
+                "unit_of_measure": "EA",
+                "description": "SAE ORB Male Straight, -6, Buna-N, Steel",
+                "quantity": 60.0,
+                "unit_price": 4.92,
+                "requested_date": null
+              }
+            ],
+            "po_number": "PO-28491",
+            "ship_to_address": "Patterson DC \u2014 Atlanta South\n4410 Fulton Industrial Blvd SW, Dock 7, Atlanta GA 30336",
+            "customer_name": "Patterson Industrial Supply Co.",
+            "requested_delivery_date": "2026-05-08"
+          }
+        ],
+        "detected_language": "en",
+        "classification": "purchase_order",
+        "classification_rationale": "The document is classified as a purchase order because it is titled 'PURCHASE ORDER' and contains a 'PO Number', buyer, vendor, and a detailed list of items to be procured.",
+        "page_count": 2
+      },
+      "thread_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>",
+      "reason": "Line 0: resolved alias '887712' -> FST-HCS-050-13-200-G5Z; unit_price 0.30 vs catalog 0.34 (-11.8%) | Line 1: resolved alias '887714' -> FST-HCS-050-13-150-S18; unit_price 1.12 vs catalog 1.28 (-12.5%) | Line 2: resolved alias '887720' -> FST-HCS-038-16-100-G8YZ; unit_price 0.36 vs catalog 0.41 (-12.2%) | Line 3: resolved alias '887723' -> FST-HXN-050-13-G5Z | Line 4: resolved alias '887745' -> FST-FWS-050-SAE-S18; unit_price 0.08 vs catalog 0.09 (-11.1%) | Line 5: resolved alias '912055' -> HYD-MJS-06-STL; unit_price 2.98 vs catalog 3.42 (-12.9%) | Line 6: resolved alias '912061' -> HYD-MJE-06-STL; unit_price 7.66 vs catalog 8.75 (-12.5%) | Line 7: resolved alias '912118' -> HYD-HSE-R2-06; unit_price 3.37 vs catalog 3.88 (-13.1%) | Line 8: resolved alias '912124' -> HYD-HSE-R2-08; unit_price 4.44 vs catalog 5.12 (-13.3%) | Line 9: resolved alias '912402' -> HYD-QCA-06-STL; unit_price 28.15 vs catalog 32.50 (-13.4%) | Line 10: unit_price 3.38 vs catalog 3.87 (-12.7%) | Line 11: unit_price 0.26 vs catalog 0.29 (-10.3%) | Line 12: unit_price 0.17 vs catalog 0.19 (-10.5%) | Line 13: unit_price 1.54 vs catalog 1.75 (-12.0%) | Line 15: unit_price 0.51 vs catalog 0.58 (-12.1%) | Line 16: unit_price 0.30 vs catalog 0.34 (-11.8%) | Line 18: unit_price 0.05 vs catalog 0.06 (-16.7%) | Line 19: unit_price 0.07 vs catalog 0.08 (-12.5%) | Line 20: unit_price 3.66 vs catalog 4.18 (-12.4%) | Line 21: unit_price 4.92 vs catalog 5.62 (-12.5%)",
+      "clarify_body": null,
+      "updated_at": "2026-04-26T06:13:53.706000+00:00",
+      "resolved_to_order_id": null,
+      "clarify_message_id": null,
+      "judge_verdict": null,
+      "schema_version": 4,
+      "source_message_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>",
+      "reply_message_id": null,
+      "validation_result": {
+        "decision": "escalate",
+        "rationale": "Patterson Industrial Supply Co., 22 lines, confidence 0.00; 19 check failures; -> escalate",
+        "lines": [
+          {
+            "notes": [
+              "resolved alias '887712' -> FST-HCS-050-13-200-G5Z",
+              "unit_price 0.30 vs catalog 0.34 (-11.8%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HCS-050-13-200-G5Z",
+            "line_index": 0
+          },
+          {
+            "notes": [
+              "resolved alias '887714' -> FST-HCS-050-13-150-S18",
+              "unit_price 1.12 vs catalog 1.28 (-12.5%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HCS-050-13-150-S18",
+            "line_index": 1
+          },
+          {
+            "notes": [
+              "resolved alias '887720' -> FST-HCS-038-16-100-G8YZ",
+              "unit_price 0.36 vs catalog 0.41 (-12.2%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HCS-038-16-100-G8YZ",
+            "line_index": 2
+          },
+          {
+            "notes": [
+              "resolved alias '887723' -> FST-HXN-050-13-G5Z"
+            ],
+            "price_ok": true,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HXN-050-13-G5Z",
+            "line_index": 3
+          },
+          {
+            "notes": [
+              "resolved alias '887745' -> FST-FWS-050-SAE-S18",
+              "unit_price 0.08 vs catalog 0.09 (-11.1%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-FWS-050-SAE-S18",
+            "line_index": 4
+          },
+          {
+            "notes": [
+              "resolved alias '912055' -> HYD-MJS-06-STL",
+              "unit_price 2.98 vs catalog 3.42 (-12.9%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-MJS-06-STL",
+            "line_index": 5
+          },
+          {
+            "notes": [
+              "resolved alias '912061' -> HYD-MJE-06-STL",
+              "unit_price 7.66 vs catalog 8.75 (-12.5%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-MJE-06-STL",
+            "line_index": 6
+          },
+          {
+            "notes": [
+              "resolved alias '912118' -> HYD-HSE-R2-06",
+              "unit_price 3.37 vs catalog 3.88 (-13.1%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-HSE-R2-06",
+            "line_index": 7
+          },
+          {
+            "notes": [
+              "resolved alias '912124' -> HYD-HSE-R2-08",
+              "unit_price 4.44 vs catalog 5.12 (-13.3%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-HSE-R2-08",
+            "line_index": 8
+          },
+          {
+            "notes": [
+              "resolved alias '912402' -> HYD-QCA-06-STL",
+              "unit_price 28.15 vs catalog 32.50 (-13.4%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-QCA-06-STL",
+            "line_index": 9
+          },
+          {
+            "notes": [
+              "unit_price 3.38 vs catalog 3.87 (-12.7%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HCS-062-11-250-S316",
+            "line_index": 10
+          },
+          {
+            "notes": [
+              "unit_price 0.26 vs catalog 0.29 (-10.3%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HCS-M10-150-40-88Z",
+            "line_index": 11
+          },
+          {
+            "notes": [
+              "unit_price 0.17 vs catalog 0.19 (-10.5%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-SHC-025-20-125-AB",
+            "line_index": 12
+          },
+          {
+            "notes": [
+              "unit_price 1.54 vs catalog 1.75 (-12.0%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-SHC-038-16-150-S18",
+            "line_index": 13
+          },
+          {
+            "notes": [],
+            "price_ok": true,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-FHC-010-24-075-AB",
+            "line_index": 14
+          },
+          {
+            "notes": [
+              "unit_price 0.51 vs catalog 0.58 (-12.1%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-HXN-062-11-S18",
+            "line_index": 15
+          },
+          {
+            "notes": [
+              "unit_price 0.30 vs catalog 0.34 (-11.8%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-NYL-038-16-S18",
+            "line_index": 16
+          },
+          {
+            "notes": [],
+            "price_ok": true,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-FWS-038-USS-ZP",
+            "line_index": 17
+          },
+          {
+            "notes": [
+              "unit_price 0.05 vs catalog 0.06 (-16.7%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-SLW-050-MS-ZP",
+            "line_index": 18
+          },
+          {
+            "notes": [
+              "unit_price 0.07 vs catalog 0.08 (-12.5%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "FST-SMS-010-16-100-ZT3",
+            "line_index": 19
+          },
+          {
+            "notes": [
+              "unit_price 3.66 vs catalog 4.18 (-12.4%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-MJN-06-04-STL",
+            "line_index": 20
+          },
+          {
+            "notes": [
+              "unit_price 4.92 vs catalog 5.62 (-12.5%)"
+            ],
+            "price_ok": false,
+            "match_confidence": 1.0,
+            "qty_ok": true,
+            "match_tier": "exact",
+            "matched_sku": "HYD-ORB-06-STL",
+            "line_index": 21
+          }
+        ],
+        "aggregate_confidence": 0.0,
+        "customer": {
+          "bill_to": {
+            "state": "OH",
+            "street2": "Attn: Accounts Payable \u2014 Dept 300",
+            "city": "Cleveland",
+            "zip": "44105",
+            "street1": "2750 Harvard Avenue",
+            "country": "US"
+          },
+          "currency": "USD",
+          "credit_limit_usd": 325000.0,
+          "customer_id": "CUST-00042",
+          "duns": "078-491-2350",
+          "sku_aliases": {
+            "887714": "FST-HCS-050-13-150-S18",
+            "887745": "FST-FWS-050-SAE-S18",
+            "912061": "HYD-MJE-06-STL",
+            "912118": "HYD-HSE-R2-06",
+            "912055": "HYD-MJS-06-STL",
+            "887720": "FST-HCS-038-16-100-G8YZ",
+            "887723": "FST-HXN-050-13-G5Z",
+            "912124": "HYD-HSE-R2-08",
+            "912402": "HYD-QCA-06-STL",
+            "887712": "FST-HCS-050-13-200-G5Z"
+          },
+          "edi_info": {
+            "isa_id": "1349821507",
+            "as2_id": "PATTERSON-INDUST",
+            "isa_qualifier": "01",
+            "van": "OpenText GXS"
+          },
+          "segment": "large_distributor",
+          "tax_id": "34-2985014",
+          "contacts": [
+            {
+              "email": "s.mccreary@pattersonindustrial.com",
+              "phone": "+1-216-641-0184",
+              "role": "Procurement Manager",
+              "name": "Susan McCreary"
+            },
+            {
+              "email": "ap@pattersonindustrial.com",
+              "phone": "+1-216-641-0100",
+              "role": "AP",
+              "name": "Accounts Payable"
+            }
+          ],
+          "payment_terms": "Net 45",
+          "notes": "National MRO distributor. POs arrive via X12 850 through GXS VAN or as PDF attachments from procurement@pattersonindustrial.com. Quarterly 3.5% rebate on Hydraulic category; ship-to location code required on every PO line.",
+          "ship_to": [
+            {
+              "street2": "Dock 14",
+              "street1": "2750 Harvard Avenue",
+              "city": "Cleveland",
+              "country": "US",
+              "state": "OH",
+              "label": "Patterson DC \u2014 Cleveland",
+              "zip": "44105",
+              "location_code": "PATT-CLE-01",
+              "receiving_hours": "Mon-Fri 06:00-15:30 ET"
+            },
+            {
+              "street2": "Dock 7",
+              "street1": "4410 Fulton Industrial Blvd SW",
+              "city": "Atlanta",
+              "country": "US",
+              "state": "GA",
+              "label": "Patterson DC \u2014 Atlanta South",
+              "zip": "30336",
+              "location_code": "PATT-ATL-02",
+              "receiving_hours": "Mon-Fri 07:00-16:00 ET"
+            },
+            {
+              "street2": null,
+              "street1": "3902 Irving Blvd",
+              "city": "Dallas",
+              "country": "US",
+              "state": "TX",
+              "label": "Patterson DC \u2014 Dallas",
+              "zip": "75247",
+              "location_code": "PATT-DAL-03",
+              "receiving_hours": "Mon-Fri 07:00-15:00 CT"
+            }
+          ],
+          "dba": null,
+          "customer_since": "2014",
+          "typical_channels": [
+            "edi_x12_850",
+            "email_pdf_po"
+          ],
+          "name": "Patterson Industrial Supply Co."
+        }
+      },
+      "status": "escalated",
+      "sent_at": null,
+      "__doc_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>"
+    }
+  ],
+  "raw_audit_event_count": 26
+}
