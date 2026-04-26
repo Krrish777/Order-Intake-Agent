@@ -251,5 +251,15 @@
     }
   ],
   "exceptions": [],
-  "raw_audit_event_count": 28
+  "raw_audit_event_count": 28,
+  "inbound_email": {
+    "headers": {
+      "From": "Anthony Molinaro <tony.m@mm-machineworks.com>",
+      "To": "orders@grafton-reese.com",
+      "Subject": "Shop reorder - hex nuts and R2 hose",
+      "Date": "Fri, 24 Apr 2026 11:42:00 -0500",
+      "Message-ID": "<20260424114200.9ab4.tony@mm-machineworks.com>"
+    },
+    "body": "Hi,\n\nNeed to restock a couple items on the shop floor. Pulling the part numbers\noff last month's invoice - please ship the following to the usual address\n(2915 S Chase, Milwaukee):\n\n1. 100 ea of FST-HXN-050-13-G5Z (hex nuts 1/2-13 grade 5 zinc)\n2. 30 ft of HYD-HSE-R2-06 (100R2 hose dash-6, 3/8 ID)\n\nNothing urgent - normal ground is fine. Net 30 as always, invoice goes to\nme at this email.\n\nThanks,\nTony Molinaro\nShop Foreman\nM&M Machine & Fabrication\n(414) 744-5602\n\nSent from my iPhone"
+  }
 }

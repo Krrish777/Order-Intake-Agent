@@ -132,5 +132,15 @@
   ],
   "orders": [],
   "exceptions": [],
-  "raw_audit_event_count": 23
+  "raw_audit_event_count": 23,
+  "inbound_email": {
+    "headers": {
+      "From": "Stan Birchwood <stan.birch@birchvalleyfarmeq.com>",
+      "To": "orders@grafton-reese.com",
+      "Subject": "Re: Need by tomorrow - Hirshey planter",
+      "Date": "Mon, 20 Apr 2026 14:27:00 -0400",
+      "Message-ID": "<177670563340.19724.459494955414530210@birchvalleyfarmeq.com>"
+    },
+    "body": "Sorry - meant 3/8-16 thread, standard coarse. 1 inch length, hex cap. Yellow zinc like always.\n\nBlue tubing is the 100ft roll, same as last month.\n\n- Stan\n(btw Hirsheys are still breathing down my neck)"
+  }
 }

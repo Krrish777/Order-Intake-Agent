@@ -17,10 +17,12 @@ sheet template can render against it instead of synthetic placeholders.
 from __future__ import annotations
 
 import argparse
+import email
 import json
 import os
 import sys
 from datetime import datetime, timezone
+from email import policy
 from pathlib import Path
 from typing import Any
 
@@ -58,7 +60,36 @@ def _ms_between(a: datetime, b: datetime) -> float:
     return (b - a).total_seconds() * 1000
 
 
-def capture(correlation_id: str) -> dict[str, Any]:
+_EMAIL_HEADERS = ("From", "To", "Subject", "Date", "Message-ID")
+
+
+def parse_inbound_email(eml_path: Path) -> dict[str, Any]:
+    """Parse an .eml fixture into ``{ headers, body }`` for the wireframe §I.
+
+    Returns the canonical headers (From/To/Subject/Date/Message-ID) and the
+    text/plain body. Multipart messages with PDF attachments (e.g. Patterson)
+    return only the text/plain part; attachments are intentionally dropped —
+    the wireframes render the attachment via separate fields, not the raw
+    base64.
+    """
+    with eml_path.open("rb") as fh:
+        msg = email.message_from_binary_file(fh, policy=policy.default)
+
+    headers = {h: msg.get(h, "") for h in _EMAIL_HEADERS}
+
+    body = ""
+    if msg.is_multipart():
+        for part in msg.walk():
+            if part.get_content_type() == "text/plain":
+                body = part.get_content()
+                break
+    else:
+        body = msg.get_content() if msg.get_content_type() == "text/plain" else ""
+
+    return {"headers": headers, "body": body.strip()}
+
+
+def capture(correlation_id: str, eml_path: Path | None = None) -> dict[str, Any]:
     project = os.environ.get(
         "GOOGLE_CLOUD_PROJECT", "demo-order-intake-local"
     )
@@ -157,6 +188,8 @@ def capture(correlation_id: str) -> dict[str, Any]:
     else:
         total_s = None
 
+    inbound_email = parse_inbound_email(eml_path) if eml_path else None
+
     return {
         "correlation_id": correlation_id,
         "source_message_id": source_message_id,
@@ -169,6 +202,7 @@ def capture(correlation_id: str) -> dict[str, Any]:
         "lifecycle_events": lifecycle,
         "orders": orders,
         "exceptions": exceptions,
+        "inbound_email": inbound_email,
         "raw_audit_event_count": len(raw),
     }
 
@@ -182,12 +216,18 @@ def main() -> int:
         default=None,
         help="write JSON to this path (default: stdout)",
     )
+    p.add_argument(
+        "--eml-path",
+        type=Path,
+        default=None,
+        help="path to the inbound .eml fixture; embeds it as inbound_email",
+    )
     args = p.parse_args()
 
     if not os.environ.get("FIRESTORE_EMULATOR_HOST"):
         os.environ["FIRESTORE_EMULATOR_HOST"] = "127.0.0.1:8080"
 
-    result = capture(args.correlation_id)
+    result = capture(args.correlation_id, eml_path=args.eml_path)
     serialized = json.dumps(result, indent=2, default=_to_jsonable)
 
     if args.out:
