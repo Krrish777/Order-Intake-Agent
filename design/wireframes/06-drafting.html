@@ -206,6 +206,127 @@ a:hover { color: var(--red); }
 .title-block .big .red { color: var(--red); }
 
 /* =========================================================
+   VERDICT STRIP — top-of-fold "what just happened" block.
+   Three big mono numerals + a meta row with LIVE pill,
+   last-run stamp, and the run trigger. Sits between the
+   title-block and the masthead so the verdict lands before
+   any prose.
+   ========================================================= */
+.verdict-strip {
+  border: 1.5px solid var(--ink);
+  background: var(--white);
+  margin-bottom: 44px;
+}
+.verdict-strip .meta-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: center;
+  padding: 11px 18px;
+  border-bottom: 1.5px solid var(--ink);
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+.verdict-strip .stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-weight: 500;
+}
+.verdict-strip .stamp .pulse {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--red);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+.verdict-strip .last-run {
+  color: var(--ink-soft);
+  letter-spacing: 0.22em;
+  text-align: center;
+}
+.verdict-strip .last-run b {
+  color: var(--ink);
+  font-weight: 500;
+}
+.verdict-strip .last-run .dot {
+  display: inline-block;
+  margin: 0 8px;
+  color: var(--ink-fade);
+}
+.verdict-strip .trigger {
+  appearance: none;
+  border: 1.5px solid var(--ink);
+  background: var(--ink);
+  color: var(--vellum);
+  padding: 10px 22px;
+  font-family: "Jost", sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.verdict-strip .trigger:hover { background: var(--red); border-color: var(--red); }
+.verdict-strip .trigger:active { transform: translateY(1px); }
+.verdict-strip .trigger:disabled { background: var(--ink-mid); border-color: var(--ink-mid); cursor: progress; }
+
+.verdict-strip .stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+.verdict-strip .stat {
+  padding: 22px 24px 20px;
+  border-right: 1.5px solid var(--ink);
+  position: relative;
+}
+.verdict-strip .stat:last-child { border-right: none; }
+.verdict-strip .stat .tag {
+  position: absolute;
+  top: 10px; right: 14px;
+  font-family: "Azeret Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.3em;
+  color: var(--ink-fade);
+}
+.verdict-strip .stat .num {
+  font-family: "Jost", sans-serif;
+  font-weight: 700;
+  font-size: clamp(58px, 8vw, 96px);
+  line-height: 0.92;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.verdict-strip .stat.accent .num { color: var(--red); }
+.verdict-strip .stat .lbl {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  margin-top: 8px;
+}
+.verdict-strip .stat .sub {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  letter-spacing: 0.005em;
+}
+@media (max-width: 720px) {
+  .verdict-strip .meta-row { grid-template-columns: 1fr; gap: 10px; text-align: center; }
+  .verdict-strip .last-run { text-align: center; }
+  .verdict-strip .stats { grid-template-columns: 1fr; }
+  .verdict-strip .stat { border-right: none; border-bottom: 1.5px solid var(--ink); }
+  .verdict-strip .stat:last-child { border-bottom: none; }
+}
+
+/* =========================================================
    MASTHEAD
    ========================================================= */
 .masthead {
@@ -415,13 +536,10 @@ a:hover { color: var(--red); }
    HERO / LEDE
    ========================================================= */
 .hero {
-  display: grid;
-  grid-template-columns: 1.4fr 1fr;
-  gap: 40px;
+  display: block;
   padding: 12px 0 52px;
   border-bottom: 1.5px solid var(--ink);
   position: relative;
-  align-items: start;
 }
 .hero .lede .kicker {
   font-family: "Azeret Mono", monospace;
@@ -1517,6 +1635,35 @@ table.latency tfoot td {
     </div>
   </div>
 
+  <!-- VERDICT STRIP — verdict + LIVE pill + run trigger above the wordmark -->
+  <div class="verdict-strip">
+    <div class="meta-row">
+      <span class="stamp"><span class="pulse"></span>LIVE · TRACK A</span>
+      <span class="last-run">last run <span class="dot">·</span> <b>22 APR 2026 · 09:41:47 IST</b> <span class="dot">·</span> 35.0 s end-to-end</span>
+      <button id="run-btn" class="trigger" type="button">Run the Pipeline</button>
+    </div>
+    <div class="stats">
+      <div class="stat">
+        <span class="tag">N · 01</span>
+        <div class="num">0</div>
+        <div class="lbl">Orders Written</div>
+        <div class="sub">the ERP is untouched</div>
+      </div>
+      <div class="stat accent">
+        <span class="tag">N · 02</span>
+        <div class="num">22</div>
+        <div class="lbl">Lines Extracted</div>
+        <div class="sub">parsed · zero matched</div>
+      </div>
+      <div class="stat">
+        <span class="tag">N · 03</span>
+        <div class="num">1</div>
+        <div class="lbl">Exception Opened</div>
+        <div class="sub">EXC-00017 · ESCALATED</div>
+      </div>
+    </div>
+  </div>
+
   <!-- MASTHEAD -->
   <header class="masthead">
     <div>
@@ -1558,26 +1705,10 @@ table.latency tfoot td {
 
       <div class="dim-line">
         <span>START</span>
-        <span class="arrow"><span class="label">35.0 SEC — END TO END</span></span>
+        <span class="arrow"><span class="label">35.0 SEC — END TO END · GMAIL → PUB/SUB → ADK AGENT → FIRESTORE</span></span>
         <span>END</span>
       </div>
     </div>
-
-    <aside class="run-card">
-      <span class="detail-label">DETAIL · <span class="r">RUN TRIGGER</span></span>
-      <div class="inner">
-        <div class="stamp"><span class="pulse"></span>LIVE · TRACK A</div>
-        <button id="run-btn" class="run-btn" type="button">Run the Pipeline</button>
-        <div class="sub">tap to begin live extraction</div>
-        <div class="foot">
-          gmail push <span style="color:var(--red);">→</span>
-          pub/sub <span style="color:var(--red);">→</span>
-          adk agent <span style="color:var(--red);">→</span>
-          firestore<br />
-          no edits · no dry-run · orders collection is record
-        </div>
-      </div>
-    </aside>
   </section>
 
   <!-- SECTION I — PIPELINE -->

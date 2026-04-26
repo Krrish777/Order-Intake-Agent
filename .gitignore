@@ -14,8 +14,20 @@ wheels/
 # Runtime logs (rotated daily / by size; never committed)
 logs/
 
+# Smoke-run output directories (timestamped, regenerable)
+runs/
+
+# Local-only working area: research notes, exported ADK sessions, planning docs
+tmp/
+
 # Firebase CLI
 .firebase/
 firebase-debug.log
 firestore-debug.log
 *-debug.log
+
+# OAuth client secret files (Google Cloud Console -> Credentials -> Desktop app)
+# Used as input to scripts/gmail_auth_init.py. Never commit.
+credentials.json
+*credentials*.json
+client_secret*.json

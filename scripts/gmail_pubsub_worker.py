@@ -25,6 +25,11 @@ from __future__ import annotations
 import asyncio
 import os
 import sys
+from pathlib import Path
+
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from dotenv import load_dotenv
 from google.adk.runners import Runner
@@ -67,6 +72,7 @@ async def _main() -> int:
         client_id=os.environ["GMAIL_CLIENT_ID"],
         client_secret=os.environ["GMAIL_CLIENT_SECRET"],
         scopes=A2_SCOPES,
+        query_override=os.environ.get("GMAIL_QUERY") or None,
     )
     watch = GmailWatch(gmail_client)
 

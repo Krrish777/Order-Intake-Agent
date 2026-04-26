@@ -57,7 +57,7 @@ META_DOC_ID = "master_data"
 DEFAULT_CUSTOMER_MATCH_THRESHOLD = 90
 DEFAULT_EMBEDDING_TOP_K = 5
 
-EMBED_MODEL = "text-embedding-004"
+EMBED_MODEL = "gemini-embedding-001"
 EMBED_DIM = 768
 
 
