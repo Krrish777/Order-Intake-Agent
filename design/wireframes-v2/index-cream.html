@@ -17,7 +17,7 @@
    ========================================================= */
 
 :root {
-  --vellum: #e8e4d8;
+  --vellum: #FDF6E3;
   --vellum-deep: #ded9c8;
   --vellum-edge: #cfc9b4;
   --ink: #1a2a5b;
@@ -50,7 +50,7 @@
 
 *, *::before, *::after { box-sizing: border-box; }
 html, body { margin: 0; padding: 0; }
-html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+html { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; scroll-behavior: smooth; scroll-padding-top: 24px; }
 
 body {
   background: var(--vellum);
@@ -112,6 +112,12 @@ p:last-child { margin-bottom: 0; }
   border: 2px solid var(--ink);
   background: transparent;
 }
+@media (max-width: 720px) {
+  .page { margin: 10px 8px; }
+}
+@media (max-width: 540px) {
+  .page { margin: 8px 6px; }
+}
 .page::before,
 .page::after,
 .page > .corner-tr,
@@ -129,55 +135,119 @@ p:last-child { margin-bottom: 0; }
 .page > .corner-bl { bottom: -8px; left: -8px; border-right: none; border-top: none; }
 
 /* =========================================================
-   TOP BAR
+   TOP BAR — RevenueBase-style marketing nav
+   brand · center nav · right CTA cluster
    ========================================================= */
+@keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+
 .top-bar {
   display: grid;
   grid-template-columns: auto 1fr auto;
-  gap: 16px;
+  gap: 36px;
   align-items: center;
-  padding: 10px 22px;
+  padding: 14px 28px;
   border-bottom: 1.5px solid var(--ink);
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
+  background: var(--white);
 }
-.top-bar .left { display: inline-flex; align-items: center; gap: 14px; color: var(--ink); font-weight: 500; }
-.top-bar .stamp { display: inline-flex; align-items: center; gap: 7px; }
-.top-bar .stamp .pulse {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--red);
-  animation: pulse 1.6s ease-in-out infinite;
-}
-@keyframes pulse { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
-.top-bar .right { display: inline-flex; align-items: center; gap: 14px; }
-.top-bar .right .gh-btn {
+
+.top-bar .brand {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   text-decoration: none;
   color: var(--ink);
-  border: 1.5px solid var(--ink);
-  background: var(--vellum);
-  padding: 5px 11px 5px 9px;
-  font-family: "Azeret Mono", monospace;
-  font-size: 10.5px;
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
+  font-family: "Jost", sans-serif;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+}
+.top-bar .brand-mark {
+  width: 16px; height: 16px;
+  background: var(--red);
+  display: inline-block;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  position: relative;
+}
+.top-bar .brand-mark::after {
+  content: "";
+  position: absolute;
+  inset: 4px;
+  background: var(--white);
+}
+.top-bar .brand-name { font-weight: 600; }
+.top-bar .brand-name .brand-accent { font-weight: 400; color: var(--ink-mid); margin-left: 4px; }
+
+.top-bar .nav-center {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 30px;
+}
+.top-bar .nav-center a {
+  text-decoration: none;
+  color: var(--ink);
+  font-family: "Jost", sans-serif;
+  font-weight: 400;
+  font-size: 14.5px;
+  letter-spacing: 0.005em;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 120ms ease;
+  white-space: nowrap;
+}
+.top-bar .nav-center a:hover { color: var(--red); }
+.top-bar .nav-center a .ext { font-size: 11px; color: var(--ink-fade); margin-left: 2px; }
+.top-bar .nav-center a:hover .ext { color: var(--red); }
+
+.top-bar .nav-right {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+}
+.top-bar .nav-right .nav-log {
+  text-decoration: none;
+  color: var(--ink);
+  font-family: "Jost", sans-serif;
+  font-size: 14.5px;
+  font-weight: 400;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 120ms ease;
+  white-space: nowrap;
+}
+.top-bar .nav-right .nav-log:hover { color: var(--red); }
+.top-bar .nav-right .nav-cta {
+  text-decoration: none;
+  color: var(--ink);
+  background: var(--vellum-deep);
+  border: 1px solid var(--ink);
+  font-family: "Jost", sans-serif;
+  font-size: 13.5px;
   font-weight: 500;
+  padding: 9px 18px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
   transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
 }
-.top-bar .right .gh-btn svg { display: block; }
-.top-bar .right .gh-btn .ext { color: var(--ink-fade); font-size: 11px; }
-.top-bar .right .gh-btn:hover {
-  background: var(--ink);
-  color: var(--vellum);
-  border-color: var(--ink);
+.top-bar .nav-right .nav-cta:hover { background: var(--ink); color: var(--vellum); border-color: var(--ink); }
+
+@media (max-width: 1080px) {
+  .top-bar { gap: 20px; padding: 14px 22px; }
+  .top-bar .nav-center { gap: 22px; }
+  .top-bar .nav-center a { font-size: 14px; }
 }
-.top-bar .right .gh-btn:hover .ext { color: var(--vellum); }
-.top-bar .center { color: var(--ink-fade); text-align: center; font-size: 9.5px; }
+@media (max-width: 900px) {
+  .top-bar { grid-template-columns: 1fr auto; gap: 16px; }
+  .top-bar .nav-center { display: none; }
+}
+@media (max-width: 540px) {
+  .top-bar { grid-template-columns: 1fr; gap: 12px; padding: 12px 18px; text-align: left; }
+  .top-bar .nav-right { justify-content: flex-start; gap: 14px; }
+}
 
 /* =========================================================
    HERO — Renance cadence: eyebrow → headline → dek → CTAs
@@ -1120,27 +1190,28 @@ p:last-child { margin-bottom: 0; }
 </head>
 <body>
 
-<main class="page">
+<main class="page" id="top">
   <div class="corner-tr"></div>
   <div class="corner-bl"></div>
 
   <!-- TOP BAR -->
-  <div class="top-bar">
-    <div class="left">
-      <span>Order Intake Agent</span>
-      <span class="stamp"><span class="pulse"></span>LIVE · TRACK A · v0.5</span>
+  <header class="top-bar">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Order Intake<span class="brand-accent">Agent</span></span>
+    </a>
+    <nav class="nav-center" aria-label="primary">
+      <a href="#howto">How it works</a>
+      <a href="#runs">Runs</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#verified">Verified</a>
+      <a href="https://github.com/Krrish777/Order-Intake-Agent" target="_blank" rel="noopener noreferrer">Source <span class="ext">&#x2197;</span></a>
+    </nav>
+    <div class="nav-right">
+      <a class="nav-log" href="#runs">Last run</a>
+      <a class="nav-cta" href="runs/A-001-patterson.html">View latest run</a>
     </div>
-    <div class="center">SHEET R-000 · LANDING · NTS</div>
-    <div class="right">
-      <a class="gh-btn" href="https://github.com/Krrish777/Order-Intake-Agent" target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub">
-        <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
-          <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z"/>
-        </svg>
-        <span>Source</span>
-        <span class="ext">&#x2197;</span>
-      </a>
-    </div>
-  </div>
+  </header>
 
   <!-- HERO -->
   <section class="hero">
@@ -1332,7 +1403,7 @@ p:last-child { margin-bottom: 0; }
   </section>
 
   <!-- PIPELINE -->
-  <section class="section tight">
+  <section class="section tight" id="pipeline">
     <div class="section-head">
       <span class="num">§ 03</span>
       <h2>Under the hood<span class="serif">eleven stages · one wire · same path</span></h2>
@@ -1373,7 +1444,7 @@ p:last-child { margin-bottom: 0; }
   </section>
 
   <!-- VERIFICATION + QUOTE -->
-  <section class="verify">
+  <section class="verify" id="verified">
     <div class="pane">
       <div class="head">§ 04 — Verified</div>
       <div class="row">
