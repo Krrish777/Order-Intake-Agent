@@ -1,3 +1,13 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Order Intake Agent — reads order emails, refuses to write bad ones · Google Solution Hackathon</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,300..800;1,300..800&family=Azeret+Mono:ital,wght@0,300..700;1,300..700&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+<style>
 /* =========================================================
    ORDER INTAKE AGENT — LANDING PAGE
    Sheet · Google Solution Hackathon · v0.5 · Apr 2026
@@ -1185,981 +1195,332 @@ p:last-child { margin-bottom: 0; }
   .colophon { grid-template-columns: 1fr; }
   .colophon > div { border-right: none; }
 }
-/* ===== READ SHEET STYLES (from runs/A-001-patterson.html) ===== */
-/* =========================================================
-   READ SHEET · A-001 · PATTERSON INDUSTRIAL SUPPLY CO.
-   ESCALATE · 22 lines extracted · 0 matched · 35.0 s
-   Manuscript-with-marginalia composition:
-   every section is a primary artefact (left) + editor's
-   marks (right). Same chrome as design/wireframes-v2/index.html.
-   ========================================================= */
+</style>
+</head>
+<body>
 
+<main class="page" id="top">
+  <div class="corner-tr"></div>
+  <div class="corner-bl"></div>
 
-/* =========================================================
-   TITLE BLOCK — engineering-drawing header, 4 cells
-   ========================================================= */
-.title-block {
-  display: grid;
-  grid-template-columns: 1.5fr 2.4fr 1.4fr 1.6fr;
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--white);
-}
-.title-block > div {
-  padding: 16px 22px 18px;
-  border-right: 1.5px solid var(--ink);
-}
-.title-block > div:last-child { border-right: none; }
-.title-block .head {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin-bottom: 6px;
-}
-.title-block .v {
-  font-family: "Jost", sans-serif;
-  font-weight: 600;
-  font-size: 18px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-  line-height: 1.15;
-}
-.title-block .v.sub {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 14px;
-  color: var(--ink-soft);
-  margin-top: 4px;
-}
-.title-block .verdict-cell .badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-family: "Azeret Mono", monospace;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: var(--red);
-}
-.title-block .verdict-cell .badge .dot {
-  width: 9px; height: 9px;
-  background: var(--red);
-  border-radius: 50%;
-  display: inline-block;
-}
-.title-block .verdict-cell .wall {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.2em;
-  color: var(--ink-mid);
-  margin-top: 6px;
-}
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <a class="brand" href="#top">
+      <span class="brand-mark" aria-hidden="true"></span>
+      <span class="brand-name">Order Intake<span class="brand-accent">Agent</span></span>
+    </a>
+    <nav class="nav-center" aria-label="primary">
+      <a href="#howto">How it works</a>
+      <a href="#runs">Runs</a>
+      <a href="#pipeline">Pipeline</a>
+      <a href="#verified">Verified</a>
+      <a href="https://github.com/Krrish777/Order-Intake-Agent" target="_blank" rel="noopener noreferrer">Source <span class="ext">&#x2197;</span></a>
+    </nav>
+    <div class="nav-right">
+      <a class="nav-log" href="#runs">Last run</a>
+      <a class="nav-cta" href="runs/A-001-patterson.html">View latest run</a>
+    </div>
+  </header>
 
-/* =========================================================
-   SHEET INTRO — single sentence narration above §I
-   ========================================================= */
-.sheet-intro {
-  padding: 36px var(--gutter) 20px;
-  border-bottom: 1.5px solid var(--ink);
-}
-.sheet-intro .kicker {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--red);
-  margin-bottom: 14px;
-}
-.sheet-intro .narration {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: var(--fs-xl);
-  font-weight: 400;
-  line-height: 1.3;
-  color: var(--ink);
-  max-width: 70ch;
-  margin: 0;
-}
-.sheet-intro .narration b {
-  font-family: "Jost", sans-serif;
-  font-weight: 600;
-  font-style: normal;
-  color: var(--red);
-}
+  <!-- HERO -->
+  <section class="hero">
+    <span class="ticks" aria-hidden="true"></span>
+    <div class="kicker">— Google Solution Hackathon · Order Intake Agent</div>
+    <h1>
+      Reads order emails<span class="slash">.</span><br />
+      <em>Refuses</em> to write bad ones.
+    </h1>
+    <p class="dek">
+      An AI agent for <b>B2B order intake</b>. Reads every incoming PO,
+      validates each line, and writes only the clean ones to your ERP.
+    </p>
+    <div class="ctas">
+      <a class="cta" href="runs/A-001-patterson.html">View the latest run <span class="arrow">&rarr;</span></a>
+      <a class="cta ghost" href="#howto">Watch how it works <span class="arrow">&darr;</span></a>
+    </div>
+    <span class="last-run">
+      <span class="pulse"></span>last run <span class="dot">·</span>
+      <b>18 APR 2026 · 10:12 EDT</b> <span class="dot">·</span>
+      Patterson Industrial <span class="dot">·</span>
+      <b style="color:var(--red);">ESCALATED</b> <span class="dot">·</span>
+      43.1 s end-to-end
+    </span>
+  </section>
 
-/* =========================================================
-   SECTION SHELL — letter + margin grid (read-sheet override)
-   inherits spacious .section padding from landing block;
-   only the section-head Roman numeral + larger h2 differ.
-   ========================================================= */
-.section-head .roman {
-  font-family: "Jost", sans-serif;
-  font-weight: 600;
-  font-size: 32px;
-  color: var(--red);
-  letter-spacing: -0.005em;
-  line-height: 1;
-}
-.read-sheet .section-head h2 {
-  font-size: var(--fs-xxl);
-  line-height: 1.05;
-}
-.read-sheet .section-head h2 .serif {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-weight: 400;
-  color: var(--ink-mid);
-  font-size: 0.55em;
-  margin-left: 0.6em;
-  letter-spacing: 0.04em;
-}
+  <!-- HERO FIGURE -->
+  <figure class="hero-figure">
+    <div class="frame">
+      <img src="assets/intake-chaos.jpg"
+           alt="EDI gets the red carpet — a robot is welcomed past velvet ropes. A second lane labelled Portal sits abandoned with cobwebs and dead branches. A third lane labelled Email is a chaotic crowd waving envelopes and papers — the real orders live here, and so does the chaos." />
+    </div>
+    <figcaption>
+      <p class="cap">
+        EDI gets the red carpet. The portal collects dust. <b>Email is where the real orders live</b> — and where the chaos is. The Order Intake Agent is the operator who walks into that crowd and reads every envelope.
+      </p>
+      <span class="credit">FIG · 01 · PROBLEM SPACE</span>
+    </figcaption>
+  </figure>
 
-/* the universal letter+margin grid */
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 3fr) minmax(220px, 1fr);
-  gap: 36px;
-  align-items: start;
-}
+  <!-- LOGO STRIP — built on -->
+  <section class="logo-strip" aria-label="built on">
+    <span class="label">Built on</span>
+    <div class="logo">Google ADK<span class="sub">agent framework</span></div>
+    <div class="logo">Gemini 3 Flash<span class="sub">extraction · judge</span></div>
+    <div class="logo">Firestore<span class="sub">erp substitute</span></div>
+    <div class="logo">LlamaCloud<span class="sub">document parse</span></div>
+    <div class="logo">Pub/Sub<span class="sub">event routing</span></div>
+  </section>
 
-/* margin column — italic editor's marks stacked */
-.margin {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-.margin .note {
-  border-left: 2px solid var(--ink);
-  padding: 4px 0 4px 14px;
-}
-.margin .note.red { border-left-color: var(--red); }
-.margin .note .label {
-  display: block;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin-bottom: 6px;
-}
-.margin .note .body {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 15px;
-  line-height: 1.45;
-  color: var(--ink);
-}
-.margin .note .body em { color: var(--red); font-style: italic; }
-.margin .note .body code {
-  font-family: "Azeret Mono", monospace;
-  font-style: normal;
-  font-size: 12.5px;
-  color: var(--ink-soft);
-  letter-spacing: 0.02em;
-}
-.margin .note.fact {
-  border-left: 1px dashed var(--rule);
-}
-.margin .note.fact .body {
-  font-family: "Azeret Mono", monospace;
-  font-style: normal;
-  font-size: 12px;
-  color: var(--ink);
-  letter-spacing: 0.04em;
-  line-height: 1.55;
-}
-.margin .note.fact .body b {
-  color: var(--ink);
-  font-weight: 600;
-}
+  <!-- STATS STRIP -->
+  <section class="stats-strip" aria-label="key metrics">
+    <div class="stat accent">
+      <span class="tag">N · 01</span>
+      <div class="num">0</div>
+      <div class="lbl">Bad Writes</div>
+      <div class="sub">to the ERP, ever</div>
+    </div>
+    <div class="stat">
+      <span class="tag">N · 02</span>
+      <div class="num">11</div>
+      <div class="lbl">Sequential Stages</div>
+      <div class="sub">one Gemini judge gates send</div>
+    </div>
+    <div class="stat">
+      <span class="tag">N · 03</span>
+      <div class="num">497</div>
+      <div class="lbl">Unit Tests</div>
+      <div class="sub">+ 30 integration · 3 evals</div>
+    </div>
+    <div class="stat">
+      <span class="tag">N · 04</span>
+      <div class="num">3</div>
+      <div class="lbl">Captured Runs</div>
+      <div class="sub">real emails · real verdicts</div>
+    </div>
+  </section>
 
-/* =========================================================
-   THE LETTER — inbound + outbound shared component
-   ========================================================= */
-.letter {
-  position: relative;
-  border: 1.5px solid var(--ink);
-  background: var(--white);
-}
-.letter .tab {
-  position: absolute;
-  top: -12px; left: 22px;
-  background: var(--ink);
-  color: var(--vellum);
-  padding: 4px 12px 5px;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.letter .tab.draft { background: var(--red); }
-.letter .hdr {
-  display: grid;
-  grid-template-columns: 80px 1fr;
-  row-gap: 6px;
-  column-gap: 18px;
-  padding: 26px 28px 18px;
-  margin: 0;
-  border-bottom: 1px dashed var(--rule);
-}
-.letter .hdr dt {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  padding-top: 1px;
-  margin: 0;
-}
-.letter .hdr dd {
-  margin: 0;
-  font-family: "Azeret Mono", monospace;
-  font-size: 13px;
-  color: var(--ink);
-  letter-spacing: 0.01em;
-  word-break: break-word;
-}
-.letter .hdr dd.subject {
-  font-family: "Jost", sans-serif;
-  font-weight: 600;
-  font-size: 17px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-}
-.letter .body {
-  padding: 24px 28px 26px;
-  font-family: "Instrument Serif", serif;
-  font-size: 17px;
-  line-height: 1.55;
-  color: var(--ink);
-}
-.letter .body p { margin: 0 0 14px; }
-.letter .body p:last-of-type { margin-bottom: 0; }
-.letter .body em { font-style: italic; color: var(--red); }
-.letter .body .sig {
-  margin-top: 22px;
-  padding-top: 16px;
-  border-top: 1px dashed var(--rule);
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  color: var(--ink-soft);
-}
-.letter .body .sig .name {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-weight: 500;
-  color: var(--ink);
-  font-size: 14px;
-}
+  <!-- HOW IT WORKS -->
+  <section class="section" id="howto">
+    <div class="section-head">
+      <span class="num">§ 01</span>
+      <h2>How it works<span class="serif">three steps · the rest is detail</span></h2>
+      <span class="meta">READ / VALIDATE / DECIDE</span>
+    </div>
+    <p class="lede">
+      Every email walks the same path. The agent reads inbound POs in any
+      format, validates each line against the customer's item master, and
+      either commits the order to the ERP — or refuses, politely, and drafts a
+      clarification for a human to send.
+    </p>
 
-/* pullquote between sections */
-.pullquote {
-  margin: 36px 0 0;
-  padding: 22px 26px;
-  border: 1px dashed var(--ink-mid);
-  background: rgba(244, 241, 228, 0.5);
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 19px;
-  line-height: 1.45;
-  color: var(--ink);
-  position: relative;
-}
-.pullquote .mark {
-  font-size: 42px;
-  line-height: 0;
-  color: var(--red);
-  margin-right: 10px;
-  vertical-align: -0.18em;
-  font-family: "Instrument Serif", serif;
-}
-.pullquote em { color: var(--red); }
-.pullquote cite {
-  display: block;
-  margin-top: 12px;
-  font-family: "Azeret Mono", monospace;
-  font-style: normal;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
+    <div class="howto">
+      <div class="step">
+        <span class="step-tag">STEP <span class="r">·</span> 01</span>
+        <div class="glyph">R</div>
+        <h3>Read</h3>
+        <p>Pull every inbound message from Gmail, classify each attachment, extract every line item.</p>
+        <div class="formats">PDF · XLS · EDI · CSV · FREE-TEXT</div>
+      </div>
+      <div class="step">
+        <span class="step-tag">STEP <span class="r">·</span> 02</span>
+        <div class="glyph">V</div>
+        <h3>Validate</h3>
+        <p>Resolve each customer; match every SKU through three tiers — exact, fuzzy, semantic embedding.</p>
+        <div class="formats">EXACT &rarr; FUZZY &rarr; EMBEDDING</div>
+      </div>
+      <div class="step refuse">
+        <span class="step-tag">STEP <span class="r">·</span> 03</span>
+        <div class="glyph">D</div>
+        <h3>Decide</h3>
+        <p>Above 0.95 confidence: commit to the ERP. Above 0.80: clarify with the customer. Below: escalate to a human.</p>
+        <div class="formats">AUTO · CLARIFY · ESCALATE</div>
+      </div>
+    </div>
+  </section>
 
-/* =========================================================
-   THE LEDGER — extraction table
-   ========================================================= */
-.ledger-wrap {
-  border: 1.5px solid var(--ink);
-  background: var(--white);
-  position: relative;
-  overflow: hidden;
-}
-.ledger-wrap .tab {
-  position: absolute;
-  top: -12px; left: 22px;
-  background: var(--ink);
-  color: var(--vellum);
-  padding: 4px 12px 5px;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.ledger {
-  width: 100%;
-  border-collapse: collapse;
-  font-family: "Azeret Mono", monospace;
-  font-size: 12px;
-  margin-top: 8px;
-}
-.ledger thead th {
-  text-align: left;
-  padding: 14px 12px 10px;
-  border-bottom: 1.5px solid var(--ink);
-  font-weight: 700;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  background: var(--vellum);
-}
-.ledger thead th.num { text-align: right; }
-.ledger tbody td {
-  padding: 8px 12px;
-  border-bottom: 1px dashed var(--rule-soft);
-  vertical-align: top;
-  color: var(--ink);
-  letter-spacing: 0.02em;
-}
-.ledger tbody tr:last-child td { border-bottom: none; }
-.ledger tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
-.ledger tbody td.sku { color: var(--ink); font-weight: 500; white-space: nowrap; }
-.ledger tbody td.desc {
-  font-family: "Jost", sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-  letter-spacing: 0.005em;
-}
-.ledger tbody td.match {
-  text-align: center;
-  color: var(--red);
-  font-weight: 700;
-  font-size: 16px;
-  width: 32px;
-}
-.ledger tfoot td {
-  padding: 14px 12px;
-  border-top: 1.5px solid var(--ink);
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 14px;
-  color: var(--ink-soft);
-  background: var(--vellum);
-  letter-spacing: 0.005em;
-}
-.ledger tfoot td b { color: var(--red); font-style: normal; font-family: "Jost", sans-serif; font-weight: 600; }
+  <!-- THREE RUNS — centerpiece -->
+  <section class="section" id="runs">
+    <div class="section-head">
+      <span class="num">§ 02</span>
+      <h2>See it in action<span class="serif">three real emails · three real verdicts</span></h2>
+      <span class="meta">A-001 / A-002 / A-003</span>
+    </div>
+    <p class="lede">
+      The agent has already processed three emails this week. Each run captured
+      its full audit trail — every stage, every artefact, every Firestore write.
+      Click any sheet to read the drawing.
+    </p>
 
-/* customer resolved inline block above ledger */
-.cust-block {
-  margin-bottom: 18px;
-  padding: 14px 18px;
-  border: 1px dashed var(--ink-mid);
-  background: rgba(244, 241, 228, 0.5);
-  display: grid;
-  grid-template-columns: repeat(4, auto);
-  gap: 14px 28px;
-  align-items: baseline;
-  font-family: "Azeret Mono", monospace;
-  font-size: 12px;
-  color: var(--ink);
-}
-.cust-block dt {
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin: 0;
-}
-.cust-block dd { margin: 2px 0 0; font-weight: 500; }
-.cust-block dd.id { color: var(--red); font-weight: 700; }
+    <div class="cards">
+      <a class="card escalate" href="runs/A-001-patterson.html">
+        <span class="card-tag">SHEET <span class="r">·</span> A-001</span>
+        <div class="card-body">
+          <div class="customer">Patterson Industrial Supply Co.</div>
+          <div class="subject">PO-28491 — Atlanta monthly consolidated</div>
+          <div class="stats-row">
+            <div class="stat">22 / 22<span>matched at tier 1</span></div>
+            <div class="stat">19<span>price violations</span></div>
+          </div>
+        </div>
+        <div class="verdict">
+          <span class="badge"><span class="dot"></span>ESCALATE</span>
+          <span class="wall">43.1 s · 11 stages</span>
+        </div>
+        <div class="read">read sheet <span class="arrow">&rarr;</span></div>
+      </a>
 
-/* =========================================================
-   THE DECISION — confidence math + tiers
-   ========================================================= */
-.decision {
-  border: 1.5px solid var(--ink);
-  background: var(--white);
-  padding: 26px 28px 28px;
-}
-.decision .tiers {
-  list-style: none;
-  margin: 0 0 24px;
-  padding: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0;
-  border-top: 1px dashed var(--rule);
-}
-.decision .tiers li {
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  gap: 18px;
-  align-items: baseline;
-  padding: 14px 0;
-  border-bottom: 1px dashed var(--rule);
-}
-.decision .tiers li .n {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  color: var(--ink-mid);
-}
-.decision .tiers li .k {
-  font-family: "Jost", sans-serif;
-  font-weight: 500;
-  font-size: 16px;
-  color: var(--ink);
-}
-.decision .tiers li .k .serif {
-  display: block;
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 13px;
-  color: var(--ink-mid);
-  margin-top: 2px;
-}
-.decision .tiers li .v {
-  font-family: "Azeret Mono", monospace;
-  font-size: 13px;
-  color: var(--red);
-  font-weight: 700;
-  letter-spacing: 0.04em;
-}
+      <a class="card auto" href="runs/A-002-mm-machine.html">
+        <span class="card-tag">SHEET <span class="r">·</span> A-002</span>
+        <div class="card-body">
+          <div class="customer">M&amp;M Machine &amp; Fabrication</div>
+          <div class="subject">Shop reorder — hex nuts and R2 hose</div>
+          <div class="stats-row">
+            <div class="stat">2 / 2<span>matched at tier 1</span></div>
+            <div class="stat">$127.40<span>committed to ERP</span></div>
+          </div>
+        </div>
+        <div class="verdict">
+          <span class="badge"><span class="dot"></span>AUTO-APPROVE</span>
+          <span class="wall">62.5 s · judge pass</span>
+        </div>
+        <div class="read">read sheet <span class="arrow">&rarr;</span></div>
+      </a>
 
-.aggregate {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 18px;
-  align-items: center;
-  padding: 18px 0;
-  border-bottom: 1.5px solid var(--ink);
-}
-.aggregate .lbl {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-.aggregate .bar {
-  position: relative;
-  height: 14px;
-  border: 1.5px solid var(--ink);
-  background: var(--vellum);
-}
-.aggregate .bar .fill { position: absolute; top: 0; left: 0; bottom: 0; width: 0%; background: var(--red); }
-.aggregate .bar .tick {
-  position: absolute; top: -6px; bottom: -6px;
-  width: 1px; background: var(--ink-mid);
-}
-.aggregate .bar .tick::after {
-  content: attr(data-label);
-  position: absolute; bottom: -22px;
-  left: 50%; transform: translateX(-50%);
-  font-family: "Azeret Mono", monospace;
-  font-size: 9.5px;
-  letter-spacing: 0.18em;
-  color: var(--ink-mid);
-  white-space: nowrap;
-}
-.aggregate .val {
-  font-family: "Jost", sans-serif;
-  font-weight: 700;
-  font-size: 28px;
-  color: var(--red);
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.01em;
-}
+      <a class="card reply" href="runs/A-003-birch-valley.html">
+        <span class="card-tag">SHEET <span class="r">·</span> A-003</span>
+        <div class="card-body">
+          <div class="customer">Birch Valley Farm Equipment</div>
+          <div class="subject">Re: Need by tomorrow — Hirshey planter</div>
+          <div class="stats-row">
+            <div class="stat">PENDING → REVIEW<span>exception advanced</span></div>
+            <div class="stat">18 ms<span>reply-check hit</span></div>
+          </div>
+        </div>
+        <div class="verdict">
+          <span class="badge"><span class="dot"></span>REPLY MERGED</span>
+          <span class="wall">5.8 s · 11 stages</span>
+        </div>
+        <div class="read">read sheet <span class="arrow">&rarr;</span></div>
+      </a>
+    </div>
 
-.routing {
-  margin-top: 28px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--rule);
-}
-.routing .h {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin-bottom: 12px;
-}
-.routing .row {
-  display: grid;
-  grid-template-columns: 70px 1fr auto;
-  gap: 18px;
-  align-items: baseline;
-  padding: 9px 0;
-  border-bottom: 1px dashed var(--rule-soft);
-  font-family: "Azeret Mono", monospace;
-  font-size: 12.5px;
-  letter-spacing: 0.04em;
-  color: var(--ink);
-}
-.routing .row:last-child { border-bottom: none; }
-.routing .row.active {
-  background: var(--red-wash);
-  margin: 0 -28px;
-  padding-left: 28px;
-  padding-right: 28px;
-  border-bottom: none;
-}
-.routing .row .word {
-  font-family: "Jost", sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-.routing .row.active .word { color: var(--red); }
+    <div class="cards-captions">
+      <div>the refusal — when prices don't reconcile.</div>
+      <div>the commit — when everything reconciles.</div>
+      <div>the memory — when an old question gets answered.</div>
+    </div>
+  </section>
 
-/* big call-out for the final decision */
-.escalate-callout {
-  margin-top: 22px;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: 22px;
-  align-items: center;
-  padding: 22px 26px;
-  background: var(--red-wash);
-  border-left: 6px solid var(--red);
-}
-.escalate-callout .word {
-  font-family: "Jost", sans-serif;
-  font-weight: 700;
-  font-size: 38px;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--red);
-  line-height: 1;
-}
-.escalate-callout .body {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 16px;
-  color: var(--ink-soft);
-  line-height: 1.4;
-}
-.escalate-callout .body code {
-  font-family: "Azeret Mono", monospace;
-  font-style: normal;
-  color: var(--ink);
-  font-size: 13px;
-}
+  <!-- PIPELINE -->
+  <section class="section tight" id="pipeline">
+    <div class="section-head">
+      <span class="num">§ 03</span>
+      <h2>Under the hood<span class="serif">eleven stages · one wire · same path</span></h2>
+      <span class="meta">SEQUENTIAL · ADK</span>
+    </div>
+    <p class="lede">
+      Behind the three steps above sits a sequential pipeline of eleven stages.
+      Six produce persisted artefacts. <em>Stage ten is a Gemini judge</em>
+      that blocks outbound emails with hallucinations or unauthorized
+      commitments before a single byte leaves the building.
+    </p>
 
-/* =========================================================
-   THE NUMBERS — latency table
-   ========================================================= */
-.latency {
-  width: 100%;
-  border: 1.5px solid var(--ink);
-  border-collapse: collapse;
-  background: var(--white);
-  font-family: "Azeret Mono", monospace;
-  font-size: 12.5px;
-}
-.latency thead th {
-  text-align: left;
-  padding: 14px 16px 10px;
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--vellum);
-  font-weight: 700;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-.latency thead th.num { text-align: right; }
-.latency tbody td {
-  padding: 9px 16px;
-  border-bottom: 1px dashed var(--rule-soft);
-  color: var(--ink);
-  letter-spacing: 0.02em;
-  vertical-align: top;
-}
-.latency tbody tr:last-child td { border-bottom: none; }
-.latency tbody td.num { text-align: right; font-variant-numeric: tabular-nums; }
-.latency tbody td.stage {
-  font-family: "Jost", sans-serif;
-  font-weight: 500;
-  font-size: 13px;
-}
-.latency tbody td.note {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 13px;
-  color: var(--ink-soft);
-  letter-spacing: 0.005em;
-}
-.latency tfoot td {
-  padding: 14px 16px;
-  border-top: 1.5px solid var(--ink);
-  font-weight: 700;
-  background: var(--vellum);
-  color: var(--ink);
-}
-.latency tfoot td.num { text-align: right; }
+    <div class="pipeline-diagram">
+      <span class="diag-label">PIPELINE · 11 STAGES</span>
+      <div class="row">
+        <div class="node"><div class="circle">01</div><div class="name">ingest</div></div>
+        <div class="node"><div class="circle">02</div><div class="name">reply check</div></div>
+        <div class="node"><div class="circle">03</div><div class="name">classify</div></div>
+        <div class="node"><div class="circle">04</div><div class="name">parse</div></div>
+        <div class="node"><div class="circle">05</div><div class="name">validate</div></div>
+        <div class="node"><div class="circle">06</div><div class="name">clarify</div></div>
+        <div class="node"><div class="circle">07</div><div class="name">persist</div></div>
+        <div class="node"><div class="circle">08</div><div class="name">confirm</div></div>
+        <div class="node"><div class="circle">09</div><div class="name">finalize</div></div>
+        <div class="node gate"><div class="circle">10</div><div class="name">judge</div></div>
+        <div class="node send"><div class="circle">11</div><div class="name">send</div></div>
+      </div>
+      <div class="legend">
+        <span><span class="swatch"></span>standard stage</span>
+        <span><span class="swatch gate"></span>quality gate</span>
+        <span><span class="swatch send"></span>egress · gmail</span>
+      </div>
+    </div>
 
-/* =========================================================
-   COLOPHON — link styles only (base shape comes from landing)
-   ========================================================= */
-.colophon .v a { text-decoration: none; border-bottom: 1px dashed var(--ink-mid); }
-.colophon .v a:hover { color: var(--red); border-color: var(--red); }
+    <div class="deeper">
+      <a href="runs/A-002-mm-machine.html">read the architecture in detail &rarr;</a>
+    </div>
+  </section>
 
-/* =========================================================
-   RESPONSIVE
-   ========================================================= */
-@media (max-width: 980px) {
-  .layout { grid-template-columns: 1fr; gap: 28px; }
-  .margin { flex-direction: row; flex-wrap: wrap; gap: 14px; }
-  .margin .note { flex: 1 1 240px; }
-  .title-block { grid-template-columns: 1fr 1fr; }
-  .title-block > div { border-right: 1.5px solid var(--ink); border-bottom: 1.5px solid var(--ink); }
-  .title-block > div:nth-child(even) { border-right: none; }
-  .title-block > div:nth-last-child(-n+2) { border-bottom: none; }
-  .cust-block { grid-template-columns: 1fr 1fr; }
-}
-@media (max-width: 720px) {
-  .title-block { grid-template-columns: 1fr; }
-  .title-block > div { border-right: none; border-bottom: 1.5px solid var(--ink); }
-  .title-block > div:last-child { border-bottom: none; }
-  .colophon { grid-template-columns: 1fr 1fr; }
-  .colophon > div:nth-child(2n) { border-right: none; }
-  .colophon > div:nth-last-child(-n+2) { border-bottom: 1.5px solid var(--ink); }
-  .escalate-callout { grid-template-columns: 1fr; gap: 12px; }
-  .cust-block { grid-template-columns: 1fr; gap: 8px; }
-}
-@media (max-width: 540px) {
-  /* top-bar mobile rules live in landing block (single source of truth) */
-  .colophon { grid-template-columns: 1fr; }
-  .colophon > div { border-right: none; border-bottom: 1.5px solid var(--ink); }
-  .colophon > div:last-child { border-bottom: none; }
-}
+  <!-- VERIFICATION + QUOTE -->
+  <section class="verify" id="verified">
+    <div class="pane">
+      <div class="head">§ 04 — Verified</div>
+      <div class="row">
+        <span class="label">Test surface</span>
+        <span class="items">
+          <span class="item">497 unit tests</span>
+          <span class="item">30 integration</span>
+          <span class="item">3 evals</span>
+        </span>
+      </div>
+      <div class="row">
+        <span class="label">Quality gate</span>
+        <span class="items">
+          <span class="item">Gemini judge on every outbound email</span>
+        </span>
+      </div>
+      <div class="row">
+        <span class="label">Audit trail</span>
+        <span class="items">
+          <span class="item">every stage</span>
+          <span class="item">every artefact</span>
+          <span class="item">every Firestore write</span>
+        </span>
+      </div>
+    </div>
+    <div class="pane quote">
+      <blockquote>
+        "An agent that <em>knows when to stop</em>, and how to ask, is the point."
+      </blockquote>
+      <cite>— Order Intake Agent · design principle 01</cite>
+    </div>
+  </section>
 
-/* =========================================================
-   CAPTURED STRIP — proof-of-real banner directly under
-   the title block. Links to the raw audit-log JSON so a
-   judge can verify the sheet was generated from a real run.
-   ========================================================= */
-.captured-strip {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 18px;
-  align-items: center;
-  padding: 12px 22px;
-  background: var(--ink);
-  color: var(--vellum);
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  border-bottom: 1.5px solid var(--ink);
-}
-.captured-strip .badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-weight: 700;
-  color: var(--vellum);
-}
-.captured-strip .badge::before {
-  content: "✦";
-  color: var(--red);
-  font-size: 12px;
-  line-height: 0;
-}
-.captured-strip .meta {
-  color: rgba(244, 241, 228, 0.7);
-  font-weight: 400;
-  letter-spacing: 0.18em;
-}
-.captured-strip .meta b { color: var(--vellum); font-weight: 600; }
-.captured-strip .meta code {
-  font-family: "Azeret Mono", monospace;
-  letter-spacing: 0.04em;
-  color: var(--vellum);
-}
-.captured-strip .meta .dot { color: rgba(244, 241, 228, 0.4); margin: 0 6px; }
-.captured-strip a {
-  color: var(--vellum);
-  text-decoration: none;
-  border: 1px solid var(--vellum);
-  padding: 4px 10px;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  transition: background 120ms ease, color 120ms ease;
-}
-.captured-strip a:hover { background: var(--red); border-color: var(--red); color: var(--vellum); }
-@media (max-width: 720px) {
-  .captured-strip { grid-template-columns: 1fr; gap: 8px; text-align: center; }
-}
+  <!-- CTA BANNER -->
+  <section class="cta-banner">
+    <div class="inner">
+      <div>
+        <div class="stamp">— closing brief</div>
+        <h2>Stop writing bad orders.<br /><em>Start refusing</em> them.</h2>
+      </div>
+      <div class="actions">
+        <a class="btn" href="runs/A-001-patterson.html">View the latest run <span class="arrow">&rarr;</span></a>
+        <span class="meta">3 captured runs · live audit trail</span>
+      </div>
+    </div>
+  </section>
 
-/* =========================================================
-   LEDGER ADDITIONS — alias sub-row and status column
-   ========================================================= */
-.ledger tbody td.sku .alias {
-  display: block;
-  margin-top: 2px;
-  font-family: "Azeret Mono", monospace;
-  font-size: 10.5px;
-  color: var(--ink-mid);
-  letter-spacing: 0.02em;
-  font-weight: 400;
-}
-.ledger tbody td.sku .alias::before {
-  content: "↳ ";
-  color: var(--ink-fade);
-  font-weight: 400;
-}
-.ledger tbody td.status {
-  text-align: center;
-  font-family: "Azeret Mono", monospace;
-  font-size: 11px;
-  white-space: nowrap;
-  letter-spacing: 0.04em;
-}
-.ledger tbody td.status .ok {
-  color: var(--green);
-  font-weight: 700;
-  font-size: 14px;
-}
-.ledger tbody td.status .warn {
-  color: var(--red);
-  font-weight: 700;
-}
-.ledger tbody td.status .warn::before {
-  content: "⚠";
-  margin-right: 3px;
-}
+  <!-- COLOPHON -->
+  <footer class="colophon">
+    <div>
+      <div class="head">Submitted to</div>
+      <div class="v">Google Solution Hackathon</div>
+    </div>
+    <div>
+      <div class="head">Build</div>
+      <div class="v">Order Intake Agent · v0.5</div>
+    </div>
+    <div>
+      <div class="head">Date</div>
+      <div class="v">26 Apr 2026</div>
+    </div>
+    <div>
+      <div class="head">Set in</div>
+      <div class="v serif">Jost · Azeret Mono · Instrument Serif</div>
+    </div>
+  </footer>
+</main>
 
-/* =========================================================
-   THE HANDOFF — persisted exception record (§IV)
-   replaces the synthetic clarification draft because no
-   draft is generated on the ESCALATE path
-   ========================================================= */
-.exception-doc {
-  border: 1.5px solid var(--ink);
-  background: var(--white);
-  position: relative;
-}
-.exception-doc .tab {
-  position: absolute;
-  top: -12px; left: 22px;
-  background: var(--red);
-  color: var(--vellum);
-  padding: 4px 12px 5px;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  font-weight: 600;
-}
-.exception-doc .id-row {
-  padding: 26px 28px 18px;
-  border-bottom: 1px dashed var(--rule);
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 16px;
-  align-items: center;
-}
-.exception-doc .id-row .id {
-  font-family: "Jost", sans-serif;
-  font-weight: 700;
-  font-size: 28px;
-  color: var(--red);
-  letter-spacing: -0.005em;
-  line-height: 1;
-}
-.exception-doc .id-row .id .sub {
-  display: block;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  font-weight: 500;
-  color: var(--ink-mid);
-  margin-top: 4px;
-}
-.exception-doc .id-row .stamp {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--red);
-  font-weight: 700;
-}
-.exception-doc .fields {
-  padding: 22px 28px;
-  display: grid;
-  grid-template-columns: 130px 1fr;
-  row-gap: 8px;
-  column-gap: 18px;
-  font-family: "Azeret Mono", monospace;
-  font-size: 12px;
-  border-bottom: 1px dashed var(--rule);
-}
-.exception-doc .fields dt {
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin: 0;
-}
-.exception-doc .fields dd {
-  margin: 0;
-  color: var(--ink);
-  word-break: break-word;
-  letter-spacing: 0.02em;
-}
-.exception-doc .fields dd.id { color: var(--red); font-weight: 700; }
-.exception-doc .fields dd em {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  color: var(--ink-soft);
-  letter-spacing: 0;
-}
-.exception-doc .rationale {
-  padding: 22px 28px 26px;
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--ink);
-}
-.exception-doc .rationale .label {
-  display: block;
-  font-family: "Azeret Mono", monospace;
-  font-style: normal;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin-bottom: 8px;
-}
-.exception-doc .rationale b {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-weight: 600;
-  color: var(--red);
-}
-
-/* ===== DISCLAIMER BANNER + MODAL (added for Next.js port) ===== */
-
-.prototype-banner {
-  position: relative;
-  z-index: 5;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: center;
-  gap: 0.6em;
-  padding: 7px 18px;
-  background: var(--ink);
-  color: var(--vellum);
-  font-family: "Azeret Mono", monospace;
-  font-size: 11px;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  min-height: 30px;
-  border-bottom: 1px solid rgba(232, 228, 216, 0.12);
-}
-.prototype-banner .dot {
-  color: var(--yellow);
-  font-size: 10px;
-  margin-right: 2px;
-}
-.prototype-banner .caps { letter-spacing: 0.22em; font-weight: 600; }
-.prototype-banner .sep { opacity: 0.45; }
-.prototype-banner .mono { text-transform: none; letter-spacing: 0.02em; }
-
-.disclaimer-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  z-index: 1000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  background: rgba(26, 42, 91, 0.78);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-}
-.disclaimer-modal {
-  background: var(--vellum);
-  color: var(--ink);
-  max-width: 540px;
-  width: 100%;
-  padding: 36px 40px 32px;
-  border: 1px solid var(--rule);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.35);
-  position: relative;
-}
-.disclaimer-modal::before {
-  content: "";
-  position: absolute;
-  inset: 8px;
-  border: 1px solid var(--rule-soft);
-  pointer-events: none;
-}
-.disclaimer-modal-tag {
-  font-size: 10px;
-  letter-spacing: 0.26em;
-  color: var(--ink-mid);
-  margin-bottom: 16px;
-}
-.disclaimer-modal-title {
-  font-family: "Instrument Serif", Georgia, serif;
-  font-size: 32px;
-  line-height: 1.1;
-  font-style: italic;
-  margin: 0 0 18px;
-  letter-spacing: -0.01em;
-}
-.disclaimer-modal-body {
-  font-size: 15px;
-  line-height: 1.55;
-  margin: 0 0 14px;
-  color: var(--ink-soft);
-}
-.disclaimer-modal-cta {
-  margin-top: 22px;
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 22px;
-  background: var(--ink);
-  color: var(--vellum);
-  font-family: "Azeret Mono", monospace;
-  font-size: 12px;
-  letter-spacing: 0.16em;
-  text-transform: uppercase;
-  border: none;
-  cursor: pointer;
-  transition: background 120ms ease;
-}
-.disclaimer-modal-cta:hover {
-  background: var(--red);
-}
-
-@media (max-width: 640px) {
-  .prototype-banner { font-size: 10px; padding: 6px 12px; gap: 0.4em; }
-  .disclaimer-modal { padding: 28px 22px 24px; }
-  .disclaimer-modal-title { font-size: 26px; }
-}
+</body>
+</html>

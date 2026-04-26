@@ -10,11 +10,10 @@
 <style>
 /* =========================================================
    ORDER INTAKE AGENT — LANDING PAGE
-   Sheet · Hack or Relay 5.0 · v0.4 · Apr 2026
-   Same drafting palette as the run sheets, but composed as
-   a landing: hero → 3 run cards → pipeline → trust → colophon.
-   Scale ruler, title block, and 158px wordmark live on the
-   per-run sheets, not here.
+   Sheet · Google Solution Hackathon · v0.5 · Apr 2026
+   v0.5 layout: Renance-cadence hero (headline → big figure)
+   on top of a RevenueBase-style ruled-band grid.
+   Same drafting palette as the per-run sheets.
    ========================================================= */
 
 :root {
@@ -64,7 +63,6 @@ body {
   overflow-x: hidden;
 }
 
-/* drafting grid background — same as the sheets */
 body::before {
   content: "";
   position: fixed; inset: 0;
@@ -131,7 +129,7 @@ p:last-child { margin-bottom: 0; }
 .page > .corner-bl { bottom: -8px; left: -8px; border-right: none; border-top: none; }
 
 /* =========================================================
-   TOP BAR — thin nav, drafting style
+   TOP BAR
    ========================================================= */
 .top-bar {
   display: grid;
@@ -182,10 +180,11 @@ p:last-child { margin-bottom: 0; }
 .top-bar .center { color: var(--ink-fade); text-align: center; font-size: 9.5px; }
 
 /* =========================================================
-   HERO — landing's first fold
+   HERO — Renance cadence: eyebrow → headline → dek → CTAs
+   The big figure lives in its own band immediately below.
    ========================================================= */
 .hero {
-  padding: 80px var(--gutter) 72px;
+  padding: 72px var(--gutter) 56px;
   border-bottom: 1.5px solid var(--ink);
   position: relative;
 }
@@ -195,7 +194,7 @@ p:last-child { margin-bottom: 0; }
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--red);
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 .hero h1 {
   font-family: "Jost", sans-serif;
@@ -204,7 +203,7 @@ p:last-child { margin-bottom: 0; }
   line-height: 0.96;
   letter-spacing: -0.025em;
   color: var(--ink);
-  margin: 0 0 28px;
+  margin: 0 0 26px;
   max-width: 18ch;
 }
 .hero h1 em {
@@ -221,26 +220,25 @@ p:last-child { margin-bottom: 0; }
   transform: translateY(-0.04em);
 }
 .hero .dek {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: var(--fs-l);
-  font-weight: 400;
-  line-height: 1.45;
-  color: var(--ink-soft);
-  max-width: 56ch;
-  margin: 0 0 40px;
-}
-.hero .dek b {
   font-family: "Jost", sans-serif;
   font-style: normal;
-  font-weight: 500;
+  font-size: clamp(18px, 1.7vw, 22px);
+  font-weight: 400;
+  line-height: 1.5;
   color: var(--ink);
+  max-width: 58ch;
+  margin: 0 0 36px;
+  letter-spacing: 0.005em;
+}
+.hero .dek b {
+  font-weight: 600;
+  color: var(--red);
 }
 .hero .ctas {
   display: flex;
   flex-wrap: wrap;
   gap: 14px;
-  margin-bottom: 30px;
+  margin-bottom: 28px;
 }
 .hero .cta {
   appearance: none;
@@ -289,10 +287,9 @@ p:last-child { margin-bottom: 0; }
 .hero .last-run b { color: var(--ink); font-weight: 500; }
 .hero .last-run .dot { color: var(--ink-fade); margin: 0 4px; }
 
-/* drafting tick marks decorating the hero left edge */
 .hero .ticks {
   position: absolute;
-  top: 80px; bottom: 72px;
+  top: 72px; bottom: 56px;
   left: calc(var(--gutter) - 14px);
   width: 1px;
   background: var(--ink);
@@ -308,9 +305,108 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* =========================================================
-   STATS STRIP — the credibility row directly below the hero
-   (competitor pattern: replaces a "trusted by" logo row that
-   we don't have yet, since we have captured runs not customers)
+   HERO FIGURE — the cartoon, edge-to-edge inside the page
+   border. Renance-style "image dominates the fold" beat.
+   ========================================================= */
+.hero-figure {
+  margin: 0;
+  padding: 28px var(--gutter) 24px;
+  border-bottom: 1.5px solid var(--ink);
+  background: var(--white);
+  position: relative;
+}
+.hero-figure .frame {
+  border: 1.5px solid var(--ink);
+  background: var(--vellum-deep);
+  padding: 18px;
+}
+.hero-figure .frame img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--ink);
+  background: var(--white);
+}
+.hero-figure figcaption {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: baseline;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--rule);
+}
+.hero-figure figcaption .cap {
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-size: clamp(15px, 1.35vw, 18px);
+  font-weight: 400;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  max-width: 66ch;
+  letter-spacing: 0.005em;
+}
+.hero-figure figcaption .cap b {
+  font-weight: 600;
+  color: var(--ink);
+}
+.hero-figure figcaption .credit {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  white-space: nowrap;
+}
+
+/* =========================================================
+   LOGO STRIP — RevenueBase "trusted by" pattern, repurposed
+   as the "built on" stack. Monospace, evenly spaced.
+   ========================================================= */
+.logo-strip {
+  display: grid;
+  grid-template-columns: auto repeat(5, 1fr);
+  align-items: center;
+  gap: 0;
+  padding: 22px var(--gutter);
+  border-bottom: 1.5px solid var(--ink);
+  background: var(--vellum-deep);
+}
+.logo-strip .label {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--ink-fade);
+  padding-right: 28px;
+  border-right: 1px dashed var(--rule);
+}
+.logo-strip .logo {
+  text-align: center;
+  font-family: "Jost", sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  letter-spacing: 0.02em;
+  color: var(--ink);
+  padding: 6px 10px;
+}
+.logo-strip .logo .sub {
+  display: block;
+  font-family: "Azeret Mono", monospace;
+  font-size: 9px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-fade);
+  font-weight: 400;
+  margin-top: 4px;
+}
+@media (max-width: 900px) {
+  .logo-strip { grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px var(--gutter); }
+  .logo-strip .label { grid-column: 1 / -1; border-right: none; border-bottom: 1px dashed var(--rule); padding: 0 0 10px; text-align: center; }
+}
+
+/* =========================================================
+   STATS STRIP — 4-up metric row
    ========================================================= */
 .stats-strip {
   display: grid;
@@ -319,7 +415,7 @@ p:last-child { margin-bottom: 0; }
   background: var(--white);
 }
 .stats-strip .stat {
-  padding: 32px 26px 28px;
+  padding: 36px 26px 30px;
   border-right: 1.5px solid var(--ink);
   position: relative;
 }
@@ -348,15 +444,16 @@ p:last-child { margin-bottom: 0; }
   letter-spacing: 0.26em;
   text-transform: uppercase;
   color: var(--ink-mid);
-  margin-top: 10px;
+  margin-top: 12px;
 }
 .stats-strip .stat .sub {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 13px;
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-size: 12.5px;
+  font-weight: 400;
   color: var(--ink-soft);
-  margin-top: 2px;
-  letter-spacing: 0.005em;
+  margin-top: 6px;
+  letter-spacing: 0.02em;
 }
 @media (max-width: 720px) {
   .stats-strip { grid-template-columns: 1fr 1fr; }
@@ -366,9 +463,75 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* =========================================================
-   HOW IT WORKS — three-step abstraction (R / V / D)
-   competitor pattern: Glacis Capture-Brain-Approve-Execute,
-   Conexiom Capture-Correct-Analyze
+   SECTION SHELL
+   ========================================================= */
+.section {
+  padding: 64px var(--gutter) 56px;
+  border-bottom: 1.5px solid var(--ink);
+  position: relative;
+}
+.section.no-border { border-bottom: none; }
+.section.tight { padding: 44px var(--gutter) 40px; }
+.section-head {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 18px;
+  align-items: baseline;
+  margin-bottom: 30px;
+  padding-bottom: 14px;
+  border-bottom: 1px dashed var(--rule);
+}
+.section-head .num {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.3em;
+  color: var(--red);
+}
+.section-head h2 {
+  font-family: "Jost", sans-serif;
+  font-weight: 500;
+  font-size: var(--fs-xl);
+  letter-spacing: -0.005em;
+  color: var(--ink);
+  line-height: 1.15;
+}
+.section-head h2 .serif {
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-weight: 400;
+  color: var(--ink-mid);
+  font-size: 0.62em;
+  margin-left: 0.6em;
+  letter-spacing: 0.04em;
+}
+.section-head .meta {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  text-align: right;
+}
+.section .lede {
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-size: clamp(16px, 1.45vw, 19px);
+  font-weight: 400;
+  color: var(--ink-soft);
+  max-width: 66ch;
+  margin: 0 0 36px;
+  line-height: 1.55;
+  letter-spacing: 0.005em;
+}
+.section .lede em {
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* =========================================================
+   HOW IT WORKS — three R / V / D tiles
    ========================================================= */
 .howto {
   display: grid;
@@ -377,7 +540,7 @@ p:last-child { margin-bottom: 0; }
   margin-top: 4px;
 }
 .howto .step {
-  padding: 30px 24px 28px;
+  padding: 32px 26px 28px;
   border: 1.5px solid var(--ink);
   border-right: none;
   background: var(--white);
@@ -423,15 +586,17 @@ p:last-child { margin-bottom: 0; }
   color: var(--ink);
 }
 .howto .step p {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
+  font-family: "Jost", sans-serif;
+  font-style: normal;
   font-size: 15px;
-  line-height: 1.45;
+  font-weight: 400;
+  line-height: 1.55;
   color: var(--ink-soft);
   margin: 0;
+  letter-spacing: 0.005em;
 }
 .howto .step .formats {
-  margin-top: 18px;
+  margin-top: 20px;
   padding-top: 12px;
   border-top: 1px dashed var(--rule);
   font-family: "Azeret Mono", monospace;
@@ -447,66 +612,7 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* =========================================================
-   SECTION SHELL — the divider rule + meta
-   ========================================================= */
-.section {
-  padding: 64px var(--gutter) 56px;
-  border-bottom: 1.5px solid var(--ink);
-  position: relative;
-}
-.section.no-border { border-bottom: none; }
-.section-head {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 18px;
-  align-items: baseline;
-  margin-bottom: 30px;
-  padding-bottom: 14px;
-  border-bottom: 1px dashed var(--rule);
-}
-.section-head .num {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  color: var(--red);
-}
-.section-head h2 {
-  font-family: "Jost", sans-serif;
-  font-weight: 500;
-  font-size: var(--fs-xl);
-  letter-spacing: -0.005em;
-  color: var(--ink);
-  line-height: 1.15;
-}
-.section-head h2 .serif {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-weight: 400;
-  color: var(--ink-mid);
-  font-size: 0.7em;
-  margin-left: 0.5em;
-  letter-spacing: 0.005em;
-}
-.section-head .meta {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  text-align: right;
-}
-.section .lede {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: var(--fs-l);
-  color: var(--ink-soft);
-  max-width: 64ch;
-  margin: 0 0 36px;
-  line-height: 1.45;
-}
-
-/* =========================================================
-   RUN CARDS — three sheets, three verdicts
+   RUN CARDS — the page's centerpiece
    ========================================================= */
 .cards {
   display: grid;
@@ -523,6 +629,16 @@ p:last-child { margin-bottom: 0; }
   position: relative;
   transition: transform 140ms ease, box-shadow 140ms ease;
 }
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 6px;
+  background: var(--ink-mid);
+}
+.card.escalate::before { background: var(--red); }
+.card.auto::before { background: var(--green); }
+.card.reply::before { background: var(--ink); }
 .card:hover {
   transform: translateY(-2px);
   box-shadow: 0 8px 0 -4px var(--ink), 0 0 0 1px var(--ink);
@@ -540,32 +656,35 @@ p:last-child { margin-bottom: 0; }
 }
 .card .card-tag .r { color: var(--red); }
 .card .card-body {
-  padding: 28px 22px 18px;
+  padding: 36px 28px 22px;
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 16px;
 }
 .card .customer {
   font-family: "Jost", sans-serif;
   font-weight: 600;
-  font-size: 22px;
+  font-size: 24px;
   line-height: 1.1;
   letter-spacing: -0.01em;
   color: var(--ink);
 }
 .card .subject {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 15px;
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-size: 14.5px;
+  font-weight: 400;
   color: var(--ink-mid);
-  line-height: 1.35;
+  line-height: 1.45;
+  letter-spacing: 0.005em;
 }
 .card .stats-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  gap: 12px;
   border-top: 1px dashed var(--rule);
-  padding-top: 12px;
+  padding-top: 14px;
+  margin-top: 4px;
 }
 .card .stats-row .stat {
   font-family: "Azeret Mono", monospace;
@@ -580,14 +699,14 @@ p:last-child { margin-bottom: 0; }
   font-size: var(--fs-micro);
   letter-spacing: 0.22em;
   text-transform: uppercase;
-  margin-top: 2px;
+  margin-top: 3px;
 }
 .card .verdict {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 22px;
+  padding: 18px 28px;
   background: var(--vellum);
   border-top: 1.5px solid var(--ink);
 }
@@ -623,7 +742,7 @@ p:last-child { margin-bottom: 0; }
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px 22px;
+  padding: 16px 28px;
   border-top: 1px dashed var(--rule);
   font-family: "Jost", sans-serif;
   font-weight: 500;
@@ -638,34 +757,27 @@ p:last-child { margin-bottom: 0; }
 }
 .card:hover .read { color: var(--red); }
 .card:hover .read .arrow { transform: translateX(4px); }
-.card .one-liner {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 14px;
-  color: var(--ink-soft);
-  text-align: center;
-  margin-top: 10px;
-}
 
 .cards-captions {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 22px;
-  margin-top: 14px;
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-size: 14px;
+  margin-top: 16px;
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-size: 13px;
+  font-weight: 400;
   color: var(--ink-mid);
   text-align: center;
-  letter-spacing: 0.005em;
+  letter-spacing: 0.02em;
 }
 
 /* =========================================================
-   PIPELINE DIAGRAM — 11 named circles in a row
+   PIPELINE DIAGRAM
    ========================================================= */
 .pipeline-diagram {
-  margin: 18px 0 24px;
-  padding: 30px 6px 22px;
+  margin: 14px 0 18px;
+  padding: 26px 6px 20px;
   border: 1.5px solid var(--ink);
   background: var(--white);
   position: relative;
@@ -774,47 +886,175 @@ p:last-child { margin-bottom: 0; }
 .section .deeper a:hover { color: var(--red); border-color: var(--red); }
 
 /* =========================================================
-   TRUST STRIP — small confidence signals row
+   VERIFICATION + QUOTE — 2-column band
    ========================================================= */
-.trust {
+.verify {
   display: grid;
-  grid-template-columns: 2fr 1fr;
-  gap: 32px;
-  align-items: center;
-  padding: 38px var(--gutter);
+  grid-template-columns: 1.35fr 1fr;
   border-bottom: 1.5px solid var(--ink);
 }
-.trust .stack {
+.verify .pane {
+  padding: 44px var(--gutter);
+  border-right: 1.5px solid var(--ink);
+  background: var(--white);
+}
+.verify .pane:last-child { border-right: none; background: var(--vellum-deep); }
+.verify .pane .head {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--red);
+  margin-bottom: 22px;
+}
+.verify .row + .row { margin-top: 14px; }
+.verify .row {
+  display: grid;
+  grid-template-columns: 130px 1fr;
+  gap: 18px;
+  align-items: baseline;
+  padding-bottom: 12px;
+  border-bottom: 1px dashed var(--rule);
+}
+.verify .row:last-child { border-bottom: none; padding-bottom: 0; }
+.verify .row .label {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+.verify .row .items {
   font-family: "Azeret Mono", monospace;
   font-size: 13px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink);
   line-height: 1.7;
 }
-.trust .stack .label {
-  font-size: var(--fs-micro);
-  color: var(--ink-mid);
-  letter-spacing: 0.26em;
-  margin-right: 10px;
-}
-.trust .stack .item { color: var(--ink); }
-.trust .stack .item + .item::before {
+.verify .row .items .item + .item::before {
   content: " · ";
   color: var(--ink-fade);
   margin: 0 4px;
 }
-.trust .stack .row + .row { margin-top: 4px; }
-.trust .quote {
+.verify .quote {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.verify .quote blockquote {
+  font-family: "Jost", sans-serif;
+  font-style: normal;
+  font-weight: 500;
+  font-size: clamp(20px, 2.1vw, 26px);
+  line-height: 1.4;
+  color: var(--ink);
+  border-left: 2px solid var(--red);
+  padding: 6px 0 6px 22px;
+  margin: 0;
+  letter-spacing: -0.005em;
+}
+.verify .quote em { color: var(--red); font-style: normal; font-weight: 600; }
+.verify .quote cite {
+  display: block;
+  margin-top: 18px;
+  padding-left: 24px;
+  font-style: normal;
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+@media (max-width: 900px) {
+  .verify { grid-template-columns: 1fr; }
+  .verify .pane { border-right: none; border-bottom: 1.5px solid var(--ink); }
+  .verify .pane:last-child { border-bottom: none; }
+}
+
+/* =========================================================
+   CTA BANNER — RevenueBase-style closer
+   ========================================================= */
+.cta-banner {
+  background: var(--ink);
+  color: var(--vellum);
+  padding: 64px var(--gutter);
+  border-bottom: 1.5px solid var(--ink);
+  position: relative;
+  overflow: hidden;
+}
+.cta-banner::before {
+  content: "";
+  position: absolute;
+  inset: 14px;
+  border: 1px dashed rgba(244, 241, 228, 0.22);
+  pointer-events: none;
+}
+.cta-banner .inner {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 36px;
+}
+.cta-banner .stamp {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--vellum-edge);
+  margin-bottom: 14px;
+}
+.cta-banner h2 {
+  font-family: "Jost", sans-serif;
+  font-weight: 500;
+  font-size: clamp(28px, 3.6vw, 44px);
+  line-height: 1.05;
+  letter-spacing: -0.015em;
+  color: var(--vellum);
+  max-width: 22ch;
+}
+.cta-banner h2 em {
   font-family: "Instrument Serif", serif;
   font-style: italic;
-  font-size: var(--fs-l);
-  line-height: 1.35;
-  color: var(--ink-soft);
-  border-left: 2px solid var(--red);
-  padding: 4px 0 4px 18px;
+  color: #ffd9a8;
+  font-weight: 400;
 }
-.trust .quote em { color: var(--red); font-style: italic; }
+.cta-banner .actions {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.cta-banner .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  border: 1.5px solid var(--vellum);
+  background: var(--vellum);
+  color: var(--ink);
+  padding: 16px 26px;
+  font-family: "Jost", sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  text-decoration: none;
+  transition: background 120ms ease, color 120ms ease, transform 120ms ease;
+}
+.cta-banner .btn:hover { background: var(--red); border-color: var(--red); color: var(--vellum); }
+.cta-banner .btn:active { transform: translateY(1px); }
+.cta-banner .actions .meta {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--vellum-edge);
+}
+@media (max-width: 720px) {
+  .cta-banner .inner { grid-template-columns: 1fr; }
+  .cta-banner .actions { align-items: flex-start; }
+}
 
 /* =========================================================
    COLOPHON
@@ -822,7 +1062,6 @@ p:last-child { margin-bottom: 0; }
 .colophon {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr 1fr;
-  border-top: 1.5px solid var(--ink);
 }
 .colophon > div {
   padding: 22px 24px 24px;
@@ -861,17 +1100,19 @@ p:last-child { margin-bottom: 0; }
   .cards { grid-template-columns: 1fr; }
   .cards-captions { grid-template-columns: 1fr; }
   .pipeline-diagram .row { grid-template-columns: repeat(11, minmax(54px, 1fr)); overflow-x: auto; padding-bottom: 6px; }
-  .trust { grid-template-columns: 1fr; gap: 22px; }
   .colophon { grid-template-columns: 1fr 1fr; }
   .colophon > div { border-bottom: 1.5px solid var(--ink); }
   .colophon > div:nth-child(2n) { border-right: none; }
   .colophon > div:nth-last-child(-n+2) { border-bottom: none; }
+  .hero-figure .frame { padding: 12px; }
+  .hero-figure figcaption { grid-template-columns: 1fr; gap: 8px; }
 }
 @media (max-width: 540px) {
   .top-bar { grid-template-columns: 1fr; gap: 6px; text-align: center; }
   .top-bar .center { display: none; }
-  .hero { padding-top: 56px; padding-bottom: 56px; }
+  .hero { padding-top: 52px; padding-bottom: 44px; }
   .hero .ticks { display: none; }
+  .hero-figure { padding: 18px var(--gutter); }
   .colophon { grid-template-columns: 1fr; }
   .colophon > div { border-right: none; }
 }
@@ -887,7 +1128,7 @@ p:last-child { margin-bottom: 0; }
   <div class="top-bar">
     <div class="left">
       <span>Order Intake Agent</span>
-      <span class="stamp"><span class="pulse"></span>LIVE · TRACK A · v0.4</span>
+      <span class="stamp"><span class="pulse"></span>LIVE · TRACK A · v0.5</span>
     </div>
     <div class="center">SHEET R-000 · LANDING · NTS</div>
     <div class="right">
@@ -924,6 +1165,30 @@ p:last-child { margin-bottom: 0; }
       <b style="color:var(--red);">ESCALATED</b> <span class="dot">·</span>
       43.1 s end-to-end
     </span>
+  </section>
+
+  <!-- HERO FIGURE -->
+  <figure class="hero-figure">
+    <div class="frame">
+      <img src="assets/intake-chaos.jpg"
+           alt="EDI gets the red carpet — a robot is welcomed past velvet ropes. A second lane labelled Portal sits abandoned with cobwebs and dead branches. A third lane labelled Email is a chaotic crowd waving envelopes and papers — the real orders live here, and so does the chaos." />
+    </div>
+    <figcaption>
+      <p class="cap">
+        EDI gets the red carpet. The portal collects dust. <b>Email is where the real orders live</b> — and where the chaos is. The Order Intake Agent is the operator who walks into that crowd and reads every envelope.
+      </p>
+      <span class="credit">FIG · 01 · PROBLEM SPACE</span>
+    </figcaption>
+  </figure>
+
+  <!-- LOGO STRIP — built on -->
+  <section class="logo-strip" aria-label="built on">
+    <span class="label">Built on</span>
+    <div class="logo">Google ADK<span class="sub">agent framework</span></div>
+    <div class="logo">Gemini 3 Flash<span class="sub">extraction · judge</span></div>
+    <div class="logo">Firestore<span class="sub">erp substitute</span></div>
+    <div class="logo">LlamaCloud<span class="sub">document parse</span></div>
+    <div class="logo">Pub/Sub<span class="sub">event routing</span></div>
   </section>
 
   <!-- STATS STRIP -->
@@ -993,7 +1258,7 @@ p:last-child { margin-bottom: 0; }
     </div>
   </section>
 
-  <!-- THREE RUNS -->
+  <!-- THREE RUNS — centerpiece -->
   <section class="section" id="runs">
     <div class="section-head">
       <span class="num">§ 02</span>
@@ -1067,7 +1332,7 @@ p:last-child { margin-bottom: 0; }
   </section>
 
   <!-- PIPELINE -->
-  <section class="section">
+  <section class="section tight">
     <div class="section-head">
       <span class="num">§ 03</span>
       <h2>Under the hood<span class="serif">eleven stages · one wire · same path</span></h2>
@@ -1107,28 +1372,53 @@ p:last-child { margin-bottom: 0; }
     </div>
   </section>
 
-  <!-- TRUST -->
-  <section class="trust">
-    <div class="stack">
-      <div class="row"><span class="label">Built on</span>
-        <span class="item">Google ADK</span>
-        <span class="item">Gemini 3 Flash</span>
-        <span class="item">Firestore</span>
-        <span class="item">LlamaCloud</span>
-        <span class="item">Pub/Sub</span>
+  <!-- VERIFICATION + QUOTE -->
+  <section class="verify">
+    <div class="pane">
+      <div class="head">§ 04 — Verified</div>
+      <div class="row">
+        <span class="label">Test surface</span>
+        <span class="items">
+          <span class="item">497 unit tests</span>
+          <span class="item">30 integration</span>
+          <span class="item">3 evals</span>
+        </span>
       </div>
-      <div class="row"><span class="label">Verified by</span>
-        <span class="item">497 unit tests</span>
-        <span class="item">30 integration tests</span>
-        <span class="item">3-case eval set</span>
+      <div class="row">
+        <span class="label">Quality gate</span>
+        <span class="items">
+          <span class="item">Gemini judge on every outbound email</span>
+        </span>
       </div>
-      <div class="row"><span class="label">Quality gate</span>
-        <span class="item">every outbound email passes a Gemini judge</span>
+      <div class="row">
+        <span class="label">Audit trail</span>
+        <span class="items">
+          <span class="item">every stage</span>
+          <span class="item">every artefact</span>
+          <span class="item">every Firestore write</span>
+        </span>
       </div>
     </div>
-    <blockquote class="quote">
-      "An agent that <em>knows when to stop</em>, and how to ask, is the point."
-    </blockquote>
+    <div class="pane quote">
+      <blockquote>
+        "An agent that <em>knows when to stop</em>, and how to ask, is the point."
+      </blockquote>
+      <cite>— Order Intake Agent · design principle 01</cite>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <section class="cta-banner">
+    <div class="inner">
+      <div>
+        <div class="stamp">— closing brief</div>
+        <h2>Stop writing bad orders.<br /><em>Start refusing</em> them.</h2>
+      </div>
+      <div class="actions">
+        <a class="btn" href="runs/A-001-patterson.html">View the latest run <span class="arrow">&rarr;</span></a>
+        <span class="meta">3 captured runs · live audit trail</span>
+      </div>
+    </div>
   </section>
 
   <!-- COLOPHON -->
@@ -1139,11 +1429,11 @@ p:last-child { margin-bottom: 0; }
     </div>
     <div>
       <div class="head">Build</div>
-      <div class="v">Order Intake Agent · v0.4</div>
+      <div class="v">Order Intake Agent · v0.5</div>
     </div>
     <div>
       <div class="head">Date</div>
-      <div class="v">25 Apr 2026</div>
+      <div class="v">26 Apr 2026</div>
     </div>
     <div>
       <div class="head">Set in</div>
