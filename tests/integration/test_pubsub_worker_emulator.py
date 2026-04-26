@@ -85,75 +85,66 @@ async def test_worker_processes_one_pubsub_message_against_emulators():
     gmail_client.label_id_for = MagicMock(return_value="Label_TEST")
     gmail_client.get_raw = MagicMock(return_value=fixture_bytes)
     gmail_client.apply_label = MagicMock()
-    gmail_client.list_unprocessed = MagicMock(return_value=[])
+    # The push triggers a label-scoped scan; return one fixture message id.
+    gmail_client.list_unprocessed = MagicMock(return_value=["fixture-msg-id"])
 
     # Mock watch - don't hit real Gmail API
     watch = AsyncMock(spec=GmailWatch)
     watch.get_profile_email = AsyncMock(return_value="me@example.com")
     watch.start = AsyncMock(return_value={"historyId": "500", "expiration": "9"})
 
-    # Mock fetch_new_message_ids to return the fixture message id
-    import backend.gmail.pubsub_worker as worker_module
+    firestore_client = get_async_client()
+    sync_state_store = GmailSyncStateStore(firestore_client)
 
-    orig_fetch = worker_module.fetch_new_message_ids
+    # Stub Runner to skip the full pipeline (which needs seeded master data).
+    runner = MagicMock()
 
-    async def _fake_fetch(gc, *, start_history_id, max_pages=20):
-        return ["fixture-msg-id"], "12346"
+    async def _empty_stream(**kw):
+        if False:
+            yield None  # pragma: no cover
 
-    worker_module.fetch_new_message_ids = _fake_fetch
+    runner.run_async = MagicMock(side_effect=lambda **kw: _empty_stream())
 
-    try:
-        firestore_client = get_async_client()
-        sync_state_store = GmailSyncStateStore(firestore_client)
+    session_service = InMemorySessionService()
 
-        # Stub Runner to skip the full pipeline (which needs seeded master data).
-        runner = MagicMock()
+    subscriber = SubscriberAsyncClient()
 
-        async def _empty_stream(**kw):
-            if False:
-                yield None  # pragma: no cover
+    worker = GmailPubSubWorker(
+        subscriber=subscriber,
+        subscription_path=subscription_path,
+        gmail_client=gmail_client,
+        runner=runner,
+        session_service=session_service,
+        sync_state_store=sync_state_store,
+        watch=watch,
+        topic_name=topic_path,
+        watch_label_ids=None,
+        watch_renew_interval_seconds=999999,  # effectively disabled
+        label_name="orderintake-processed",
+    )
 
-        runner.run_async = MagicMock(side_effect=lambda **kw: _empty_stream())
+    await worker.init()
 
-        session_service = InMemorySessionService()
-
-        subscriber = SubscriberAsyncClient()
-
-        worker = GmailPubSubWorker(
-            subscriber=subscriber,
-            subscription_path=subscription_path,
-            gmail_client=gmail_client,
-            runner=runner,
-            session_service=session_service,
-            sync_state_store=sync_state_store,
-            watch=watch,
-            topic_name=topic_path,
-            watch_label_ids=None,
-            watch_renew_interval_seconds=999999,  # effectively disabled
-            label_name="orderintake-processed",
+    # One pull cycle
+    resp = await subscriber.pull(
+        request={"subscription": subscription_path, "max_messages": 10}
+    )
+    assert len(resp.received_messages) >= 1
+    for received in resp.received_messages:
+        await worker.process_message(received.message.data)
+        await subscriber.acknowledge(
+            request={
+                "subscription": subscription_path,
+                "ack_ids": [received.ack_id],
+            }
         )
 
-        await worker.init()
+    # Assertions: the push triggered a label-scoped scan and processed the
+    # one fixture message id returned by list_unprocessed.
+    gmail_client.list_unprocessed.assert_called_with(label_name="orderintake-processed")
+    gmail_client.get_raw.assert_called_with("fixture-msg-id")
+    gmail_client.apply_label.assert_called_with("fixture-msg-id", "Label_TEST")
 
-        # One pull cycle
-        resp = await subscriber.pull(
-            request={"subscription": subscription_path, "max_messages": 10}
-        )
-        assert len(resp.received_messages) >= 1
-        for received in resp.received_messages:
-            await worker.process_message(received.message.data)
-            await subscriber.acknowledge(
-                request={
-                    "subscription": subscription_path,
-                    "ack_ids": [received.ack_id],
-                }
-            )
-
-        # Assertions
-        gmail_client.get_raw.assert_called_with("fixture-msg-id")
-        gmail_client.apply_label.assert_called_with("fixture-msg-id", "Label_TEST")
-
-        cursor = await sync_state_store.get_cursor("me@example.com")
-        assert cursor == "12346"
-    finally:
-        worker_module.fetch_new_message_ids = orig_fetch
+    # Cursor advanced to the push payload's historyId (telemetry only).
+    cursor = await sync_state_store.get_cursor("me@example.com")
+    assert cursor == "12345"
