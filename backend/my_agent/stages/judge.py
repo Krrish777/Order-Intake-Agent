@@ -109,6 +109,9 @@ class JudgeStage(AuditedStage):
         source_id = self._extract_source_message_id(ctx.session.state) or ""
         judge_verdicts: dict[str, dict] = {}
 
+        confirmation_bodies = ctx.session.state.get("confirmation_bodies", {}) or {}
+        clarify_bodies      = ctx.session.state.get("clarify_bodies", {})      or {}
+
         for entry in process_results:
             result = entry.get("result", {})
             kind   = result.get("kind")
@@ -117,6 +120,22 @@ class JudgeStage(AuditedStage):
                 continue
 
             subject, body, entry_source_id = _extract_draft(entry, envelope)
+            # ConfirmStage writes confirmation_body to Firestore via
+            # field-mask update *after* PersistStage stored the
+            # ProcessResult in state. The snapshot inside process_results
+            # therefore does not see the body. Fall back to the dict
+            # ConfirmStage / ClarifyStage populate on session state,
+            # keyed by ``{filename}#{sub_doc_index}``.
+            if body is None:
+                body_key = f"{entry.get('filename')}#{entry.get('sub_doc_index')}"
+                source   = (
+                    confirmation_bodies if kind == "order" else clarify_bodies
+                )
+                draft = source.get(body_key)
+                if isinstance(draft, dict):
+                    body = draft.get("body")
+                    if subject == f"Re: {envelope.subject}" and draft.get("subject"):
+                        subject = draft["subject"]
             if body is None:
                 continue   # no draft to judge (ESCALATE exceptions, etc.)
 
@@ -269,13 +288,17 @@ def _flatten_facts(entry: dict) -> dict[str, Any]:
         return {
             "customer_name":  customer.get("name"),
             "customer_id":    customer.get("customer_id"),
+            "ship_to":        customer.get("ship_to") or customer.get("bill_to"),
+            "payment_terms":  customer.get("payment_terms"),
             "order_total":    order.get("order_total"),
             "line_items":     [
                 {
-                    "sku":        ln.get("product", {}).get("sku"),
-                    "qty":        ln.get("quantity"),
-                    "unit_price": ln.get("product", {}).get("price_at_time"),
-                    "line_total": ln.get("line_total"),
+                    "sku":               ln.get("product", {}).get("sku"),
+                    "short_description": ln.get("product", {}).get("short_description"),
+                    "uom":               ln.get("product", {}).get("uom"),
+                    "qty":               ln.get("quantity"),
+                    "unit_price":        ln.get("product", {}).get("price_at_time"),
+                    "line_total":        ln.get("line_total"),
                 }
                 for ln in lines
             ],
