@@ -37,3 +37,4 @@ client_secret*.json
 
 .claude/
 .remember/
+CLAUDE.md
