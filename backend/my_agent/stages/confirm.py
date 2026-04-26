@@ -201,6 +201,7 @@ class ConfirmStage(AuditedStage):
             await self._order_store.update_with_confirmation(
                 order_ref, body_str
             )
+            order_dict["confirmation_body"] = body_str
 
             body_key = f"{entry['filename']}#{entry['sub_doc_index']}"
             await self._audit_logger.emit(

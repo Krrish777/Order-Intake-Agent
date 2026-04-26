@@ -49,6 +49,13 @@ from backend.utils.logging import get_logger
 
 _log = get_logger(__name__)
 
+
+def _is_valid_doc_id(value: str) -> bool:
+    # Firestore rejects doc-ids containing '/' (path-segment separator) or empty/None.
+    # LLM extraction occasionally returns description-like strings as SKU candidates
+    # (e.g. "HCS 1/2-13 x 2 GR5 ZP"); treat those as misses rather than crashing.
+    return bool(value) and "/" not in value
+
 PRODUCTS_COLLECTION = "products"
 CUSTOMERS_COLLECTION = "customers"
 META_COLLECTION = "meta"
@@ -124,6 +131,9 @@ class MasterDataRepo:
     async def get_product(self, sku: str) -> Optional[ProductRecord]:
         """Exact document lookup by sku. ``None`` if the sku is not in the
         catalog."""
+        if not _is_valid_doc_id(sku):
+            _log.debug("product_skipped_invalid_sku", sku=sku)
+            return None
         snap = await self._client.collection(PRODUCTS_COLLECTION).document(sku).get()
         if not snap.exists:
             _log.debug("product_not_found", sku=sku)
@@ -140,7 +150,9 @@ class MasterDataRepo:
         if not skus:
             return {}
 
-        unique_skus = list(dict.fromkeys(skus))
+        unique_skus = [s for s in dict.fromkeys(skus) if _is_valid_doc_id(s)]
+        if not unique_skus:
+            return {}
         refs: list[AsyncDocumentReference] = [
             self._client.collection(PRODUCTS_COLLECTION).document(s) for s in unique_skus
         ]
