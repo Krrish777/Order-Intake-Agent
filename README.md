@@ -1,190 +1,135 @@
 # Order Intake Agent
 
-> **The inbox, automated.** A multi-stage AI agent that turns customer order emails — free text, PDFs, XLS, XML — into validated sales orders, end-to-end, without a human re-keying a line.
+> **The order desk that never sleeps.**
+> If your sales team is a row of humans re-typing PDFs into the ERP, Order Intake Agent is the colleague who reads the email, finds the order, asks the smart question, and writes the sales order — before anyone gets to their desk.
 
-[![Python 3.13](https://img.shields.io/badge/python-3.13-blue.svg)](https://www.python.org/downloads/)
-[![Built with Google ADK](https://img.shields.io/badge/built%20with-Google%20ADK-4285F4)](https://github.com/google/adk-python)
-[![Powered by Gemini](https://img.shields.io/badge/powered%20by-Gemini-8E75B2)](https://ai.google.dev/)
-[![Firestore](https://img.shields.io/badge/data-Firestore-FFA000)](https://firebase.google.com/products/firestore)
-[![Google Solution Challenge 2026](https://img.shields.io/badge/Google%20Solution%20Challenge-2026-34A853)](https://developers.google.com/community/gdsc-solution-challenge)
-
----
-
-## Demo
+**Built for the Google Solution Challenge 2026.**
 
 <!--
-Drop a 30–60s screen recording or GIF here once recorded.
+Drop your 30–60s screen recording here once it's cut.
 Suggested: ![demo](docs/demo.gif)
 -->
 
-| Surface | Where to look |
+---
+
+## What it does
+
+A customer emails an order. Two things happen.
+
+| | Step |
 |---|---|
-| 2-min walkthrough | _coming soon — see `hackathon-deck/`_ |
-| Live pipeline | `make dev` → ADK Web UI on http://localhost:8000 |
-| Hackathon deck | [`hackathon-deck/index.html`](hackathon-deck/index.html) |
-| Dashboard wireframes | [`design/wireframes/`](design/wireframes/) |
+| **1** | The agent reads the email and any attachment — free text, PDF, Excel, XML. |
+| **2** | It extracts the line items, matches each one to your product catalog, and validates quantities, prices, and the customer. |
+| **3** | If everything checks out, the sales order lands in the system and a confirmation reply goes back. If something is unclear, the agent writes a polite question to the customer. If something is wrong, a human sees a single, specific reason. |
+
+No portal. No "please use our form." No human re-typing a PDF into a screen.
 
 ---
 
-## The problem
+## Built for you if
 
-In B2B distribution, **30–60% of customer orders still arrive as unstructured email** — free-text in the body, a PDF attachment, an Excel sheet, sometimes an XML or EDI file. Order-desk teams re-key every line by hand into the ERP. It is slow, error-prone, and unloved work, and it does not scale with order volume.
-
-The same teams already tried portals; customers refused them. The orders keep coming through the inbox.
-
-## The solution
-
-A single agent that lives on the order-desk inbox and does what the human used to do — **read the email, find the order, match the products, validate the result, write the sales order, and reply to the customer**. When something is ambiguous, it asks the customer in plain English. When something looks wrong, it routes to a human with the specific reason. Every action is auditable.
-
-Built with **Google ADK** (orchestration), **Gemini** (extraction + judging), **Firestore** (master data + transactional state), **Cloud Pub/Sub** (Gmail event fan-out), and **Cloud Run** (hosting).
+- Your customers send orders by email — and you have given up on convincing them to use a portal.
+- Someone on your team spends an hour a day re-keying line items into the ERP.
+- You have a product catalog with thousands of SKUs and customer-specific naming, and matching them is more art than lookup.
+- You need an audit trail of every decision the system made on every order.
+- You want a real human in the loop — but only for the orders that actually need one.
 
 ---
 
-## How it works
+## The problem, in one table
 
-An incoming email enters an 11-stage `SequentialAgent` pipeline. Each stage has one job, writes its output to session state, and is independently testable.
+| Without Order Intake Agent | With Order Intake Agent |
+|---|---|
+| Order arrives. Sarah opens the PDF, alt-tabs to the ERP, types 14 line codes, fixes the unit conversion, sends a confirmation. **Twenty-five minutes.** | Order arrives. The agent extracts, matches, validates, and drafts. Sarah skims the draft and clicks send. **Twenty-five seconds.** |
+| A typo in the SKU lookup ships the wrong product. Customer is angry. | The matcher hedges when it is unsure and asks the customer instead of guessing. |
+| "Where are we on the Patterson order?" → nobody knows. | Every order has an audit trail of every decision the agent made. |
+| Hiring more people scales the problem linearly. | The next 1,000 orders cost the same as the last one. |
 
-| # | Stage | What it does |
-|---|---|---|
-| 1 | **Ingest** | Receives Gmail push notification, fetches the thread, normalizes attachments. |
-| 2 | **ReplyShortCircuit** | If the email is a customer reply to a pending clarification, route to the open exception instead of starting a new order. |
-| 3 | **Classify** | Decide intent: new order, reply, noise, escalation. |
-| 4 | **Parse** | Extract line items via LlamaExtract / Gemini structured output. Flatten multi-doc PDFs. |
-| 5 | **Validate** | Run the order through the validation pipeline — SKU match (3-tier: exact → fuzzy → embedding), quantity, price, customer master. |
-| 6 | **Clarify** | If validation flags ambiguity, draft a customer-facing question. Human-readable, not robotic. |
-| 7 | **Persist** | Write the order (or pending exception) to Firestore. |
-| 8 | **Confirm** | Generate the customer-facing order confirmation draft. |
-| 9 | **Finalize** | One- or two-sentence run recap for the audit log. |
-| 10 | **Judge** | LLM-as-judge quality gate on the outbound reply — block sends that fail. |
-| 11 | **Send** | Push the reply via Gmail. Honors `dry_run` for safe local runs. |
+---
+
+## How it actually works
 
 ```
-                 ┌──────────────┐
-   Customer ───▶ │ Gmail inbox  │
-   email         └──────┬───────┘
-                        │ push notification
-                        ▼
-                ┌──────────────────┐
-                │ Cloud Pub/Sub    │
-                └──────┬───────────┘
-                       ▼
-   ┌─────────────────────────────────────────────────┐
-   │  Order Intake Agent (ADK SequentialAgent)        │
-   │                                                  │
-   │  Ingest → ReplyShortCircuit → Classify → Parse   │
-   │     → Validate → Clarify → Persist → Confirm     │
-   │     → Finalize → Judge → Send                    │
-   └────────────┬─────────────────────────────┬───────┘
-                ▼                             ▼
-       ┌─────────────────┐           ┌────────────────┐
-       │ Firestore       │           │ Gmail (reply)  │
-       │ (orders +       │           └────────────────┘
-       │  master data)   │
-       └─────────────────┘
+Customer email  ─▶  Gmail  ─▶  Pub/Sub  ─▶  Order Intake Agent  ─▶  Sales order + reply
+                                                  │
+                                                  └─▶  Audit trail
 ```
+
+Inside the agent is a sequence of small, single-purpose stages — read, classify, extract, match, validate, ask-if-unsure, persist, confirm, judge, send. Each stage is independently testable and the whole pipeline is one ADK `SequentialAgent`.
+
+The interesting bits:
+
+- **Three-tier SKU matching** — exact, then fuzzy, then semantic (Gemini embeddings, Firestore vector index). The agent knows when it is in the third tier and lowers its confidence accordingly.
+- **LLM-as-judge gate on outbound** — every reply is graded by a second model before it is allowed to send. A bad draft is blocked, not sent.
+- **Reply short-circuit** — if a customer is replying to a clarifying question, the agent picks up the open exception instead of treating it as a new order.
 
 ---
 
-## Built with Google
+## Built on Google
 
-| Capability | Google product |
-|---|---|
-| Agent framework | [Google ADK (Python)](https://github.com/google/adk-python) |
-| LLM (extract, judge, draft) | [Gemini](https://ai.google.dev/) |
-| Embeddings (SKU tier-3 match) | `gemini-embedding-001` (768d) |
-| Master + transactional data | [Cloud Firestore](https://firebase.google.com/products/firestore) |
-| Inbox event fan-out | [Cloud Pub/Sub](https://cloud.google.com/pubsub) |
-| Email I/O | [Gmail API](https://developers.google.com/gmail/api) |
-| Hosting (planned) | [Cloud Run](https://cloud.google.com/run) |
+- **[Google ADK](https://github.com/google/adk-python)** — agent orchestration
+- **[Gemini](https://ai.google.dev/)** — extraction, drafting, judging
+- **`gemini-embedding-001`** — semantic SKU matching
+- **[Cloud Firestore](https://firebase.google.com/products/firestore)** — master data + transactional state + vector index
+- **[Cloud Pub/Sub](https://cloud.google.com/pubsub)** — Gmail event fan-out
+- **[Gmail API](https://developers.google.com/gmail/api)** — inbox in, replies out
 
-Other dependencies: `pydantic`, `rapidfuzz`, `pymupdf`, `openpyxl`, `reportlab`, `structlog`, `llama-cloud` (LlamaExtract).
+---
+
+## What it is not
+
+- **Not a portal.** Customers do not log in anywhere. They keep emailing the same address they always did.
+- **Not a chatbot.** It does not chat with the customer; it answers them like the order desk would.
+- **Not an EDI replacement.** It handles the unstructured 60% that EDI never solved.
+- **Not a black box.** Every stage writes to an audit log; every reply is gated by a second model.
+- **Not an autopilot.** It hands off to a human the moment it stops being confident.
 
 ---
 
 ## Quick start
 
-**Prereqs:** Python 3.13, [`uv`](https://docs.astral.sh/uv/), [Firebase CLI](https://firebase.google.com/docs/cli), a Google Cloud project with the Gmail API enabled, and a `LLAMA_CLOUD_API_KEY`.
-
 ```bash
-# 1. Install
+# Prereqs: Python 3.13, uv, Firebase CLI, a Google Cloud project with Gmail API on.
+
 uv sync
+cp .env.example .env        # fill in keys
 
-# 2. Configure
-cp .env.example .env
-# fill in: GOOGLE_API_KEY, LLAMA_CLOUD_API_KEY, GMAIL_*, FIRESTORE_*
-
-# 3. Start the Firestore emulator (leave running)
-make emulator
-
-# 4. Seed master data (products, customers) into the emulator
-make seed
-
-# 5. Run the agent
-make dev      # ADK Web UI at http://localhost:8000
-# or
-make cli      # CLI chat against the order_intake app
-# or
-make smoke    # one-shot end-to-end run on a fixture
+make emulator               # Firestore emulator, leave running
+make seed                   # load product + customer master data
+make dev                    # ADK Web UI on http://localhost:8000
 ```
 
-For Gmail live-mode bootstrap (OAuth, watch setup, polling), see `scripts/gmail_*.py` and `.env.example`.
+Other entry points:
+
+| Command | What it does |
+|---|---|
+| `make cli` | CLI chat against the agent |
+| `make smoke` | Run one fixture email through the full pipeline |
+| `uv run pytest` | Unit + integration tests |
 
 ---
 
 ## Repo layout
 
 ```
-.
-├── adk_apps/order_intake/   # ADK app entry — what `adk web` and `adk run` load
-├── backend/
-│   ├── gmail/               # Gmail client, poller, Pub/Sub worker
-│   ├── ingestion/           # Email + attachment normalization
-│   ├── models/              # Pydantic schemas (OrderRecord, master records, ...)
-│   ├── my_agent/            # Root SequentialAgent + 11 stages
-│   │   └── stages/          # Ingest, Classify, Parse, Validate, ... Judge, Send
-│   ├── persistence/         # Firestore stores (OrderStore, ExceptionStore, ...)
-│   ├── prompts/             # Prompt templates per stage
-│   ├── tools/               # SKU matcher, validator, master-data repo
-│   └── audit/               # Structured audit logging
-├── data/
-│   ├── masters/             # Seed JSON for products + customers
-│   ├── csv/ excel/ pdf/ edi/ email/   # Fixture documents
-├── design/wireframes/       # Dashboard mockups
-├── firebase/                # Firestore rules + indexes
-├── hackathon-deck/          # Pitch deck (HTML)
-├── scripts/                 # gmail_auth_init, gmail_poll, load_master_data, smoke_run
-└── tests/                   # unit / integration / e2e / eval
+adk_apps/order_intake/   ADK app entry — what `adk web` loads
+backend/                 Agent stages, Gmail client, Firestore stores, validators
+data/                    Seed master data + fixture emails / PDFs / Excel / EDI
+design/                  Dashboard wireframes
+firebase/                Firestore rules + indexes
+hackathon-deck/          Pitch deck (HTML)
+scripts/                 Gmail OAuth bootstrap, master-data loader, smoke runner
+tests/                   unit / integration / e2e / eval
 ```
 
 ---
 
 ## Status
 
-This repo represents an MVP built for the **Google Solution Challenge 2026** under the working title _Order Intake Agent_.
-
-| Track | Scope | Status |
-|---|---|---|
-| A — Gmail ingress / egress | OAuth, polling, Pub/Sub worker, send | ✅ |
-| B — Generator + Judge | LLM-as-judge gate on outbound replies | ✅ |
-| C — Duplicate detection | Idempotency + reply-shortcircuit | ✅ |
-| D — Audit log | Structured per-run audit trail | ✅ |
-| E — Tier-3 embedding SKU match | `gemini-embedding-001` + Firestore vector index | ✅ |
-
-Out of scope for this submission: PO Confirmation Agent (separate sibling project, deferred).
+This is a working MVP. The end-to-end pipeline runs against the Firestore emulator and a live Gmail inbox. The dashboard is wireframed but not wired up.
 
 ---
 
-## Tests
+## License
 
-```bash
-uv run pytest                                # unit
-uv run pytest -m integration                 # hits Firestore emulator
-uv run pytest -m firestore_emulator          # explicit emulator-only
-uv run pytest -m gmail_live                  # live Gmail (gated, opt-in)
-```
-
----
-
-## Acknowledgments
-
-Domain reference for the order-desk problem space drawn from **Glacis** (the German order-automation startup), reverse-engineered from public material. This project is an independent reimplementation on the Google Cloud stack — no Glacis code or proprietary material was used.
+MIT.
