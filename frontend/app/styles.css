@@ -200,19 +200,6 @@ p:last-child { margin-bottom: 0; }
   align-items: center;
   gap: 18px;
 }
-.top-bar .nav-right .nav-log {
-  text-decoration: none;
-  color: var(--ink);
-  font-family: "Jost", sans-serif;
-  font-size: 14.5px;
-  font-weight: 400;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 120ms ease;
-  white-space: nowrap;
-}
-.top-bar .nav-right .nav-log:hover { color: var(--red); }
 .top-bar .nav-right .nav-cta {
   text-decoration: none;
   color: var(--ink);
@@ -243,13 +230,20 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* =========================================================
-   HERO — Renance cadence: eyebrow → headline → dek → CTAs
-   The big figure lives in its own band immediately below.
+   HERO — split-screen: text on the left, cartoon on the right
    ========================================================= */
 .hero {
-  padding: clamp(80px, 8vw, 132px) var(--gutter) clamp(64px, 6vw, 96px);
+  padding: clamp(64px, 6vw, 104px) var(--gutter) clamp(56px, 5vw, 88px);
   border-bottom: 1.5px solid var(--ink);
   position: relative;
+}
+.hero-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.25fr);
+  gap: clamp(40px, 5vw, 72px);
+  align-items: center;
+  max-width: 1320px;
+  margin: 0 auto;
 }
 .hero .kicker {
   font-family: "Azeret Mono", monospace;
@@ -257,17 +251,17 @@ p:last-child { margin-bottom: 0; }
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--red);
-  margin-bottom: 36px;
+  margin-bottom: 32px;
 }
 .hero h1 {
   font-family: "Jost", sans-serif;
   font-weight: 600;
-  font-size: var(--fs-vast);
-  line-height: 0.96;
-  letter-spacing: -0.025em;
+  font-size: clamp(38px, 4.6vw, 62px);
+  line-height: 1.02;
+  letter-spacing: -0.022em;
   color: var(--ink);
-  margin: 0 0 36px;
-  max-width: 18ch;
+  margin: 0 0 32px;
+  max-width: none;
 }
 .hero h1 em {
   font-family: "Instrument Serif", serif;
@@ -285,12 +279,12 @@ p:last-child { margin-bottom: 0; }
 .hero .dek {
   font-family: "Jost", sans-serif;
   font-style: normal;
-  font-size: clamp(18px, 1.7vw, 23px);
+  font-size: clamp(17px, 1.55vw, 21px);
   font-weight: 400;
   line-height: 1.55;
   color: var(--ink);
-  max-width: 58ch;
-  margin: 0 0 48px;
+  max-width: 52ch;
+  margin: 0 0 40px;
   letter-spacing: 0.005em;
 }
 .hero .dek b {
@@ -300,8 +294,7 @@ p:last-child { margin-bottom: 0; }
 .hero .ctas {
   display: flex;
   flex-wrap: wrap;
-  gap: 18px;
-  margin-bottom: 44px;
+  gap: 16px;
 }
 .hero .cta {
   appearance: none;
@@ -329,204 +322,21 @@ p:last-child { margin-bottom: 0; }
   color: var(--ink);
 }
 .hero .cta.ghost:hover { background: var(--vellum-deep); color: var(--ink); border-color: var(--ink); }
-.hero .last-run {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding-top: 22px;
-  border-top: 1px dashed var(--rule);
-}
-.hero .last-run .pulse {
-  width: 7px; height: 7px; border-radius: 50%;
-  background: var(--red);
-  animation: pulse 1.6s ease-in-out infinite;
-  display: inline-block;
-}
-.hero .last-run b { color: var(--ink); font-weight: 500; }
-.hero .last-run .dot { color: var(--ink-fade); margin: 0 4px; }
 
-.hero .ticks {
-  position: absolute;
-  top: clamp(80px, 8vw, 132px);
-  bottom: clamp(64px, 6vw, 96px);
-  left: calc(var(--gutter) - 18px);
-  width: 1px;
-  background: var(--ink);
-  opacity: 0.25;
-}
-.hero .ticks::before {
-  content: "";
-  position: absolute;
-  top: 0; bottom: 0; left: -3px;
-  width: 7px;
-  background-image: repeating-linear-gradient(to bottom, var(--ink) 0 1px, transparent 1px 24px);
-  opacity: 0.5;
-}
-
-/* =========================================================
-   HERO FIGURE — the cartoon, edge-to-edge inside the page
-   border. Renance-style "image dominates the fold" beat.
-   ========================================================= */
-.hero-figure {
-  margin: 0;
-  padding: clamp(40px, 4vw, 64px) var(--gutter) clamp(36px, 3.5vw, 56px);
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--white);
+.hero-image {
   position: relative;
 }
-.hero-figure .frame {
-  border: 1.5px solid var(--ink);
-  background: var(--vellum-deep);
-  padding: clamp(20px, 2vw, 32px);
-  max-width: 1200px;
-  margin: 0 auto;
-}
-.hero-figure .frame img {
+.hero-image img {
   display: block;
   width: 100%;
   height: auto;
-  border: 1px solid var(--ink);
-  background: var(--white);
-}
-.hero-figure figcaption {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 28px;
-  align-items: baseline;
-  margin: 28px auto 0;
-  padding-top: 20px;
-  border-top: 1px dashed var(--rule);
-  max-width: 1200px;
-}
-.hero-figure figcaption .cap {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-size: clamp(15px, 1.35vw, 18px);
-  font-weight: 400;
-  color: var(--ink-soft);
-  line-height: 1.55;
-  max-width: 66ch;
-  letter-spacing: 0.005em;
-}
-.hero-figure figcaption .cap b {
-  font-weight: 600;
-  color: var(--ink);
-}
-.hero-figure figcaption .credit {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  white-space: nowrap;
 }
 
-/* =========================================================
-   LOGO STRIP — RevenueBase "trusted by" pattern, repurposed
-   as the "built on" stack. Monospace, evenly spaced.
-   ========================================================= */
-.logo-strip {
-  display: grid;
-  grid-template-columns: auto repeat(5, 1fr);
-  align-items: center;
-  gap: 12px;
-  padding: 32px var(--gutter);
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--vellum-deep);
-}
-.logo-strip .label {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--ink-fade);
-  padding-right: 28px;
-  border-right: 1px dashed var(--rule);
-}
-.logo-strip .logo {
-  text-align: center;
-  font-family: "Jost", sans-serif;
-  font-weight: 600;
-  font-size: 16px;
-  letter-spacing: 0.02em;
-  color: var(--ink);
-  padding: 6px 10px;
-}
-.logo-strip .logo .sub {
-  display: block;
-  font-family: "Azeret Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-fade);
-  font-weight: 400;
-  margin-top: 4px;
-}
 @media (max-width: 900px) {
-  .logo-strip { grid-template-columns: 1fr 1fr; gap: 12px; padding: 18px var(--gutter); }
-  .logo-strip .label { grid-column: 1 / -1; border-right: none; border-bottom: 1px dashed var(--rule); padding: 0 0 10px; text-align: center; }
-}
-
-/* =========================================================
-   STATS STRIP — 4-up metric row
-   ========================================================= */
-.stats-strip {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  border-bottom: 1.5px solid var(--ink);
-  background: var(--white);
-}
-.stats-strip .stat {
-  padding: 56px 36px 48px;
-  border-right: 1.5px solid var(--ink);
-  position: relative;
-}
-.stats-strip .stat:last-child { border-right: none; }
-.stats-strip .stat .tag {
-  position: absolute;
-  top: 12px; right: 16px;
-  font-family: "Azeret Mono", monospace;
-  font-size: 9px;
-  letter-spacing: 0.3em;
-  color: var(--ink-fade);
-}
-.stats-strip .stat .num {
-  font-family: "Jost", sans-serif;
-  font-weight: 700;
-  font-size: clamp(54px, 6.4vw, 84px);
-  line-height: 0.92;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  font-variant-numeric: tabular-nums;
-}
-.stats-strip .stat.accent .num { color: var(--red); }
-.stats-strip .stat .lbl {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-  margin-top: 18px;
-}
-.stats-strip .stat .sub {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-size: 13px;
-  font-weight: 400;
-  color: var(--ink-soft);
-  margin-top: 10px;
-  letter-spacing: 0.02em;
-}
-@media (max-width: 720px) {
-  .stats-strip { grid-template-columns: 1fr 1fr; }
-  .stats-strip .stat { border-bottom: 1.5px solid var(--ink); }
-  .stats-strip .stat:nth-child(even) { border-right: none; }
-  .stats-strip .stat:nth-last-child(-n+2) { border-bottom: none; }
+  .hero-split {
+    grid-template-columns: 1fr;
+    gap: clamp(36px, 5vw, 56px);
+  }
 }
 
 /* =========================================================
@@ -598,88 +408,7 @@ p:last-child { margin-bottom: 0; }
 }
 
 /* =========================================================
-   HOW IT WORKS — three R / V / D tiles
-   ========================================================= */
-.howto {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0;
-  margin-top: 8px;
-}
-.howto .step {
-  padding: 48px 36px 40px;
-  border: 1.5px solid var(--ink);
-  border-right: none;
-  background: var(--white);
-  position: relative;
-}
-.howto .step:last-child { border-right: 1.5px solid var(--ink); }
-.howto .step .step-tag {
-  position: absolute;
-  top: -10px; left: 18px;
-  background: var(--vellum);
-  padding: 0 8px;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink);
-}
-.howto .step .step-tag .r { color: var(--red); }
-.howto .step .glyph {
-  width: 64px; height: 64px;
-  border: 2px solid var(--ink);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 26px;
-  font-family: "Jost", sans-serif;
-  font-weight: 700;
-  font-size: 24px;
-  color: var(--ink);
-  background: var(--vellum);
-}
-.howto .step.refuse .glyph {
-  border-color: var(--red);
-  color: var(--red);
-}
-.howto .step h3 {
-  font-family: "Jost", sans-serif;
-  font-size: 24px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  margin: 0 0 14px;
-  color: var(--ink);
-}
-.howto .step p {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-size: 15.5px;
-  font-weight: 400;
-  line-height: 1.6;
-  color: var(--ink-soft);
-  margin: 0;
-  letter-spacing: 0.005em;
-}
-.howto .step .formats {
-  margin-top: 28px;
-  padding-top: 18px;
-  border-top: 1px dashed var(--rule);
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-@media (max-width: 720px) {
-  .howto { grid-template-columns: 1fr; }
-  .howto .step { border-right: 1.5px solid var(--ink); border-bottom: none; }
-  .howto .step + .step { border-top: none; }
-}
-
-/* =========================================================
-   RUN CARDS — the page's centerpiece
+   RUN CARDS — the page's centerpiece (now § 01)
    ========================================================= */
 .cards {
   display: grid;
@@ -860,6 +589,38 @@ p:last-child { margin-bottom: 0; }
   text-transform: uppercase;
   color: var(--ink);
 }
+.pipeline-brackets {
+  display: grid;
+  grid-template-columns: repeat(11, 1fr);
+  margin-bottom: 14px;
+}
+.pipeline-brackets .bracket {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.pipeline-brackets .bracket:nth-child(1) { grid-column: 1 / span 4; }
+.pipeline-brackets .bracket:nth-child(2) { grid-column: 5 / span 3; }
+.pipeline-brackets .bracket:nth-child(3) { grid-column: 8 / span 4; }
+.pipeline-brackets .bracket-rule {
+  width: 86%;
+  height: 8px;
+  border-top: 1px solid var(--ink);
+  border-left: 1px solid var(--ink);
+  border-right: 1px solid var(--ink);
+  opacity: 0.55;
+}
+.pipeline-brackets .bracket-label {
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--ink);
+  padding: 0 10px;
+}
+.pipeline-brackets .bracket:nth-child(2) .bracket-label { color: var(--ink-soft); }
+.pipeline-brackets .bracket:nth-child(3) .bracket-label { color: var(--red); }
 .pipeline-diagram .row {
   display: grid;
   grid-template-columns: repeat(11, 1fr);
@@ -953,99 +714,12 @@ p:last-child { margin-bottom: 0; }
 .section .deeper a:hover { color: var(--red); border-color: var(--red); }
 
 /* =========================================================
-   VERIFICATION + QUOTE — 2-column band
-   ========================================================= */
-.verify {
-  display: grid;
-  grid-template-columns: 1.35fr 1fr;
-  border-bottom: 1.5px solid var(--ink);
-}
-.verify .pane {
-  padding: clamp(56px, 5vw, 88px) var(--gutter);
-  border-right: 1.5px solid var(--ink);
-  background: var(--white);
-}
-.verify .pane:last-child { border-right: none; background: var(--vellum-deep); }
-.verify .pane .head {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.3em;
-  text-transform: uppercase;
-  color: var(--red);
-  margin-bottom: 32px;
-}
-.verify .row + .row { margin-top: 22px; }
-.verify .row {
-  display: grid;
-  grid-template-columns: 150px 1fr;
-  gap: 24px;
-  align-items: baseline;
-  padding-bottom: 18px;
-  border-bottom: 1px dashed var(--rule);
-}
-.verify .row:last-child { border-bottom: none; padding-bottom: 0; }
-.verify .row .label {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-.verify .row .items {
-  font-family: "Azeret Mono", monospace;
-  font-size: 13px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--ink);
-  line-height: 1.7;
-}
-.verify .row .items .item + .item::before {
-  content: " · ";
-  color: var(--ink-fade);
-  margin: 0 4px;
-}
-.verify .quote {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-}
-.verify .quote blockquote {
-  font-family: "Jost", sans-serif;
-  font-style: normal;
-  font-weight: 500;
-  font-size: clamp(20px, 2.1vw, 26px);
-  line-height: 1.4;
-  color: var(--ink);
-  border-left: 2px solid var(--red);
-  padding: 6px 0 6px 22px;
-  margin: 0;
-  letter-spacing: -0.005em;
-}
-.verify .quote em { color: var(--red); font-style: normal; font-weight: 600; }
-.verify .quote cite {
-  display: block;
-  margin-top: 18px;
-  padding-left: 24px;
-  font-style: normal;
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.24em;
-  text-transform: uppercase;
-  color: var(--ink-mid);
-}
-@media (max-width: 900px) {
-  .verify { grid-template-columns: 1fr; }
-  .verify .pane { border-right: none; border-bottom: 1.5px solid var(--ink); }
-  .verify .pane:last-child { border-bottom: none; }
-}
-
-/* =========================================================
-   CTA BANNER — RevenueBase-style closer
+   CTA BANNER — slim closer
    ========================================================= */
 .cta-banner {
   background: var(--ink);
   color: var(--vellum);
-  padding: clamp(80px, 7vw, 120px) var(--gutter);
+  padding: clamp(48px, 4vw, 76px) var(--gutter);
   border-bottom: 1.5px solid var(--ink);
   position: relative;
   overflow: hidden;
@@ -1072,12 +746,12 @@ p:last-child { margin-bottom: 0; }
   letter-spacing: 0.3em;
   text-transform: uppercase;
   color: var(--vellum-edge);
-  margin-bottom: 22px;
+  margin-bottom: 18px;
 }
 .cta-banner h2 {
   font-family: "Jost", sans-serif;
   font-weight: 500;
-  font-size: clamp(28px, 3.6vw, 44px);
+  font-size: clamp(26px, 3.2vw, 40px);
   line-height: 1.05;
   letter-spacing: -0.015em;
   color: var(--vellum);
@@ -1113,53 +787,39 @@ p:last-child { margin-bottom: 0; }
 }
 .cta-banner .btn:hover { background: var(--red); border-color: var(--red); color: var(--vellum); }
 .cta-banner .btn:active { transform: translateY(1px); }
-.cta-banner .actions .meta {
-  font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-micro);
-  letter-spacing: 0.22em;
-  text-transform: uppercase;
-  color: var(--vellum-edge);
-}
 @media (max-width: 720px) {
   .cta-banner .inner { grid-template-columns: 1fr; }
   .cta-banner .actions { align-items: flex-start; }
 }
 
 /* =========================================================
-   COLOPHON
+   FOOTER — single horizontal line
    ========================================================= */
-.colophon {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr;
-}
-.colophon > div {
-  padding: 36px 32px 38px;
-  border-right: 1.5px solid var(--ink);
+.footer-line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 18px var(--gutter);
   font-family: "Azeret Mono", monospace;
-  font-size: var(--fs-small);
-  color: var(--ink);
-}
-.colophon > div:last-child { border-right: none; }
-.colophon .head {
   font-size: var(--fs-micro);
-  letter-spacing: 0.26em;
+  letter-spacing: 0.22em;
   text-transform: uppercase;
   color: var(--ink-mid);
-  margin-bottom: 14px;
 }
-.colophon .v {
-  font-family: "Jost", sans-serif;
-  font-weight: 500;
-  font-size: 14px;
+.footer-line .sep {
+  color: var(--ink-fade);
+}
+.footer-line a {
   color: var(--ink);
-  letter-spacing: 0.01em;
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: color 120ms ease, border-color 120ms ease;
 }
-.colophon .v.serif {
-  font-family: "Instrument Serif", serif;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 16px;
-  color: var(--ink-soft);
+.footer-line a:hover {
+  color: var(--red);
+  border-bottom-color: var(--red);
 }
 
 /* =========================================================
@@ -1169,21 +829,11 @@ p:last-child { margin-bottom: 0; }
   .cards { grid-template-columns: 1fr; }
   .cards-captions { grid-template-columns: 1fr; }
   .pipeline-diagram .row { grid-template-columns: repeat(11, minmax(54px, 1fr)); overflow-x: auto; padding-bottom: 6px; }
-  .colophon { grid-template-columns: 1fr 1fr; }
-  .colophon > div { border-bottom: 1.5px solid var(--ink); }
-  .colophon > div:nth-child(2n) { border-right: none; }
-  .colophon > div:nth-last-child(-n+2) { border-bottom: none; }
-  .hero-figure .frame { padding: 12px; }
-  .hero-figure figcaption { grid-template-columns: 1fr; gap: 8px; }
+  .pipeline-brackets { display: none; }
 }
 @media (max-width: 540px) {
   .top-bar { grid-template-columns: 1fr; gap: 6px; text-align: center; }
-  .top-bar .center { display: none; }
   .hero { padding-top: 52px; padding-bottom: 44px; }
-  .hero .ticks { display: none; }
-  .hero-figure { padding: 18px var(--gutter); }
-  .colophon { grid-template-columns: 1fr; }
-  .colophon > div { border-right: none; }
 }
 /* ===== READ SHEET STYLES (from runs/A-001-patterson.html) ===== */
 /* =========================================================
@@ -1818,10 +1468,135 @@ p:last-child { margin-bottom: 0; }
 .latency tfoot td.num { text-align: right; }
 
 /* =========================================================
-   COLOPHON — link styles only (base shape comes from landing)
+   READ-SHEET TOP BAR — engineering-drawing override of the
+   landing top-bar (which is brand + nav + CTA). Scoped to
+   .read-sheet so the landing styles are untouched.
    ========================================================= */
-.colophon .v a { text-decoration: none; border-bottom: 1px dashed var(--ink-mid); }
-.colophon .v a:hover { color: var(--red); border-color: var(--red); }
+.read-sheet .top-bar {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 16px;
+  align-items: center;
+  padding: 10px 22px;
+  border-bottom: 1.5px solid var(--ink);
+  background: var(--white);
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-micro);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+}
+.read-sheet .top-bar .left {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  color: var(--ink);
+  font-weight: 500;
+  flex-wrap: wrap;
+}
+.read-sheet .top-bar .left .back {
+  text-decoration: none;
+  color: var(--ink);
+  border-bottom: 1px dashed var(--ink-mid);
+  padding-bottom: 1px;
+}
+.read-sheet .top-bar .left .back:hover { color: var(--red); border-color: var(--red); }
+.read-sheet .top-bar .left .sep { color: var(--ink-fade); }
+.read-sheet .top-bar .stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+.read-sheet .top-bar .stamp .pulse {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--red);
+  animation: pulse 1.6s ease-in-out infinite;
+  display: inline-block;
+}
+@keyframes pulse { 0%, 100% { opacity: 0.35; } 50% { opacity: 1; } }
+.read-sheet .top-bar .center {
+  color: var(--ink-fade);
+  text-align: center;
+  font-size: 9.5px;
+  letter-spacing: 0.26em;
+}
+.read-sheet .top-bar .right {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+}
+.read-sheet .top-bar .right .gh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  background: var(--vellum);
+  padding: 5px 11px 5px 9px;
+  font-family: "Azeret Mono", monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 500;
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.read-sheet .top-bar .right .gh-btn svg { display: block; }
+.read-sheet .top-bar .right .gh-btn .ext { color: var(--ink-fade); font-size: 11px; }
+.read-sheet .top-bar .right .gh-btn:hover { background: var(--ink); color: var(--vellum); border-color: var(--ink); }
+.read-sheet .top-bar .right .gh-btn:hover .ext { color: var(--vellum); }
+
+@media (max-width: 720px) {
+  .read-sheet .top-bar { grid-template-columns: 1fr; gap: 8px; padding: 10px 16px; text-align: left; }
+  .read-sheet .top-bar .center { text-align: left; }
+  .read-sheet .top-bar .right { justify-content: flex-start; }
+}
+
+/* =========================================================
+   READ-SHEET COLOPHON — base shape (the landing block was
+   removed and replaced with .footer-line, so we own this here).
+   ========================================================= */
+.read-sheet .colophon {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  border-top: 1.5px solid var(--ink);
+}
+.read-sheet .colophon > div {
+  padding: 22px 24px 24px;
+  border-right: 1.5px solid var(--ink);
+  font-family: "Azeret Mono", monospace;
+  font-size: var(--fs-small);
+  color: var(--ink);
+}
+.read-sheet .colophon > div:last-child { border-right: none; }
+.read-sheet .colophon .head {
+  font-size: var(--fs-micro);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-mid);
+  margin-bottom: 8px;
+}
+.read-sheet .colophon .v {
+  font-family: "Jost", sans-serif;
+  font-weight: 500;
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+.read-sheet .colophon .v.serif {
+  font-family: "Instrument Serif", serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
+  color: var(--ink-soft);
+}
+.read-sheet .colophon .v a {
+  text-decoration: none;
+  border-bottom: 1px dashed var(--ink-mid);
+  color: var(--ink);
+}
+.read-sheet .colophon .v a:hover { color: var(--red); border-color: var(--red); }
 
 /* =========================================================
    RESPONSIVE

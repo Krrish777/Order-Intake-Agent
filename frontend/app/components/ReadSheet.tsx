@@ -30,30 +30,25 @@ export default function ReadSheet({ id, data }: { id: string; data: RunData }) {
       <div className="corner-tr" />
       <div className="corner-bl" />
 
-      {/* TOP BAR */}
+      {/* TOP BAR — engineering-drawing style, per wireframe */}
       <header className="top-bar">
-        <Link className="brand" href="/">
-          <span className="brand-mark" aria-hidden="true" />
-          <span className="brand-name">
-            Order Intake<span className="brand-accent">Agent</span>
-          </span>
-        </Link>
-        <nav className="nav-center" aria-label="primary">
-          <Link href="/">Landing</Link>
-          <Link href="/runs/A-001-patterson">A-001</Link>
-          <Link href="/runs/A-002-mm-machine">A-002</Link>
-          <Link href="/runs/A-003-birch-valley">A-003</Link>
-          <a href={GITHUB_URL} target="_blank" rel="noopener noreferrer">
-            Source <span className="ext">↗</span>
+        <div className="left">
+          <Link className="back" href="/">← all runs</Link>
+          <span className="sep">·</span>
+          <span>Order Intake Agent</span>
+          <span className="stamp"><span className="pulse" />CAPTURED · v0.6</span>
+        </div>
+        <div className="center">
+          SHEET {sheetId.toUpperCase()} · {customer.toUpperCase()} · NTS
+        </div>
+        <div className="right">
+          <a className="gh-btn" href={GITHUB_URL} target="_blank" rel="noopener noreferrer" aria-label="View source on GitHub">
+            <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true">
+              <path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8Z" />
+            </svg>
+            <span>Source</span>
+            <span className="ext">↗</span>
           </a>
-        </nav>
-        <div className="nav-right">
-          <span className="nav-log">
-            Sheet <b style={{ color: 'var(--ink)' }}>{sheetId.toUpperCase()}</b>
-          </span>
-          <Link className="nav-cta" href="/">
-            ← Back to landing
-          </Link>
         </div>
       </header>
 
@@ -98,7 +93,7 @@ export default function ReadSheet({ id, data }: { id: string; data: RunData }) {
           <span className="dot">·</span>
           captured <b>{capturedAt}</b>
         </span>
-        <a href={`https://github.com/Krrish777/Order-Intake-Agent/blob/master/design/wireframes-v2/data/${id}.json`} target="_blank" rel="noopener noreferrer">
+        <a href={`https://github.com/Krrish777/Order-Intake-Agent/blob/master/frontend/data/runs/${id}.json`} target="_blank" rel="noopener noreferrer">
           view raw JSON ↗
         </a>
       </div>
@@ -221,25 +216,26 @@ export default function ReadSheet({ id, data }: { id: string; data: RunData }) {
 
       <footer className="colophon">
         <div>
+          <div className="head">Sheet</div>
+          <div className="v">{sheetId.toUpperCase()} · {customer}</div>
+        </div>
+        <div>
           <div className="head">Verdict</div>
           <div className="v" style={{ color: VERDICT_COLOR[verdict] }}>
             {verdict}
+            {data.total_wall_clock_seconds !== null
+              ? ` · ${data.total_wall_clock_seconds.toFixed(1)} s`
+              : ''}
           </div>
         </div>
         <div>
-          <div className="head">Run</div>
-          <div className="v">
-            <code>{data.correlation_id.slice(0, 12)}…</code>
-          </div>
-        </div>
-        <div>
-          <div className="head">Captured</div>
-          <div className="v">{capturedAt}</div>
+          <div className="head">Set in</div>
+          <div className="v serif">Jost · Azeret Mono · Instrument Serif</div>
         </div>
         <div>
           <div className="head">Back</div>
           <div className="v">
-            <Link href="/">↩ landing</Link>
+            <Link href="/">← landing</Link>
           </div>
         </div>
       </footer>

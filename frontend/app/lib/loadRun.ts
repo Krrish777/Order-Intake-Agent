@@ -2,16 +2,10 @@ import fs from 'node:fs';
 import path from 'node:path';
 import type { RunData } from './runShape';
 
-const DATA_DIR = path.resolve(
-  process.cwd(),
-  '..',
-  'design',
-  'wireframes-v2',
-  'data',
-);
+const DATA_DIR = path.join(process.cwd(), 'data', 'runs');
 
 export function getRunIds(): string[] {
-  // Stable order — landing's §02 cards expect A-001 → A-002 → A-003.
+  // Stable order — landing's §01 cards expect A-001 → A-002 → A-003.
   return ['A-001-patterson', 'A-002-mm-machine', 'A-003-birch-valley'];
 }
 

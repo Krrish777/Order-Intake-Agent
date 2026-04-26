@@ -15,7 +15,8 @@ wheels/
 logs/
 
 # Smoke-run output directories (timestamped, regenerable)
-runs/
+# Anchored to repo root so it doesn't swallow frontend/data/runs/.
+/runs/
 
 # Git worktrees (project-local, throwaway branches)
 .worktrees/
