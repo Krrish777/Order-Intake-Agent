@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir -p /c/Users/777kr/.claude/skills/excalidraw-diagram/references/vendor)",
+      "Bash(curl -fsSL --max-time 60 -o /c/Users/777kr/.claude/skills/excalidraw-diagram/references/vendor/react.production.min.js https://unpkg.com/react@18.3.1/umd/react.production.min.js)",
+      "Bash(curl -fsSL --max-time 60 -o /c/Users/777kr/.claude/skills/excalidraw-diagram/references/vendor/react-dom.production.min.js https://unpkg.com/react-dom@18.3.1/umd/react-dom.production.min.js)",
+      "Bash(curl -fsSL --max-time 60 -o /c/Users/777kr/.claude/skills/excalidraw-diagram/references/vendor/excalidraw.production.min.js https://unpkg.com/@excalidraw/excalidraw@0.17.6/dist/excalidraw.production.min.js)",
+      "Read(//c/Users/777kr/.claude/skills/excalidraw-diagram/references/**)"
+    ]
+  }
+}

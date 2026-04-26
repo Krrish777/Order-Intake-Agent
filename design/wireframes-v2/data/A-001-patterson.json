@@ -224,7 +224,7 @@
               {
                 "sku": "912061",
                 "unit_of_measure": "EA",
-                "description": "JIC Male Elbow 90\u00b0, -6 (9/16-18 UNF), Forged Steel",
+                "description": "JIC Male Elbow 90°, -6 (9/16-18 UNF), Forged Steel",
                 "quantity": 48.0,
                 "unit_price": 7.66,
                 "requested_date": null
@@ -351,7 +351,7 @@
               }
             ],
             "po_number": "PO-28491",
-            "ship_to_address": "Patterson DC \u2014 Atlanta South\n4410 Fulton Industrial Blvd SW, Dock 7, Atlanta GA 30336",
+            "ship_to_address": "Patterson DC — Atlanta South\n4410 Fulton Industrial Blvd SW, Dock 7, Atlanta GA 30336",
             "customer_name": "Patterson Industrial Supply Co.",
             "requested_delivery_date": "2026-05-08"
           }
@@ -627,7 +627,7 @@
         "customer": {
           "bill_to": {
             "state": "OH",
-            "street2": "Attn: Accounts Payable \u2014 Dept 300",
+            "street2": "Attn: Accounts Payable — Dept 300",
             "city": "Cleveland",
             "zip": "44105",
             "street1": "2750 Harvard Avenue",
@@ -680,7 +680,7 @@
               "city": "Cleveland",
               "country": "US",
               "state": "OH",
-              "label": "Patterson DC \u2014 Cleveland",
+              "label": "Patterson DC — Cleveland",
               "zip": "44105",
               "location_code": "PATT-CLE-01",
               "receiving_hours": "Mon-Fri 06:00-15:30 ET"
@@ -691,7 +691,7 @@
               "city": "Atlanta",
               "country": "US",
               "state": "GA",
-              "label": "Patterson DC \u2014 Atlanta South",
+              "label": "Patterson DC — Atlanta South",
               "zip": "30336",
               "location_code": "PATT-ATL-02",
               "receiving_hours": "Mon-Fri 07:00-16:00 ET"
@@ -702,7 +702,7 @@
               "city": "Dallas",
               "country": "US",
               "state": "TX",
-              "label": "Patterson DC \u2014 Dallas",
+              "label": "Patterson DC — Dallas",
               "zip": "75247",
               "location_code": "PATT-DAL-03",
               "receiving_hours": "Mon-Fri 07:00-15:00 CT"
@@ -722,5 +722,15 @@
       "__doc_id": "<177675897596.2064.16567937247607777057@grafton-reese.example>"
     }
   ],
-  "raw_audit_event_count": 26
+  "raw_audit_event_count": 26,
+  "inbound_email": {
+    "headers": {
+      "From": "Gail Prescott <g.prescott@patterson-indust.com>",
+      "To": "orders@grafton-reese.com",
+      "Subject": "PO-28491 - Atlanta monthly consolidated",
+      "Date": "Sat, 18 Apr 2026 10:12:00 -0400",
+      "Message-ID": "<177675897596.2064.16567937247607777057@grafton-reese.example>"
+    },
+    "body": "Grafton team,\n\nMonthly consolidated for the Atlanta DC — PO-28491, need-by 5/8. Everything on the sheet is our recurring mix for the Piedmont accounts, nothing unusual. Ship PATT-ATL-02 as always, Net 45 on file.\n\nIf the SS JIC elbows (line 7) are on backorder, fine to partial-ship the rest and drop the elbows to the next truck. Don't split the hoses though — customer wants the full drop on those.\n\nGail Prescott\nPatterson Industrial Supply — Atlanta DC Purchasing\n(770) 441-2850"
+  }
 }
