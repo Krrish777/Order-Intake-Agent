@@ -1,0 +1,136 @@
+{
+  "correlation_id": "72f754e6ff434afb92d17f4cb0928c81",
+  "source_message_id": "<177670563340.19724.459494955414530210@birchvalleyfarmeq.com>",
+  "session_id": "smoke-1a5de48a",
+  "agent_version": "track-a-v0.4",
+  "captured_at": "2026-04-26T07:08:08.850522+00:00",
+  "total_wall_clock_seconds": 5.8,
+  "stage_count": 11,
+  "stages": [
+    {
+      "stage": "ingest_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T07:07:49.299000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "classify_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T07:07:49.317000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "reply_shortcircuit_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T07:07:49.299000+00:00",
+      "exited_ts": "2026-04-26T07:07:49.317000+00:00",
+      "duration_ms": 18.0,
+      "payload": {}
+    },
+    {
+      "stage": "parse_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T07:07:49.330000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "validate_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T07:07:49.330000+00:00",
+      "exited_ts": "2026-04-26T07:07:49.339000+00:00",
+      "duration_ms": 9.0,
+      "payload": {}
+    },
+    {
+      "stage": "confirm_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T07:07:49.346000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "persist_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T07:07:49.346000+00:00",
+      "exited_ts": "2026-04-26T07:07:49.346000+00:00",
+      "duration_ms": 0.0,
+      "payload": {}
+    },
+    {
+      "stage": "clarify_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T07:07:49.339000+00:00",
+      "exited_ts": "2026-04-26T07:07:49.346000+00:00",
+      "duration_ms": 7.0,
+      "payload": {}
+    },
+    {
+      "stage": "finalize_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T07:07:49.362000+00:00",
+      "exited_ts": "2026-04-26T07:07:55.127000+00:00",
+      "duration_ms": 5765.0,
+      "payload": {}
+    },
+    {
+      "stage": "send_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": null,
+      "exited_ts": "2026-04-26T07:07:55.141000+00:00",
+      "duration_ms": null,
+      "payload": {}
+    },
+    {
+      "stage": "judge_stage",
+      "action": "stage_exited",
+      "outcome": "ok",
+      "entered_ts": "2026-04-26T07:07:55.127000+00:00",
+      "exited_ts": "2026-04-26T07:07:55.141000+00:00",
+      "duration_ms": 14.0,
+      "payload": {}
+    }
+  ],
+  "lifecycle_events": [
+    {
+      "stage": "lifecycle",
+      "action": "envelope_received",
+      "outcome": null,
+      "ts": "2026-04-26T07:07:49.299000+00:00",
+      "payload": {
+        "attachment_count": 1
+      }
+    },
+    {
+      "stage": "lifecycle",
+      "action": "run_finalized",
+      "outcome": "ok",
+      "ts": "2026-04-26T07:07:55.123000+00:00",
+      "payload": {
+        "docs_skipped": 0,
+        "exceptions_opened": 0,
+        "reply_handled": true,
+        "orders_created": 0
+      }
+    }
+  ],
+  "orders": [],
+  "exceptions": [],
+  "raw_audit_event_count": 23
+}
